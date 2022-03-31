@@ -33,7 +33,7 @@ export const executeSpy = (
 	{
 		error = null,
 		stderr = "",
-		stdout = "",
+		stdout = "{}",
 	}: {
 		error?: null | Error;
 		stderr?: string;

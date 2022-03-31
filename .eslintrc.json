@@ -13,13 +13,7 @@
 				"jsdoc/require-jsdoc": "off",
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-unsafe-argument": "off",
-				"@typescript-eslint/naming-convention": [
-					"warn",
-					{
-						"selector": "default",
-						"format": ["PascalCase", "camelCase", "UPPER_CASE"]
-					}
-				],
+				"@typescript-eslint/naming-convention": "off",
 				"import/no-unresolved": [
 					"error",
 					{

@@ -1,10 +1,22 @@
 import { spawnSync } from "child_process";
 import { FieldAssignment, GlobalFlags } from "./index";
 
-type CLIResponse<T> = T | { message: string };
+type FlagValue = string | string[] | boolean;
 
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
+
+export const parseFlagValue = (value: FlagValue) => {
+	if (typeof value === "string") {
+		return `="${value}"`;
+	}
+
+	if (Array.isArray(value)) {
+		return `="${value.join(",")}"`;
+	}
+
+	return "";
+};
 
 export class CLI {
 	public globalFlags: Partial<GlobalFlags> = {};
@@ -13,30 +25,26 @@ export class CLI {
 		return `"${field}[${type}]=${value}"`;
 	}
 
-	private createFlags(flags: Record<string, string | boolean>): string[] {
-		return (
-			Object.entries(flags)
-				// eslint-disable-next-line @typescript-eslint/naming-convention
-				.filter(([_, value]) => Boolean(value))
-				.map(
-					([flag, value]) =>
-						`--${camelToHyphen(flag)}${
-							typeof value === "string" ? `="${value}"` : ""
-						}`,
-				)
-		);
+	private createFlags(flags: Record<string, FlagValue>): string[] {
+		return Object.entries(flags)
+			.filter(([_, value]) => Boolean(value))
+			.map(
+				([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`,
+			);
 	}
 
-	public execute<TData = Record<string, any>>(
+	public execute<TData extends string | Record<string, any> | void>(
 		command: string[],
 		{
 			args = [],
 			flags = {},
+			json = true,
 		}: {
 			args?: (string | null | FieldAssignment)[];
-			flags?: Record<string, string | boolean>;
+			flags?: Record<string, FlagValue>;
+			json?: boolean;
 		} = {},
-	): CLIResponse<TData> {
+	): TData {
 		for (const arg of args) {
 			if (typeof arg === "string") {
 				command.push(`"${arg}"`);
@@ -50,8 +58,7 @@ export class CLI {
 			...this.createFlags({
 				...this.globalFlags,
 				...flags,
-				// We always want to use JSON format
-				format: "json",
+				format: json ? "json" : "human-readable",
 			}),
 		];
 
@@ -70,12 +77,20 @@ export class CLI {
 		}
 
 		const output = result.stdout.toString().trim();
+
+		if (output.length === 0) {
+			return;
+		}
+
+		if (!json) {
+			return output as TData;
+		}
+
 		try {
 			return JSON.parse(output) as TData;
-		} catch {
-			return {
-				message: output,
-			} as unknown as TData;
+		} catch (error) {
+			console.log(output);
+			throw error;
 		}
 	}
 }

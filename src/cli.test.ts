@@ -46,16 +46,18 @@ describe("cli", () => {
 			);
 		});
 
-		it("parses command JSON responses", () => {
+		it("parses command JSON responses by default", () => {
 			const data = { foo: "bar" };
 			const execute = executeSpy([["foo"]], { stdout: JSON.stringify(data) });
 			expect(execute.response).toEqual(data);
 		});
 
-		it("handles non-JSON responses", () => {
+		it("can also return non-JSON responses", () => {
 			const message = "some message";
-			const execute = executeSpy([["foo"]], { stdout: message });
-			expect(execute.response).toEqual({ message });
+			const execute = executeSpy([["foo"], { json: false }], {
+				stdout: message,
+			});
+			expect(execute.response).toEqual(message);
 		});
 	});
 
