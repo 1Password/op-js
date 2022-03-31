@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "AMD",
+		"allowJs": true,
+		"esModuleInterop": true,
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"noImplicitAny": false,
+		"types": ["node", "jest"],
+		"baseUrl": ".",
+		"outDir": "./dist",
+		"declaration": true,
+	},
+	"include": ["src/index.ts", "src/cli.ts"],
+}

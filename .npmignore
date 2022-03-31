@@ -1,0 +1,11 @@
+src/
+node_modules/
+tsconfig.json
+jest.config.js
+test-bed.ts
+.husky/
+.nvmrc
+.prettierrc
+.eslintrc.json
+.gitlab-ci.yml
+.gitignore

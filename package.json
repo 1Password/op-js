@@ -3,27 +3,27 @@
 	"version": "0.1.0",
 	"description": "A typed JS wrapper for the 1Password CLI",
 	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"repository": {
 		"type": "git",
 		"url": "https://gitlab.1password.io/dev/b5/op-cli-js/"
 	},
 	"license": "MIT",
 	"scripts": {
-		"build": "NODE_ENV=production yarn compile",
-		"compile": "node -r esbuild-register compile.ts",
-		"eslint": "eslint -c .eslintrc.json 'src/**/*.ts'",
+		"build": "yarn compile --minify && tsc --emitDeclarationOnly",
+		"compile": "esbuild --bundle --platform=node --outdir=dist src/index.js",
+		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
-		"prettier": "prettier --check src/",
+		"prettier": "prettier --check 'src/*.ts'",
+		"test-bed": "node -r esbuild-register test-bed.ts",
 		"test": "jest",
 		"typecheck": "tsc --noEmit",
 		"watch": "yarn compile --watch"
 	},
 	"prettier": "@1password/front-end-style/prettierrc.json",
 	"lint-staged": {
-		"src/**/*": [
-			"prettier --write"
-		],
-		"src/**/*.ts": [
+		"src/*.ts": [
+			"prettier --write",
 			"eslint -c .eslintrc.json --fix"
 		]
 	},
@@ -38,7 +38,7 @@
 		"eslint-plugin-no-unsanitized": "^4.0.1",
 		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-sonarjs": "^0.13.0",
-		"eslint-plugin-unicorn": "^41.0.1",
+		"eslint-plugin-unicorn": "^40.1.0",
 		"husky": "^7.0.4",
 		"jest": "^27.5.1",
 		"lint-staged": "^12.3.7",
