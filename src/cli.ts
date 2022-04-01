@@ -1,7 +1,8 @@
 import { spawnSync } from "child_process";
 import { FieldAssignment, GlobalFlags } from "./index";
 
-type FlagValue = string | string[] | boolean;
+export type Flags = Record<string, FlagValue>;
+export type FlagValue = string | string[] | boolean;
 
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
@@ -53,14 +54,21 @@ export class CLI {
 			}
 		}
 
+		if (json) {
+			flags = { ...flags, format: "json" };
+		}
+
 		command = [
 			...command,
 			...this.createFlags({
 				...this.globalFlags,
 				...flags,
-				format: json ? "json" : "human-readable",
 			}),
 		];
+
+		if (process.env.NODE_ENV === "development") {
+			console.info("op", command.join(" "));
+		}
 
 		const result = spawnSync("op", command, {
 			shell: true,
