@@ -441,3 +441,295 @@ export const connect = {
  */
 export const read = (reference: string, flags: CommandFlags = {}) =>
 	cli.execute<string>(["read"], { args: [reference], flags, json: false });
+
+export const item = {
+	/**
+	 * Create an item.
+	 */
+	create: (
+		assignments: FieldAssignment[],
+		flags: CommandFlags<{
+			category: string; // TODO: narrow types, e.g. "secrets"
+			dryRun: boolean;
+			generatePassword: string | boolean;
+			tags: string[];
+			template: string;
+			title: string;
+			url: string;
+			vault: string;
+		}> = {},
+	) => cli.execute(["item", "create"], { args: assignments, flags }),
+
+	/**
+	 * Permanently delete an item.
+	 *
+	 * Use {@param archive} to move it to the Archive instead.
+	 */
+	delete: (
+		nameOrIdOrLink: string,
+		flags: CommandFlags<{
+			archive: boolean;
+			vault: string;
+		}> = {},
+	) => cli.execute(["item", "delete"], { args: [nameOrIdOrLink], flags }),
+
+	/**
+	 * Edit an item's details.
+	 */
+	edit: (
+		nameOrIdOrLink: string,
+		assignments: FieldAssignment[],
+		flags: CommandFlags<{
+			dryRun: boolean;
+			generatePassword: string | boolean;
+			tags: string[];
+			title: string;
+			url: string;
+			vault: string;
+		}> = {},
+	) =>
+		cli.execute(["item", "edit"], {
+			args: [nameOrIdOrLink, ...assignments],
+			flags,
+		}),
+
+	/**
+	 * Return details about an item.
+	 */
+	get: (
+		nameOrIdOrLink: string,
+		flags: CommandFlags<{
+			fields: string[]; // TODO this is wrong
+			includeArchive: boolean;
+			vault: string;
+		}> = {},
+	) => cli.execute(["item", "get"], { args: [nameOrIdOrLink], flags }),
+
+	/**
+	 * Output the primary one-time password for this item.
+	 */
+	otp: (
+		nameOrIdOrLink: string,
+		flags: CommandFlags<{
+			includeArchive: boolean;
+			vault: string;
+		}> = {},
+	) =>
+		cli.execute<string>(["item", "get"], {
+			args: [nameOrIdOrLink],
+			flags: { ...flags, otp: true },
+		}),
+
+	/**
+	 * Get a shareable link for the item.
+	 */
+	shareLink: (
+		nameOrIdOrLink: string,
+		flags: CommandFlags<{
+			includeArchive: boolean;
+			vault: string;
+		}> = {},
+	) =>
+		cli.execute<string>(["item", "get"], {
+			args: [nameOrIdOrLink],
+			flags: { ...flags, shareLink: true },
+		}),
+
+	/**
+	 * List items.
+	 */
+	list: (
+		flags: CommandFlags<{
+			categories: string[]; // TODO: narrow types
+			includeArchive: boolean;
+			long: boolean;
+			tags: string[];
+			vault: string;
+		}> = {},
+	) => cli.execute(["item", "list"], { flags }),
+
+	/**
+	 * Share an item.
+	 */
+	share: (
+		nameOrId: string,
+		flags: CommandFlags<{
+			emails: string[];
+			expiry: string;
+			vault: string;
+			viewOnce: boolean;
+		}> = {},
+	) => cli.execute(["item", "share"], { args: [nameOrId], flags }),
+
+	template: {
+		/**
+		 * Return a template for an item type.
+		 */
+		get: (category: string, flags: CommandFlags = {}) =>
+			cli.execute(["item", "template", "get"], { args: [category], flags }),
+
+		/**
+		 * Lists available item type templates.
+		 */
+		list: (flags: CommandFlags = {}) =>
+			cli.execute(["item", "template", "list"], { flags }),
+	},
+};
+
+export const vault = {
+	/**
+	 * Create a new vault
+	 */
+	create: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "create"]),
+
+	/**
+	 * Remove a vault.
+	 */
+	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "delete"]),
+
+	/**
+	 * Edit a vault's name, description, icon or Travel Mode status.
+	 */
+	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "edit"]),
+
+	/**
+	 * Get details about a vault.
+	 */
+	get: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "get"]),
+
+	/**
+	 * List vaults.
+	 */
+	list: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "list"]),
+
+	group: {
+		/**
+		 * Grant a group permissions in a vault.
+		 */
+		grant: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "group", "grant"]),
+
+		/**
+		 * List all the groups that have access to the given vault
+		 */
+		list: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "group", "list"]),
+
+		/**
+		 * Revoke a group's permissions in a vault, in part or in full
+		 */
+		revoke: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "group", "revoke"]),
+	},
+
+	user: {
+		/**
+		 * Grant a user permissions in a vault
+		 */
+		grant: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "user", "grant"]),
+
+		/**
+		 * List all users with access to the vault and their permissions
+		 */
+		list: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "user", "list"]),
+
+		/**
+		 * Revoke a user's permissions in a vault, in part or in full
+		 */
+		revoke: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["vault", "user", "revoke"]),
+	},
+};
+
+export const user = {
+	/**
+	 * Confirm users who have accepted their invitation to the 1Password account.
+	 */
+	confirm: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "confirm"]),
+
+	/**
+	 * Remove a user and all their data from the account.
+	 */
+	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "delete"]),
+
+	/**
+	 * Change a user's name or Travel Mode status
+	 */
+	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "edit"]),
+
+	/**
+	 * Get details about a user.
+	 */
+	get: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "get"]),
+
+	/**
+	 * List users.
+	 */
+	list: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "list"]),
+
+	/**
+	 * Provision a user in the authenticated account.
+	 */
+	provision: (flags: CommandFlags<{}> = {}) =>
+		cli.execute(["user", "provision"]),
+
+	/**
+	 * Reactivate a suspended user.
+	 */
+	reactivate: (flags: CommandFlags<{}> = {}) =>
+		cli.execute(["user", "reactivate"]),
+
+	/**
+	 * Suspend a user.
+	 */
+	suspend: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "suspend"]),
+};
+
+export const group = {
+	/**
+	 * Create a group.
+	 */
+	create: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "create"]),
+
+	/**
+	 * Remove a group.
+	 */
+	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "delete"]),
+
+	/**
+	 * Change a group's name or description.
+	 */
+	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "edit"]),
+
+	/**
+	 * Get details about a group.
+	 */
+	get: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "get"]),
+
+	/**
+	 * List groups.
+	 */
+	list: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "list"]),
+
+	user: {
+		/**
+		 * Grant a user access to a group.
+		 */
+		grant: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["group", "user", "grant"]),
+
+		/**
+		 * Retrieve users that belong to a group.
+		 */
+		list: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["group", "user", "list"]),
+
+		/**
+		 * Revoke a user's access to a vault or group.
+		 */
+		revoke: (flags: CommandFlags<{}> = {}) =>
+			cli.execute(["group", "user", "grant"]),
+	},
+};
