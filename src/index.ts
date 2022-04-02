@@ -580,66 +580,272 @@ export const vault = {
 	/**
 	 * Create a new vault
 	 */
-	create: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "create"]),
+	create: (
+		name: string,
+		flags: CommandFlags<{
+			allowAdminsToManage: "true" | "false";
+			description: string;
+			icon:
+				| "airplane"
+				| "application"
+				| "art-supplies"
+				| "bankers-box"
+				| "brown-briefcase"
+				| "brown-gate"
+				| "buildings"
+				| "cabin"
+				| "castle"
+				| "circle-of-dots"
+				| "coffee"
+				| "color-wheel"
+				| "curtained-window"
+				| "document"
+				| "doughnut"
+				| "fence"
+				| "galaxy"
+				| "gears"
+				| "globe"
+				| "green-backpack"
+				| "green-gem"
+				| "handshake"
+				| "heart-with-monitor"
+				| "house"
+				| "id-card"
+				| "jet"
+				| "large-ship"
+				| "luggage"
+				| "plant"
+				| "porthole"
+				| "puzzle"
+				| "rainbow"
+				| "record"
+				| "round-door"
+				| "sandals"
+				| "scales"
+				| "screwdriver"
+				| "shop"
+				| "tall-window"
+				| "treasure-chest"
+				| "vault-door"
+				| "vehicle"
+				| "wallet"
+				| "wrench";
+		}> = {},
+	) => cli.execute(["vault", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a vault.
 	 */
-	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "delete"]),
+	delete: (nameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["vault", "delete"], { args: [nameOrId], flags }),
 
 	/**
 	 * Edit a vault's name, description, icon or Travel Mode status.
 	 */
-	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "edit"]),
+	edit: (
+		nameOrId: string,
+		flags: CommandFlags<{
+			description: string;
+			// TODO: move this to a type
+			icon:
+				| "airplane"
+				| "application"
+				| "art-supplies"
+				| "bankers-box"
+				| "brown-briefcase"
+				| "brown-gate"
+				| "buildings"
+				| "cabin"
+				| "castle"
+				| "circle-of-dots"
+				| "coffee"
+				| "color-wheel"
+				| "curtained-window"
+				| "document"
+				| "doughnut"
+				| "fence"
+				| "galaxy"
+				| "gears"
+				| "globe"
+				| "green-backpack"
+				| "green-gem"
+				| "handshake"
+				| "heart-with-monitor"
+				| "house"
+				| "id-card"
+				| "jet"
+				| "large-ship"
+				| "luggage"
+				| "plant"
+				| "porthole"
+				| "puzzle"
+				| "rainbow"
+				| "record"
+				| "round-door"
+				| "sandals"
+				| "scales"
+				| "screwdriver"
+				| "shop"
+				| "tall-window"
+				| "treasure-chest"
+				| "vault-door"
+				| "vehicle"
+				| "wallet"
+				| "wrench";
+			name: string;
+			travelMode: "on" | "off";
+		}> = {},
+	) => cli.execute(["vault", "edit"], { args: [nameOrId], flags }),
 
 	/**
 	 * Get details about a vault.
 	 */
-	get: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "get"]),
+	get: (nameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["vault", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List vaults.
 	 */
-	list: (flags: CommandFlags<{}> = {}) => cli.execute(["vault", "list"]),
+	list: (
+		flags: CommandFlags<{
+			group: string;
+			user: string;
+		}> = {},
+	) => cli.execute(["vault", "list"], { flags }),
 
 	group: {
 		/**
 		 * Grant a group permissions in a vault.
 		 */
-		grant: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "group", "grant"]),
+		grant: (
+			flags: CommandFlags<{
+				group: string;
+				permissions: // Teams have three permissions
+				(
+					| "allow_viewing"
+					| "allow_editing"
+					| "allow_managing"
+					// Business has the above and more granular options
+					| "view_items"
+					| "view_and_copy_passwords"
+					| "view_item_history"
+					| "create_items"
+					| "edit_items"
+					| "archive_items"
+					| "delete_items"
+					| "import_items"
+					| "export_items"
+					| "copy_and_share_items"
+					| "print_items"
+					| "manage_vault"
+				)[];
+				vault: string;
+			}> = {},
+		) => cli.execute(["vault", "group", "grant"], { flags }),
 
 		/**
 		 * List all the groups that have access to the given vault
 		 */
-		list: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "group", "list"]),
+		list: (vault: string, flags: CommandFlags = {}) =>
+			cli.execute(["vault", "group", "list"], { args: [vault], flags }),
 
 		/**
 		 * Revoke a group's permissions in a vault, in part or in full
 		 */
-		revoke: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "group", "revoke"]),
+		revoke: (
+			flags: CommandFlags<{
+				group: string;
+				// TODO: move this to a type
+				permissions: // Teams have three permissions
+				(
+					| "allow_viewing"
+					| "allow_editing"
+					| "allow_managing"
+					// Business has the above and more granular options
+					| "view_items"
+					| "view_and_copy_passwords"
+					| "view_item_history"
+					| "create_items"
+					| "edit_items"
+					| "archive_items"
+					| "delete_items"
+					| "import_items"
+					| "export_items"
+					| "copy_and_share_items"
+					| "print_items"
+					| "manage_vault"
+				)[];
+				vault: string;
+			}> = {},
+		) => cli.execute(["vault", "group", "revoke"], { flags }),
 	},
 
 	user: {
 		/**
 		 * Grant a user permissions in a vault
 		 */
-		grant: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "user", "grant"]),
+		grant: (
+			flags: CommandFlags<{
+				user: string;
+				// TODO: move this to a type
+				permissions: // Teams have three permissions
+				(
+					| "allow_viewing"
+					| "allow_editing"
+					| "allow_managing"
+					// Business has the above and more granular options
+					| "view_items"
+					| "view_and_copy_passwords"
+					| "view_item_history"
+					| "create_items"
+					| "edit_items"
+					| "archive_items"
+					| "delete_items"
+					| "import_items"
+					| "export_items"
+					| "copy_and_share_items"
+					| "print_items"
+					| "manage_vault"
+				)[];
+				vault: string;
+			}> = {},
+		) => cli.execute(["vault", "user", "grant"], { flags }),
 
 		/**
 		 * List all users with access to the vault and their permissions
 		 */
-		list: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "user", "list"]),
+		list: (vault: string, flags: CommandFlags = {}) =>
+			cli.execute(["vault", "user", "list"], { args: [vault], flags }),
 
 		/**
 		 * Revoke a user's permissions in a vault, in part or in full
 		 */
-		revoke: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["vault", "user", "revoke"]),
+		revoke: (
+			flags: CommandFlags<{
+				user: string;
+				// TODO: move this to a type
+				permissions: // Teams have three permissions
+				(
+					| "allow_viewing"
+					| "allow_editing"
+					| "allow_managing"
+					// Business has the above and more granular options
+					| "view_items"
+					| "view_and_copy_passwords"
+					| "view_item_history"
+					| "create_items"
+					| "edit_items"
+					| "archive_items"
+					| "delete_items"
+					| "import_items"
+					| "export_items"
+					| "copy_and_share_items"
+					| "print_items"
+					| "manage_vault"
+				)[];
+				vault: string;
+			}> = {},
+		) => cli.execute(["vault", "user", "revoke"], { flags }),
 	},
 };
 
@@ -647,89 +853,144 @@ export const user = {
 	/**
 	 * Confirm users who have accepted their invitation to the 1Password account.
 	 */
-	confirm: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "confirm"]),
+	confirm: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<{ all: boolean }> = {},
+	) => cli.execute(["user", "confirm"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * Remove a user and all their data from the account.
 	 */
-	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "delete"]),
+	delete: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["user", "delete"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * Change a user's name or Travel Mode status
 	 */
-	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "edit"]),
+	edit: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<{
+			name: string;
+			travelMode: "on" | "off";
+		}> = {},
+	) => cli.execute(["user", "edit"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * Get details about a user.
+	 *
+	 * Omit the first param and set the `me` flag to get details about the current user.
 	 */
-	get: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "get"]),
+	get: (
+		emailOrNameOrId: string | null,
+		flags: CommandFlags<{
+			fingerprint: boolean;
+			publicKey: boolean;
+			me: boolean;
+		}> = {},
+	) => cli.execute(["user", "get"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * List users.
 	 */
-	list: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "list"]),
+	list: (
+		flags: CommandFlags<{
+			group: string;
+			vault: string;
+		}> = {},
+	) => cli.execute(["user", "list"], { flags }),
 
 	/**
 	 * Provision a user in the authenticated account.
 	 */
-	provision: (flags: CommandFlags<{}> = {}) =>
-		cli.execute(["user", "provision"]),
+	provision: (
+		flags: CommandFlags<{
+			email: string;
+			language: string;
+			name: string;
+		}> = {},
+	) => cli.execute(["user", "provision"], { flags }),
 
 	/**
 	 * Reactivate a suspended user.
 	 */
-	reactivate: (flags: CommandFlags<{}> = {}) =>
-		cli.execute(["user", "reactivate"]),
+	reactivate: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["user", "reactivate"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * Suspend a user.
 	 */
-	suspend: (flags: CommandFlags<{}> = {}) => cli.execute(["user", "suspend"]),
+	suspend: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<{ deauthorizeDevicesAfter: string }> = {},
+	) => cli.execute(["user", "suspend"], { args: [emailOrNameOrId], flags }),
 };
 
 export const group = {
 	/**
 	 * Create a group.
 	 */
-	create: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "create"]),
+	create: (name: string, flags: CommandFlags<{ description: string }> = {}) =>
+		cli.execute(["group", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a group.
 	 */
-	delete: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "delete"]),
+	delete: (nameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["group", "delete"], { args: [nameOrId], flags }),
 
 	/**
 	 * Change a group's name or description.
 	 */
-	edit: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "edit"]),
+	edit: (
+		nameOrId: string,
+		flags: CommandFlags<{
+			description: string;
+			name: string;
+		}> = {},
+	) => cli.execute(["group", "edit"], { args: [nameOrId], flags }),
 
 	/**
 	 * Get details about a group.
 	 */
-	get: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "get"]),
+	get: (nameOrId: string, flags: CommandFlags = {}) =>
+		cli.execute(["group", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List groups.
 	 */
-	list: (flags: CommandFlags<{}> = {}) => cli.execute(["group", "list"]),
+	list: (
+		flags: CommandFlags<{
+			vault: string;
+			user: string;
+		}> = {},
+	) => cli.execute(["group", "list"], { flags }),
 
 	user: {
 		/**
 		 * Grant a user access to a group.
 		 */
-		grant: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["group", "user", "grant"]),
+		grant: (
+			flags: CommandFlags<{
+				group: string;
+				role: "member" | "manager";
+				user: string;
+			}> = {},
+		) => cli.execute(["group", "user", "grant"], { flags }),
 
 		/**
 		 * Retrieve users that belong to a group.
 		 */
-		list: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["group", "user", "list"]),
+		list: (group: string, flags: CommandFlags = {}) =>
+			cli.execute(["group", "user", "list"], { args: [group], flags }),
 
 		/**
 		 * Revoke a user's access to a vault or group.
 		 */
-		revoke: (flags: CommandFlags<{}> = {}) =>
-			cli.execute(["group", "user", "grant"]),
+		revoke: (
+			flags: CommandFlags<{
+				group: string;
+				user: string;
+			}> = {},
+		) => cli.execute(["group", "user", "grant"], { flags }),
 	},
 };
