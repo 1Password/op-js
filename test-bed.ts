@@ -1,7 +1,7 @@
 import { setGlobalFlags } from "./src";
 
 setGlobalFlags({
-	account: "team-b5testbusiness.b5test.com",
+	account: "my.b5test.com",
 });
 
 // console.log("account.forget", account.forget("team_b5testbusiness"));
@@ -9,10 +9,21 @@ setGlobalFlags({
 // console.log("account.list", account.list());
 // console.log(
 // 	"document.create",
-// 	document.create("jest.config.js", {
-// 		fileName: "foo",
+// 	document.create("hey", {
+// 		fileName: "foo.txt",
 // 		title: "Some file",
 // 	}),
+// );
+// console.log(
+// 	"document.create",
+// 	document.create(
+// 		"package.json",
+// 		{
+// 			fileName: "foo.txt",
+// 			title: "Some file",
+// 		},
+// 		true,
+// 	),
 // );
 // console.log(
 // 	"document.edit",
@@ -167,4 +178,15 @@ setGlobalFlags({
 // 	item.get("xtoszeq662e2ys2ia3l2mgcwly", {
 // 		fields: { type: ["concealed", "email"] },
 // 	}),
+// );
+// console.log(
+// 	inject(
+// 		"input.txt",
+// 		{
+// 			outFile: "./test.txt",
+// 			fileMode: "0777",
+// 			force: true,
+// 		},
+// 		true,
+// 	),
 // );

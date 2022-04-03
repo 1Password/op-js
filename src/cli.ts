@@ -64,10 +64,12 @@ export class CLI {
 		{
 			args = [],
 			flags = {},
+			stdin = "",
 			json = true,
 		}: {
 			args?: (string | null | FieldAssignment)[];
 			flags?: Record<string, FlagValue>;
+			stdin?: string;
 			json?: boolean;
 		} = {},
 	): TData {
@@ -92,11 +94,17 @@ export class CLI {
 			}),
 		];
 
-		if (process.env.NODE_ENV === "development") {
-			console.info("op", command.join(" "));
+		// I know this isn't the right way to do
+		// this, but it's quick and dirty so idc
+		if (stdin.length > 0) {
+			stdin = `echo "${stdin}" | `;
 		}
 
-		const result = spawnSync("op", command, {
+		if (process.env.NODE_ENV === "development") {
+			console.info(`${stdin}op`, command.join(" "));
+		}
+
+		const result = spawnSync(`${stdin}op`, command, {
 			shell: true,
 			stdio: ["inherit", "pipe", "pipe"],
 		});

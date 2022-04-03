@@ -332,7 +332,7 @@ export const account = {
 	/**
 	 * Add a new 1Password account to sign in to for the first time.
 	 *
-	 * FIXME: This cannot yet be implemented from the JS wrapper because it
+	 * TODO: This cannot yet be implemented from the JS wrapper because it
 	 * requires interactive input from the CLI, which we do not support.
 	 *
 	 * add: (
@@ -407,18 +407,19 @@ export const account = {
 
 export const document = {
 	/**
-	 * Create a document item.
+	 * Create a document item with data or a file on disk.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-create}
 	 */
 	create: (
-		filePath: string,
+		dataOrFile: string,
 		flags: CommandFlags<{
 			fileName: string;
 			tags: Tags;
 			title: string;
 			vault: string;
 		}> = {},
+		fromFile = false,
 	) =>
 		cli.execute<{
 			uuid: string;
@@ -426,8 +427,9 @@ export const document = {
 			updatedAt: string;
 			vaultUuid: string;
 		}>(["document", "create"], {
-			args: [filePath],
+			args: [fromFile ? dataOrFile : "-"],
 			flags,
+			stdin: fromFile ? "" : dataOrFile,
 		}),
 
 	/**
@@ -449,21 +451,25 @@ export const document = {
 	/**
 	 * Update a document.
 	 *
+	 * Replaces the file contents with the provided file path or data.
+	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-edit}
 	 */
 	edit: (
 		nameOrId: string,
-		filePath: string,
+		dataOrFile: string,
 		flags: CommandFlags<{
 			fileName: string;
 			tags: Tags;
 			title: string;
 			vault: string;
 		}> = {},
+		fromFile = false,
 	) =>
 		cli.execute<void>(["document", "edit"], {
-			args: [nameOrId, filePath],
+			args: [nameOrId, fromFile ? dataOrFile : "-"],
 			flags,
+			stdin: fromFile ? "" : dataOrFile,
 		}),
 
 	/**
@@ -660,7 +666,7 @@ export const connect = {
 			cli.execute<{
 				id: string;
 				name: string;
-				state: string; // FIXME: narrow types, e.g. "ACTIVE"
+				state: string; // TODO: narrow types, e.g. "ACTIVE"
 				created_at: string;
 				creator_id: string;
 				tokens_version: number;
@@ -679,7 +685,7 @@ export const connect = {
 				{
 					id: string;
 					name: string;
-					state: string; // FIXME: narrow types, e.g. "ACTIVE"
+					state: string; // TODO: narrow types, e.g. "ACTIVE"
 					created_at: string;
 					creator_id: string;
 					tokens_version: number;
@@ -766,10 +772,10 @@ export const connect = {
 				{
 					id: string;
 					name: string;
-					state: string; // FIXME: narrow types, e.g. "ACTIVE"
+					state: string; // TODO: narrow types, e.g. "ACTIVE"
 					issuer: string;
 					audience: string;
-					features: string[]; // FIXME: narrow array types, e.g. "vaultaccess"
+					features: string[]; // TODO: narrow array types, e.g. "vaultaccess"
 					vaults: []; // TODO: what goes in this array?
 					created_at: string;
 					integration_id: string;
@@ -849,6 +855,21 @@ export const read = {
 			json: false,
 		}),
 };
+
+export const inject = (
+	dataOrFile: string,
+	flags: CommandFlags<{
+		outFile: string;
+		fileMode: string;
+		force: boolean;
+	}> = {},
+	fromFile = false,
+) =>
+	cli.execute<string | void>(["inject"], {
+		flags: { ...flags, inFile: fromFile ? dataOrFile : undefined },
+		json: false,
+		stdin: fromFile ? "" : dataOrFile,
+	});
 
 export const item = {
 	/**
@@ -1165,7 +1186,7 @@ export const vault = {
 					id: string;
 					name: string;
 					description: string;
-					state: string; // FIXME: narrow types, e.g. "ACTIVE"
+					state: string; // TODO: narrow types, e.g. "ACTIVE"
 					created_at: string;
 					permissions: VaultPermisson[];
 				}[]
