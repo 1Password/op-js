@@ -1,32 +1,25 @@
 import child_process from "child_process";
-import { camelToHyphen, cli } from "./cli";
+import {
+	camelToHyphen,
+	cli,
+	createFieldAssignment,
+	createFlags,
+	parseFlagValue,
+} from "./cli";
 
 jest.mock("child_process");
 
-declare global {
-	namespace jest {
-		interface Matchers<R> {
-			madeOpCommand(expected: string): R;
-		}
-	}
-}
-
-expect.extend({
-	madeOpCommand: (
-		received: {
-			call: [string, string[]];
-		},
-		expected: string,
-	) => {
-		const actual = `${received.call[0]} ${received.call[1].join(" ")}`;
-		expected = `op ${expected} --format="json"`;
-
-		return {
-			pass: expected === actual,
-			message: () => `Expected command '${expected}' to equal '${actual}'`,
-		};
+const expectOpCommand = (
+	received: {
+		call: [string, string[]];
 	},
-});
+	expected: string,
+): void => {
+	const actual = `${received.call[0]} ${received.call[1].join(" ")}`;
+	expected = `op ${expected} --format="json"`;
+
+	expect(actual).toBe(expected);
+};
 
 export const executeSpy = (
 	params: Parameters<typeof cli.execute>,
@@ -64,21 +57,56 @@ describe("camelToHyphen", () => {
 });
 
 describe("parseFlagValue", () => {
-	it.todo("parses string type values");
+	it("parses string type values", () => {
+		expect(parseFlagValue("foo")).toEqual('="foo"');
+	});
 
-	it.todo("parses string array type values");
+	it("parses string array type values", () => {
+		expect(parseFlagValue(["foo", "bar"])).toEqual('="foo,bar"');
+	});
 
-	it.todo("parses boolean type values");
+	it("parses boolean type values", () => {
+		expect(parseFlagValue(true)).toEqual("");
+	});
+
+	it("parses type field selector values", () => {
+		expect(
+			parseFlagValue({
+				type: ["otp"],
+			}),
+		).toEqual('="type=otp"');
+	});
+
+	it("parses label field selector values", () => {
+		expect(
+			parseFlagValue({
+				label: ["username", "password"],
+			}),
+		).toEqual('="label=username,label=password"');
+	});
 });
 
 describe("createFlags", () => {
-	it.todo("creates flags from a flag object");
+	it("creates flags from a flag object", () => {
+		expect(createFlags({ someFlag: "foo" })).toEqual(['--some-flag="foo"']);
+	});
 
-	it.todo("ignore null and falsey values");
+	it("ignores null and falsey values", () => {
+		expect(
+			createFlags({ someFlag: "foo", anotherFlag: false, andAnother: null }),
+		).toEqual(['--some-flag="foo"']);
+	});
 });
 
 describe("createFieldAssignment", () => {
-	it.todo("creates a field assignment from a field assignment object");
+	it("creates a field assignment from a field assignment object", () => {
+		expect(createFieldAssignment(["username", "text", "foo"])).toEqual(
+			'"username[text]=foo"',
+		);
+		expect(createFieldAssignment(["password", "password", "abc123"])).toEqual(
+			'"password[password]=abc123"',
+		);
+	});
 });
 
 describe("cli", () => {
@@ -91,7 +119,8 @@ describe("cli", () => {
 					flags: { foo: "bar", lorem: true, howdy: ["dolor", "sit"] },
 				},
 			]);
-			expect(execute).madeOpCommand(
+			expectOpCommand(
+				execute,
 				`example command "howdy" --foo="bar" --lorem --howdy="dolor,sit"`,
 			);
 		});
@@ -106,7 +135,8 @@ describe("cli", () => {
 					],
 				},
 			]);
-			expect(execute).madeOpCommand(
+			expectOpCommand(
+				execute,
 				`foo "username[text]=foo" "password[password]=abc123"`,
 			);
 		});
@@ -146,7 +176,8 @@ describe("cli", () => {
 			};
 
 			const execute = executeSpy([["foo"]]);
-			expect(execute).madeOpCommand(
+			expectOpCommand(
+				execute,
 				`foo --account="my.b5test.com" --iso-timestamps`,
 			);
 		});
