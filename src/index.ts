@@ -149,6 +149,66 @@ export type OutputCategory =
 	| "SECURE_NOTE"
 	| "SERVER";
 
+export type AccountType =
+	| "BUSINESS"
+	| "TEAM"
+	| "FAMILY"
+	| "INDIVIDUAL"
+	| "UNKNOWN";
+
+export type AccountState =
+	| "REGISTERED"
+	| "ACTIVE"
+	| "SUSPENDED"
+	| "DELETED"
+	| "PURGING"
+	| "PURGED"
+	| "UNKNOWN";
+
+export type UserType = "MEMBER" | "GUEST" | "SERVICE_ACCOUNT" | "UNKNOWN";
+
+export type UserState =
+	| "ACTIVE"
+	| "PENDING"
+	| "DELETED"
+	| "SUSPENDED"
+	| "RECOVERY_STARTED"
+	| "RECOVERY_ACCEPTED"
+	| "TRANSFER_PENDING"
+	| "TRANSFER_STARTED"
+	| "TRANSFER_ACCEPTED"
+	| "EMAIL_VERIFIED_BUT_REGISTRATION_INCOMPLETE"
+	| "TEAM_REGISTRATION_INITIATED"
+	| "UNKNOWN";
+
+export type PasswordStrength =
+	| "TERRIBLE"
+	| "WEAK"
+	| "FAIR"
+	| "GOOD"
+	| "VERY_GOOD"
+	| "EXCELLENT"
+	| "FANTASTIC";
+
+export type VaultType =
+	| "PERSONAL"
+	| "EVERYONE"
+	| "TRANSFER"
+	| "USER_CREATED"
+	| "UNKNOWN";
+
+export type UserRole = "MEMBER" | "MANAGER";
+
+export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
+
+export type GroupType =
+	| "ADMINISTRATORS"
+	| "OWNERS"
+	| "RECOVERY"
+	| "TEAM_MEMBERS"
+	| "USER_DEFINED"
+	| "UNKNOWN_TYPE";
+
 interface Section {
 	id: string;
 }
@@ -199,7 +259,7 @@ type PasswordField = ValueField & {
 	password_details: {
 		entropy: number;
 		generated: boolean;
-		strength: string; // FIXME: narrow types, e.g. "FANTASTIC"
+		strength: PasswordStrength;
 	};
 };
 
@@ -240,7 +300,15 @@ export interface GlobalFlags {
 	account: string;
 	cache: boolean;
 	config: string;
-	encoding: "utf-8" | "shift_jis" | "gbk";
+	encoding:
+		| "utf-8"
+		| "shift-jis"
+		| "shiftjis"
+		| "sjis"
+		| "s-jis"
+		| "shift_jis"
+		| "s_jis"
+		| "gbk";
 	isoTimestamps: boolean;
 	sessionToken: string;
 }
@@ -256,6 +324,9 @@ type CommandFlags<
 export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 	cli.globalFlags = flags;
 };
+
+export const version = () =>
+	cli.execute<string>([], { flags: { version: true }, json: false });
 
 export const account = {
 	/**
@@ -286,6 +357,8 @@ export const account = {
 
 	/**
 	 * Remove a 1Password account from this device.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-forget}
 	 */
 	forget: (
 		account: string | null,
@@ -299,14 +372,16 @@ export const account = {
 
 	/**
 	 * Get details about your account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-get}
 	 */
 	get: (flags: CommandFlags = {}) =>
 		cli.execute<{
 			id: string;
 			name: string;
 			domain: string;
-			type: string; // FIXME: narrow types, e.g. "INDIVIDUAL", 'BUSINESS'
-			state: string; // FIXME: narrow types, e.g. "ACTIVE"
+			type: AccountType;
+			state: AccountState;
 			created_at: string;
 		}>(["account", "get"], {
 			flags,
@@ -314,6 +389,8 @@ export const account = {
 
 	/**
 	 * List users and accounts set up on this device.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-list}
 	 */
 	list: (flags: CommandFlags = {}) =>
 		cli.execute<
@@ -331,6 +408,8 @@ export const account = {
 export const document = {
 	/**
 	 * Create a document item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-create}
 	 */
 	create: (
 		filePath: string,
@@ -355,6 +434,8 @@ export const document = {
 	 * Permanently delete a document.
 	 *
 	 * Set `archive` to move it to the Archive instead.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-delete}
 	 */
 	delete: (
 		nameOrId: string,
@@ -367,6 +448,8 @@ export const document = {
 
 	/**
 	 * Update a document.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-edit}
 	 */
 	edit: (
 		nameOrId: string,
@@ -385,6 +468,8 @@ export const document = {
 
 	/**
 	 * Download a document and return its contents.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
 	 */
 	get: (
 		nameOrId: string,
@@ -401,6 +486,8 @@ export const document = {
 
 	/**
 	 * Download a document and save it to a file.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
 	 */
 	toFile: (
 		nameOrId: string,
@@ -421,6 +508,8 @@ export const document = {
 
 	/**
 	 * List documents.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-list}
 	 */
 	list: (
 		flags: CommandFlags<{
@@ -449,6 +538,8 @@ export const document = {
 export const eventsApi = {
 	/**
 	 * Create an Events API integration token.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api#subcommands}
 	 */
 	create: (
 		name: string,
@@ -468,6 +559,8 @@ export const connect = {
 	group: {
 		/**
 		 * Grant a group access to manage Secrets Automation.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-grant}
 		 */
 		grant: (
 			flags: CommandFlags<
@@ -487,6 +580,8 @@ export const connect = {
 
 		/**
 		 * Revoke a group's access to manage Secrets Automation.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-revoke}
 		 */
 		revoke: (
 			flags: CommandFlags<
@@ -510,6 +605,8 @@ export const connect = {
 		 * Add a 1Password Connect server to your account and generate a credentials file for it.
 		 *
 		 * Creates a credentials file in the CWD.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-create}
 		 */
 		create: (
 			name: string,
@@ -525,6 +622,8 @@ export const connect = {
 
 		/**
 		 * Remove a Connect server.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-delete}
 		 */
 		delete: (nameOrId: string, flags: CommandFlags = {}) =>
 			cli.execute<void>(["connect", "server", "delete"], {
@@ -534,6 +633,8 @@ export const connect = {
 
 		/**
 		 * Rename a Connect server.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
 		 */
 		edit: (
 			nameOrId: string,
@@ -552,6 +653,8 @@ export const connect = {
 
 		/**
 		 * Get details about a Connect server.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-get}
 		 */
 		get: (nameOrId: string, flags: CommandFlags = {}) =>
 			cli.execute<{
@@ -568,6 +671,8 @@ export const connect = {
 
 		/**
 		 * Get a list of Connect servers.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-list}
 		 */
 		list: (flags: CommandFlags = {}) =>
 			cli.execute<
@@ -587,6 +692,8 @@ export const connect = {
 	token: {
 		/**
 		 * Issue a new token for a Connect server.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-create}
 		 */
 		create: (
 			name: string,
@@ -608,6 +715,8 @@ export const connect = {
 
 		/**
 		 * Revoke a token for a Connect server.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-delete}
 		 */
 		delete: (
 			token: string,
@@ -623,6 +732,8 @@ export const connect = {
 
 		/**
 		 * Rename a Connect token.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-edit}
 		 */
 		edit: (
 			token: string,
@@ -643,6 +754,8 @@ export const connect = {
 
 		/**
 		 * List tokens for Connect servers.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-list}
 		 */
 		list: (
 			flags: CommandFlags<{
@@ -669,6 +782,8 @@ export const connect = {
 	vault: {
 		/**
 		 * Grant a Connect server access to a vault.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
 		 */
 		grant: (
 			flags: CommandFlags<
@@ -686,6 +801,8 @@ export const connect = {
 
 		/**
 		 * Revoke a Connect server's access to a vault.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
 		 */
 		revoke: (
 			flags: CommandFlags<
@@ -706,6 +823,8 @@ export const connect = {
 export const read = {
 	/**
 	 * Read a secret by secret reference and return its value
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
 	 */
 	parse: (
 		reference: string,
@@ -716,6 +835,8 @@ export const read = {
 	 * Read a secret by secret reference and save it to a file
 	 *
 	 * Returns the path to the file.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
 	 */
 	toFile: (
 		reference: string,
@@ -732,6 +853,8 @@ export const read = {
 export const item = {
 	/**
 	 * Create an item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-create}
 	 */
 	create: (
 		assignments: FieldAssignment[],
@@ -751,6 +874,8 @@ export const item = {
 	 * Permanently delete an item.
 	 *
 	 * Set `archive` to move it to the Archive instead.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-delete}
 	 */
 	delete: (
 		nameOrIdOrLink: string,
@@ -767,6 +892,8 @@ export const item = {
 
 	/**
 	 * Edit an item's details.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-edit}
 	 */
 	edit: (
 		nameOrIdOrLink: string,
@@ -787,6 +914,8 @@ export const item = {
 
 	/**
 	 * Return details about an item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
 	 */
 	get: (
 		nameOrIdOrLink: string,
@@ -799,6 +928,8 @@ export const item = {
 
 	/**
 	 * Output the primary one-time password for this item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
 	 */
 	otp: (
 		nameOrIdOrLink: string,
@@ -815,6 +946,8 @@ export const item = {
 
 	/**
 	 * Get a shareable link for the item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
 	 */
 	shareLink: (
 		nameOrIdOrLink: string,
@@ -831,6 +964,8 @@ export const item = {
 
 	/**
 	 * List items.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-list}
 	 */
 	list: (
 		flags: CommandFlags<{
@@ -845,7 +980,7 @@ export const item = {
 			{
 				id: string;
 				title: string;
-				version: 1;
+				version: number;
 				tags?: Tags;
 				vault: { id: string };
 				category: OutputCategory;
@@ -857,6 +992,8 @@ export const item = {
 
 	/**
 	 * Share an item.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-share}
 	 */
 	share: (
 		nameOrId: string,
@@ -876,6 +1013,8 @@ export const item = {
 	template: {
 		/**
 		 * Return a template for an item type.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-get}
 		 */
 		get: (category: InputCategory, flags: CommandFlags = {}) =>
 			cli.execute<
@@ -897,6 +1036,8 @@ export const item = {
 
 		/**
 		 * Lists available item type templates.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-list}
 		 */
 		list: (flags: CommandFlags = {}) =>
 			cli.execute<{ uuid: string; name: string }[]>(
@@ -909,6 +1050,8 @@ export const item = {
 export const vault = {
 	/**
 	 * Create a new vault
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-create}
 	 */
 	create: (
 		name: string,
@@ -923,13 +1066,15 @@ export const vault = {
 			name: string;
 			attribute_version: number;
 			content_version: number;
-			type: string; // FIXME: narrow types, e.g. "PERSONAL"
+			type: VaultType;
 			created_at: string;
 			updated_at: string;
 		}>(["vault", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a vault.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-delete}
 	 */
 	delete: (nameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<string>(["vault", "delete"], {
@@ -940,6 +1085,8 @@ export const vault = {
 
 	/**
 	 * Edit a vault's name, description, icon or Travel Mode status.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-edit}
 	 */
 	edit: (
 		nameOrId: string,
@@ -958,6 +1105,8 @@ export const vault = {
 
 	/**
 	 * Get details about a vault.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-get}
 	 */
 	get: (nameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<{
@@ -966,13 +1115,15 @@ export const vault = {
 			attribute_version: number;
 			content_version: number;
 			items: number;
-			type: string; // FIXME: narrow types, e.g. "PERSONAL"
+			type: VaultType;
 			created_at: string;
 			updated_at: string;
 		}>(["vault", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List vaults.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-list}
 	 */
 	list: (
 		flags: CommandFlags<{
@@ -985,6 +1136,8 @@ export const vault = {
 	group: {
 		/**
 		 * Grant a group permissions in a vault.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-grant}
 		 */
 		grant: (
 			flags: CommandFlags<{
@@ -1003,6 +1156,8 @@ export const vault = {
 
 		/**
 		 * List all the groups that have access to the given vault
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-list}
 		 */
 		list: (vault: string, flags: CommandFlags = {}) =>
 			cli.execute<
@@ -1018,6 +1173,8 @@ export const vault = {
 
 		/**
 		 * Revoke a group's permissions in a vault, in part or in full
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-revoke}
 		 */
 		revoke: (
 			flags: CommandFlags<{
@@ -1038,6 +1195,8 @@ export const vault = {
 	user: {
 		/**
 		 * Grant a user permissions in a vault
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-grant}
 		 */
 		grant: (
 			flags: CommandFlags<{
@@ -1056,6 +1215,8 @@ export const vault = {
 
 		/**
 		 * List all users with access to the vault and their permissions
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-list}
 		 */
 		list: (vault: string, flags: CommandFlags = {}) =>
 			cli.execute<
@@ -1063,14 +1224,16 @@ export const vault = {
 					id: string;
 					name: string;
 					email: string;
-					type: string; // FIXME: narrow types, e.g. "MEMBER"
-					state: string; // FIXME: narrow types, e.g. "ACTIVE"
+					type: UserRole;
+					state: UserState;
 					permissions: VaultPermisson[];
 				}[]
 			>(["vault", "user", "list"], { args: [vault], flags }),
 
 		/**
 		 * Revoke a user's permissions in a vault, in part or in full
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-revoke}
 		 */
 		revoke: (
 			flags: CommandFlags<{
@@ -1092,6 +1255,8 @@ export const vault = {
 export const user = {
 	/**
 	 * Confirm users who have accepted their invitation to the 1Password account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
 	confirm: (
 		emailOrNameOrId: string,
@@ -1105,6 +1270,8 @@ export const user = {
 
 	/**
 	 * Remove a user and all their data from the account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-delete}
 	 */
 	delete: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<void>(["user", "delete"], {
@@ -1115,6 +1282,8 @@ export const user = {
 
 	/**
 	 * Change a user's name or Travel Mode status
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-edit}
 	 */
 	edit: (
 		emailOrNameOrId: string,
@@ -1133,6 +1302,8 @@ export const user = {
 	 * Get details about a user.
 	 *
 	 * Omit the first param and set the `me` flag to get details about the current user.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
 	get: (
 		emailOrNameOrId: string | null,
@@ -1146,8 +1317,8 @@ export const user = {
 			id: string;
 			name: string;
 			email: string;
-			type: string; // FIXME: narrow types, e.g. "MEMBER"
-			state: string; // FIXME: narrow types, e.g. "TRANSFER_PENDING" "TRANSFER_ACCEPTED" "TRANSFER_STARTED"
+			type: UserType;
+			state: UserState;
 			created_at: string;
 			updated_at: string;
 			last_auth_at: string;
@@ -1155,6 +1326,8 @@ export const user = {
 
 	/**
 	 * List users.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-list}
 	 */
 	list: (
 		flags: CommandFlags<{
@@ -1166,12 +1339,14 @@ export const user = {
 			id: string;
 			name: string;
 			email: string;
-			type: string; // FIXME: narrow types, e.g. "MEMBER"
-			state: string; // FIXME: narrow types, e.g. "ACTIVE"
+			type: UserType;
+			state: UserState;
 		}>(["user", "list"], { flags }),
 
 	/**
 	 * Provision a user in the authenticated account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
 	 */
 	invite: (
 		flags: CommandFlags<
@@ -1188,8 +1363,8 @@ export const user = {
 			id: string;
 			name: string;
 			email: string;
-			type: string; // FIXME: narrow types, e.g. "MEMBER"
-			state: string; // FIXME: narrow types, e.g. "TRANSFER_PENDING" "TRANSFER_ACCEPTED" "TRANSFER_STARTED"
+			type: UserType;
+			state: UserState;
 			created_at: string;
 			updated_at: string;
 			last_auth_at: string;
@@ -1197,6 +1372,8 @@ export const user = {
 
 	/**
 	 * Reactivate a suspended user.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-reactivate}
 	 */
 	reactivate: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<void>(["user", "reactivate"], {
@@ -1207,6 +1384,8 @@ export const user = {
 
 	/**
 	 * Suspend a user.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-suspend}
 	 */
 	suspend: (
 		emailOrNameOrId: string,
@@ -1222,19 +1401,23 @@ export const user = {
 export const group = {
 	/**
 	 * Create a group.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-create}
 	 */
 	create: (name: string, flags: CommandFlags<{ description: string }> = {}) =>
 		cli.execute<{
 			id: string;
 			name: string;
-			state: string; // FIXME: narrow types, e.g. "ACTIVE"
+			state: GroupState;
 			created_at: string;
 			updated_at: string;
-			type: string; // FIXME: narrow types, e.g. "USER_DEFINED"
+			type: GroupType;
 		}>(["group", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a group.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-delete}
 	 */
 	delete: (nameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<void>(["group", "delete"], {
@@ -1245,6 +1428,8 @@ export const group = {
 
 	/**
 	 * Change a group's name or description.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-edit}
 	 */
 	edit: (
 		nameOrId: string,
@@ -1261,20 +1446,24 @@ export const group = {
 
 	/**
 	 * Get details about a group.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-get}
 	 */
 	get: (nameOrId: string, flags: CommandFlags = {}) =>
 		cli.execute<{
 			id: string;
 			name: string;
 			description: string;
-			state: string; // FIXME: narrow types, e.g. "ACTIVE"
+			state: GroupState;
 			created_at: string;
 			updated_at: string;
-			type: string; // FIXME: narrow types, e.g. "USER_DEFINED"
+			type: GroupType;
 		}>(["group", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List groups.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-list}
 	 */
 	list: (
 		flags: CommandFlags<{
@@ -1287,7 +1476,7 @@ export const group = {
 				id: string;
 				name: string;
 				description: string;
-				state: string; // FIXME: narrow types, e.g. "ACTIVE"
+				state: GroupState;
 				created_at: string;
 			}[]
 		>(["group", "list"], { flags }),
@@ -1295,17 +1484,21 @@ export const group = {
 	user: {
 		/**
 		 * Grant a user access to a group.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-grant}
 		 */
 		grant: (
 			flags: CommandFlags<{
 				group: string;
-				role: "member" | "manager";
+				role: UserRole;
 				user: string;
 			}> = {},
 		) => cli.execute<void>(["group", "user", "grant"], { flags, json: false }),
 
 		/**
 		 * Retrieve users that belong to a group.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-list}
 		 */
 		list: (group: string, flags: CommandFlags = {}) =>
 			cli.execute<
@@ -1313,14 +1506,16 @@ export const group = {
 					id: string;
 					name: string;
 					email: string;
-					type: string; // FIXME: narrow types, e.g. "MEMBER"
-					state: string; // FIXME: narrow types, e.g. "ACTIVE"
-					role: string; // FIXME: narrow types, e.g. "MANAGER"
+					type: UserType;
+					state: UserState;
+					role: UserRole;
 				}[]
 			>(["group", "user", "list"], { args: [group], flags }),
 
 		/**
 		 * Revoke a user's access to a vault or group.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-revoke}
 		 */
 		revoke: (
 			flags: CommandFlags<{
