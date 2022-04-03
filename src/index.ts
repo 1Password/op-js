@@ -1369,7 +1369,7 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
 	 */
-	invite: (
+	provision: (
 		flags: CommandFlags<
 			{
 				language: string;
@@ -1389,7 +1389,7 @@ export const user = {
 			created_at: string;
 			updated_at: string;
 			last_auth_at: string;
-		}>(["user", "invite"], { flags }),
+		}>(["user", "provision"], { flags }),
 
 	/**
 	 * Reactivate a suspended user.

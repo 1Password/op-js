@@ -1,7 +1,7 @@
 import { setGlobalFlags } from "./src";
 
 setGlobalFlags({
-	account: "my.b5test.com",
+	account: "team-b5testbusiness.b5test.com",
 });
 
 // console.log("account.forget", account.forget("team_b5testbusiness"));
@@ -120,8 +120,8 @@ setGlobalFlags({
 // console.log(vault.get("cwlb4pjwkkl2ouule3kh6uqsfq"));
 // console.log(vault.create("TestVault"));
 // console.log(
-// 	vault.edit("cwlb4pjwkkl2ouule3kh6uqsfq", {
-// 		icon: "circle-of-dots",
+// 	vault.edit("ns3qgjm6vlhxb4nfhy6yi4wbz4", {
+// 		icon: "green-backpack",
 // 		travelMode: "off",
 // 	}),
 // );
@@ -158,7 +158,7 @@ setGlobalFlags({
 // );
 // console.log(user.list());
 // console.log(
-// 	user.invite({
+// 	user.provision({
 // 		email: "jody.heavener+testinvite@agilebits.com",
 // 		name: "Test Invite",
 // 	}),
@@ -166,9 +166,9 @@ setGlobalFlags({
 // console.log(user.delete("US7XLVE2MJAIRA4BULFLPURBSE"));
 // console.log(user.get("US7XLVE2MJAIRA4BULFLPURBSE"));
 // console.log(user.edit("US7XLVE2MJAIRA4BULFLPURBSE", { name: "Test Use!!!r" }));
-// console.log(user.confirm("US7XLVE2MJAIRA4BULFLPURBSE"));
-// console.log(user.suspend("US7XLVE2MJAIRA4BULFLPURBSE"));
-// console.log(user.reactivate("US7XLVE2MJAIRA4BULFLPURBSE"));
+// console.log(user.confirm("TGO6QPCS6ND4ZIXBNVE2NGXD6Q"));
+// console.log(user.suspend("TGO6QPCS6ND4ZIXBNVE2NGXD6Q"));
+// console.log(user.reactivate("TGO6QPCS6ND4ZIXBNVE2NGXD6Q"));
 // console.log(
 // 	item.get("xtoszeq662e2ys2ia3l2mgcwly", {
 // 		fields: { label: ["username", "password"] },
