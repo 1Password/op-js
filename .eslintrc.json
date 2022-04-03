@@ -13,6 +13,7 @@
 				"jsdoc/require-jsdoc": "off",
 				"jsdoc/require-param": "off",
 				"jsdoc/require-returns": "off",
+				"@typescript-eslint/ban-types": "off",
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-unsafe-argument": "off",
 				"@typescript-eslint/naming-convention": "off",

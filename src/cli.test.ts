@@ -63,6 +63,24 @@ describe("camelToHyphen", () => {
 	});
 });
 
+describe("parseFlagValue", () => {
+	it.todo("parses string type values");
+
+	it.todo("parses string array type values");
+
+	it.todo("parses boolean type values");
+});
+
+describe("createFlags", () => {
+	it.todo("creates flags from a flag object");
+
+	it.todo("ignore null and falsey values");
+});
+
+describe("createFieldAssignment", () => {
+	it.todo("creates a field assignment from a field assignment object");
+});
+
 describe("cli", () => {
 	describe("execute", () => {
 		it("constructs and calls an op command", () => {

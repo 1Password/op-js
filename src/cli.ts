@@ -1,8 +1,18 @@
 import { spawnSync } from "child_process";
-import { FieldAssignment, GlobalFlags } from "./index";
+import {
+	FieldAssignment,
+	FieldLabelSelector,
+	FieldTypeSelector,
+	GlobalFlags,
+} from "./index";
 
+export type FlagValue =
+	| string
+	| string[]
+	| boolean
+	| FieldLabelSelector
+	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
-export type FlagValue = string | string[] | boolean;
 
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
@@ -16,23 +26,38 @@ export const parseFlagValue = (value: FlagValue) => {
 		return `="${value.join(",")}"`;
 	}
 
+	if (typeof value === "object") {
+		let fields = "";
+
+		if ("label" in value) {
+			fields += (value.label || []).map((label) => `label=${label}`).join(",");
+		}
+
+		if ("type" in value) {
+			fields += (value.type || []).map((type) => `type=${type}`).join(",");
+		}
+
+		if (fields.length > 0) {
+			return `="${fields}"`;
+		}
+	}
+
 	return "";
 };
 
+export const createFlags = (flags: Record<string, FlagValue>): string[] =>
+	Object.entries(flags)
+		.filter(([_, value]) => Boolean(value))
+		.map(([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`);
+
+export const createFieldAssignment = ([
+	field,
+	type,
+	value,
+]: FieldAssignment): string => `"${field}[${type}]=${value}"`;
+
 export class CLI {
 	public globalFlags: Partial<GlobalFlags> = {};
-
-	private createFieldAssignment([field, type, value]: FieldAssignment): string {
-		return `"${field}[${type}]=${value}"`;
-	}
-
-	private createFlags(flags: Record<string, FlagValue>): string[] {
-		return Object.entries(flags)
-			.filter(([_, value]) => Boolean(value))
-			.map(
-				([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`,
-			);
-	}
 
 	public execute<TData extends string | Record<string, any> | void>(
 		command: string[],
@@ -49,8 +74,9 @@ export class CLI {
 		for (const arg of args) {
 			if (typeof arg === "string") {
 				command.push(`"${arg}"`);
-			} else if (arg !== null) {
-				command.push(this.createFieldAssignment(arg));
+				// If it's an array assume it's a field assignment
+			} else if (Array.isArray(arg)) {
+				command.push(createFieldAssignment(arg));
 			}
 		}
 
@@ -60,7 +86,7 @@ export class CLI {
 
 		command = [
 			...command,
-			...this.createFlags({
+			...createFlags({
 				...this.globalFlags,
 				...flags,
 			}),
