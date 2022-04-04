@@ -1,12 +1,12 @@
 {
-	"name": "op-cli-js",
+	"name": "1password-js",
 	"version": "0.1.0",
 	"description": "A typed JS wrapper for the 1Password CLI",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"repository": {
 		"type": "git",
-		"url": "https://gitlab.1password.io/dev/b5/op-cli-js/"
+		"url": "https://github.com/1Password/1password-js"
 	},
 	"license": "MIT",
 	"scripts": {
