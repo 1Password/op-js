@@ -1,300 +1,11 @@
 import { cli, Flags } from "./cli";
 
-export type FieldAssignmentType =
-	| "password"
-	| "text"
-	| "email"
-	| "url"
-	| "date"
-	| "monthYear"
-	| "phone"
-	// Used for deleting a field
-	| "delete";
+type CommandFlags<
+	TOptional extends Flags = {},
+	TRequired extends Flags = {},
+> = Partial<TOptional & GlobalFlags> & TRequired;
 
-export type FieldAssignment = [
-	field: string,
-	type: FieldAssignmentType,
-	value: string,
-];
-
-export interface FieldLabelSelector {
-	label?: string[];
-}
-export interface FieldTypeSelector {
-	type?: (
-		| "address"
-		| "concealed"
-		| "creditcardnumber"
-		| "creditcardtype"
-		| "date"
-		| "email"
-		| "file"
-		| "gender"
-		| "menu"
-		| "monthyear"
-		| "otp"
-		| "phone"
-		| "reference"
-		| "string"
-		| "url"
-	)[];
-}
-
-export type VaultIcon =
-	| "airplane"
-	| "application"
-	| "art-supplies"
-	| "bankers-box"
-	| "brown-briefcase"
-	| "brown-gate"
-	| "buildings"
-	| "cabin"
-	| "castle"
-	| "circle-of-dots"
-	| "coffee"
-	| "color-wheel"
-	| "curtained-window"
-	| "document"
-	| "doughnut"
-	| "fence"
-	| "galaxy"
-	| "gears"
-	| "globe"
-	| "green-backpack"
-	| "green-gem"
-	| "handshake"
-	| "heart-with-monitor"
-	| "house"
-	| "id-card"
-	| "jet"
-	| "large-ship"
-	| "luggage"
-	| "plant"
-	| "porthole"
-	| "puzzle"
-	| "rainbow"
-	| "record"
-	| "round-door"
-	| "sandals"
-	| "scales"
-	| "screwdriver"
-	| "shop"
-	| "tall-window"
-	| "treasure-chest"
-	| "vault-door"
-	| "vehicle"
-	| "wallet"
-	| "wrench";
-
-export type VaultPermisson =
-	// Teams have three permissions
-	| "allow_viewing"
-	| "allow_editing"
-	| "allow_managing"
-	// Business has the above and more granular options
-	| "view_items"
-	| "view_and_copy_passwords"
-	| "view_item_history"
-	| "create_items"
-	| "edit_items"
-	| "archive_items"
-	| "delete_items"
-	| "import_items"
-	| "export_items"
-	| "copy_and_share_items"
-	| "print_items"
-	| "manage_vault";
-
-export type InputCategory =
-	| "Email Account"
-	| "Medical Record"
-	| "Password"
-	| "Bank Account"
-	| "Membership"
-	| "Reward Program"
-	| "Credit Card"
-	| "Driver License"
-	| "Outdoor License"
-	| "Passport"
-	| "Wireless Router"
-	| "Social Security Number"
-	| "Software License"
-	| "API Credential"
-	| "Database"
-	| "Document"
-	| "Identity"
-	| "Login"
-	| "Secure Note"
-	| "Server";
-
-export type OutputCategory =
-	| "EMAIL_ACCOUNT"
-	| "MEDICAL_RECORD"
-	| "PASSWORD"
-	| "BANK_ACCOUNT"
-	| "MEMBERSHIP"
-	| "REWARD_PROGRAM"
-	| "CREDIT_CARD"
-	| "DRIVER_LICENSE"
-	| "OUTDOOR_LICENSE"
-	| "PASSPORT"
-	| "WIRELESS_ROUTER"
-	| "SOCIAL_SECURITY_NUMBER"
-	| "SOFTWARE_LICENSE"
-	| "API_CREDENTIAL"
-	| "DATABASE"
-	| "DOCUMENT"
-	| "IDENTITY"
-	| "LOGIN"
-	| "SECURE_NOTE"
-	| "SERVER";
-
-export type AccountType =
-	| "BUSINESS"
-	| "TEAM"
-	| "FAMILY"
-	| "INDIVIDUAL"
-	| "UNKNOWN";
-
-export type AccountState =
-	| "REGISTERED"
-	| "ACTIVE"
-	| "SUSPENDED"
-	| "DELETED"
-	| "PURGING"
-	| "PURGED"
-	| "UNKNOWN";
-
-export type UserType = "MEMBER" | "GUEST" | "SERVICE_ACCOUNT" | "UNKNOWN";
-
-export type UserState =
-	| "ACTIVE"
-	| "PENDING"
-	| "DELETED"
-	| "SUSPENDED"
-	| "RECOVERY_STARTED"
-	| "RECOVERY_ACCEPTED"
-	| "TRANSFER_PENDING"
-	| "TRANSFER_STARTED"
-	| "TRANSFER_ACCEPTED"
-	| "EMAIL_VERIFIED_BUT_REGISTRATION_INCOMPLETE"
-	| "TEAM_REGISTRATION_INITIATED"
-	| "UNKNOWN";
-
-export type PasswordStrength =
-	| "TERRIBLE"
-	| "WEAK"
-	| "FAIR"
-	| "GOOD"
-	| "VERY_GOOD"
-	| "EXCELLENT"
-	| "FANTASTIC";
-
-export type VaultType =
-	| "PERSONAL"
-	| "EVERYONE"
-	| "TRANSFER"
-	| "USER_CREATED"
-	| "UNKNOWN";
-
-export type UserRole = "MEMBER" | "MANAGER";
-
-export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
-
-export type GroupType =
-	| "ADMINISTRATORS"
-	| "OWNERS"
-	| "RECOVERY"
-	| "TEAM_MEMBERS"
-	| "USER_DEFINED"
-	| "UNKNOWN_TYPE";
-
-interface Section {
-	id: string;
-}
-
-interface Field {
-	id: string;
-	type: string;
-	label: string;
-	section?: Section;
-	tags?: Tags;
-}
-
-type ValueField = Field & {
-	value: string;
-};
-
-type GenericField = ValueField & {
-	type:
-		| "STRING"
-		| "URL"
-		| "ADDRESS"
-		| "DATE"
-		| "MONTH_YEAR"
-		| "EMAIL"
-		| "PHONE"
-		| "REFERENCE";
-};
-
-type UsernameField = ValueField & {
-	type: "STRING";
-	purpose: "USERNAME";
-};
-
-type NotesField = ValueField & {
-	type: "STRING";
-	purpose: "NOTES";
-};
-
-type OtpField = ValueField & {
-	type: "OTP";
-	totp: string;
-};
-
-type PasswordField = ValueField & {
-	type: "CONCEALED";
-	purpose: "PASSWORD";
-	entropy: number;
-	password_details: {
-		entropy: number;
-		generated: boolean;
-		strength: PasswordStrength;
-	};
-};
-
-interface File {
-	id: string;
-	name: string;
-	size: number;
-	content_path: string;
-	section: Section;
-}
-
-type Tags = string[];
-
-interface Item {
-	id: string;
-	title: string;
-	version: number;
-	vault: {
-		id: string;
-	};
-	category: OutputCategory;
-	last_edited_by: string;
-	created_at: string;
-	updated_at: string;
-	sections: Section[];
-	fields: (
-		| UsernameField
-		| PasswordField
-		| OtpField
-		| NotesField
-		| GenericField
-	)[];
-	files: File[];
-	urls: { primary: boolean; href: string }[];
-}
+// Section: Global Flags
 
 export interface GlobalFlags {
 	account: string;
@@ -313,11 +24,6 @@ export interface GlobalFlags {
 	sessionToken: string;
 }
 
-type CommandFlags<
-	TOptional extends Flags = {},
-	TRequired extends Flags = {},
-> = Partial<TOptional & GlobalFlags> & TRequired;
-
 /**
  * Set any of the {@link GlobalFlags} on the CLI command.
  */
@@ -325,8 +31,99 @@ export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 	cli.globalFlags = flags;
 };
 
+// Section: Version
+
+/**
+ * Retrieve the current version of the CLI.
+ */
 export const version = () =>
 	cli.execute<string>([], { flags: { version: true }, json: false });
+
+// Section: Secret Injection
+
+/**
+ * Inject secrets into a config file.
+ */
+export const inject = <TReturn extends string | void>(
+	dataOrFile: string,
+	flags: CommandFlags<{
+		outFile: string;
+		fileMode: string;
+		force: boolean;
+	}> = {},
+	fromFile = false,
+) =>
+	cli.execute<TReturn>(["inject"], {
+		flags: { ...flags, inFile: fromFile ? dataOrFile : undefined },
+		json: false,
+		stdin: fromFile ? "" : dataOrFile,
+	});
+
+// Section: Reading Secret References
+
+export const read = {
+	/**
+	 * Read a secret by secret reference and return its value
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
+	 */
+	parse: (
+		reference: string,
+		flags: CommandFlags<{ noNewline: boolean }> = {},
+	) => cli.execute<string>(["read"], { args: [reference], flags, json: false }),
+
+	/**
+	 * Read a secret by secret reference and save it to a file
+	 *
+	 * Returns the path to the file.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
+	 */
+	toFile: (
+		reference: string,
+		outputPath: string,
+		flags: CommandFlags<{ noNewline: boolean }> = {},
+	) =>
+		cli.execute<string>(["read"], {
+			args: [reference],
+			flags: { ...flags, outFile: outputPath },
+			json: false,
+		}),
+};
+
+// Section: Accounts
+
+export type AccountType =
+	| "BUSINESS"
+	| "TEAM"
+	| "FAMILY"
+	| "INDIVIDUAL"
+	| "UNKNOWN";
+
+export type AccountState =
+	| "REGISTERED"
+	| "ACTIVE"
+	| "SUSPENDED"
+	| "DELETED"
+	| "PURGING"
+	| "PURGED"
+	| "UNKNOWN";
+
+export interface Account {
+	id: string;
+	name: string;
+	domain: string;
+	type: AccountType;
+	state: AccountState;
+	created_at: string;
+}
+
+export interface ListAccount {
+	url: string;
+	email: string;
+	user_uuid: string;
+	shorthand?: string;
+}
 
 export const account = {
 	/**
@@ -376,14 +173,7 @@ export const account = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-get}
 	 */
 	get: (flags: CommandFlags = {}) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			domain: string;
-			type: AccountType;
-			state: AccountState;
-			created_at: string;
-		}>(["account", "get"], {
+		cli.execute<Account>(["account", "get"], {
 			flags,
 		}),
 
@@ -393,17 +183,32 @@ export const account = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-list}
 	 */
 	list: (flags: CommandFlags = {}) =>
-		cli.execute<
-			{
-				url: string;
-				email: string;
-				user_uuid: string;
-				shorthand?: string;
-			}[]
-		>(["account", "list"], {
+		cli.execute<ListAccount[]>(["account", "list"], {
 			flags,
 		}),
 };
+
+// Section: Documents
+
+export interface Document {
+	id: string;
+	title: string;
+	version: number;
+	vault: {
+		id: string;
+	};
+	last_edited_by: string;
+	created_at: string;
+	updated_at: string;
+	"overview.ainfo"?: string;
+}
+
+export interface CreatedDocument {
+	uuid: string;
+	createdAt: string;
+	updatedAt: string;
+	vaultUuid: string;
+}
 
 export const document = {
 	/**
@@ -415,18 +220,13 @@ export const document = {
 		dataOrFile: string,
 		flags: CommandFlags<{
 			fileName: string;
-			tags: Tags;
+			tags: string[];
 			title: string;
 			vault: string;
 		}> = {},
 		fromFile = false,
 	) =>
-		cli.execute<{
-			uuid: string;
-			createdAt: string;
-			updatedAt: string;
-			vaultUuid: string;
-		}>(["document", "create"], {
+		cli.execute<CreatedDocument>(["document", "create"], {
 			args: [fromFile ? dataOrFile : "-"],
 			flags,
 			stdin: fromFile ? "" : dataOrFile,
@@ -460,7 +260,7 @@ export const document = {
 		dataOrFile: string,
 		flags: CommandFlags<{
 			fileName: string;
-			tags: Tags;
+			tags: string[];
 			title: string;
 			vault: string;
 		}> = {},
@@ -523,23 +323,12 @@ export const document = {
 			vault: string;
 		}> = {},
 	) =>
-		cli.execute<
-			{
-				id: string;
-				title: string;
-				version: number;
-				vault: {
-					id: string;
-				};
-				last_edited_by: string;
-				created_at: string;
-				updated_at: string;
-				"overview.ainfo"?: string;
-			}[]
-		>(["document", "list"], {
+		cli.execute<Document[]>(["document", "list"], {
 			flags,
 		}),
 };
+
+// Section: Events API
 
 export const eventsApi = {
 	/**
@@ -560,6 +349,29 @@ export const eventsApi = {
 			json: false,
 		}),
 };
+
+// Section: Connect
+
+export interface ConnectServer {
+	id: string;
+	name: string;
+	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	created_at: string;
+	creator_id: string;
+	tokens_version: number;
+}
+
+export interface ConnectServerToken {
+	id: string;
+	name: string;
+	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	issuer: string;
+	audience: string;
+	features: string[]; // TODO: narrow array types, e.g. "vaultaccess"
+	vaults: []; // TODO: what goes in this array?
+	created_at: string;
+	integration_id: string;
+}
 
 export const connect = {
 	group: {
@@ -663,14 +475,7 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-get}
 		 */
 		get: (nameOrId: string, flags: CommandFlags = {}) =>
-			cli.execute<{
-				id: string;
-				name: string;
-				state: string; // TODO: narrow types, e.g. "ACTIVE"
-				created_at: string;
-				creator_id: string;
-				tokens_version: number;
-			}>(["connect", "server", "get"], {
+			cli.execute<ConnectServer>(["connect", "server", "get"], {
 				args: [nameOrId],
 				flags,
 			}),
@@ -681,16 +486,7 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-list}
 		 */
 		list: (flags: CommandFlags = {}) =>
-			cli.execute<
-				{
-					id: string;
-					name: string;
-					state: string; // TODO: narrow types, e.g. "ACTIVE"
-					created_at: string;
-					creator_id: string;
-					tokens_version: number;
-				}[]
-			>(["connect", "server", "list"], {
+			cli.execute<ConnectServer[]>(["connect", "server", "list"], {
 				flags,
 			}),
 	},
@@ -768,19 +564,7 @@ export const connect = {
 				server: string;
 			}> = {},
 		) =>
-			cli.execute<
-				{
-					id: string;
-					name: string;
-					state: string; // TODO: narrow types, e.g. "ACTIVE"
-					issuer: string;
-					audience: string;
-					features: string[]; // TODO: narrow array types, e.g. "vaultaccess"
-					vaults: []; // TODO: what goes in this array?
-					created_at: string;
-					integration_id: string;
-				}[]
-			>(["connect", "token", "list"], {
+			cli.execute<ConnectServerToken[]>(["connect", "token", "list"], {
 				flags,
 			}),
 	},
@@ -826,50 +610,201 @@ export const connect = {
 	},
 };
 
-export const read = {
-	/**
-	 * Read a secret by secret reference and return its value
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
-	 */
-	parse: (
-		reference: string,
-		flags: CommandFlags<{ noNewline: boolean }> = {},
-	) => cli.execute<string>(["read"], { args: [reference], flags, json: false }),
+// Section: Items
 
-	/**
-	 * Read a secret by secret reference and save it to a file
-	 *
-	 * Returns the path to the file.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
-	 */
-	toFile: (
-		reference: string,
-		outputPath: string,
-		flags: CommandFlags<{ noNewline: boolean }> = {},
-	) =>
-		cli.execute<string>(["read"], {
-			args: [reference],
-			flags: { ...flags, outFile: outputPath },
-			json: false,
-		}),
+export type InputCategory =
+	| "Email Account"
+	| "Medical Record"
+	| "Password"
+	| "Bank Account"
+	| "Membership"
+	| "Reward Program"
+	| "Credit Card"
+	| "Driver License"
+	| "Outdoor License"
+	| "Passport"
+	| "Wireless Router"
+	| "Social Security Number"
+	| "Software License"
+	| "API Credential"
+	| "Database"
+	| "Document"
+	| "Identity"
+	| "Login"
+	| "Secure Note"
+	| "Server";
+
+export type OutputCategory =
+	| "EMAIL_ACCOUNT"
+	| "MEDICAL_RECORD"
+	| "PASSWORD"
+	| "BANK_ACCOUNT"
+	| "MEMBERSHIP"
+	| "REWARD_PROGRAM"
+	| "CREDIT_CARD"
+	| "DRIVER_LICENSE"
+	| "OUTDOOR_LICENSE"
+	| "PASSPORT"
+	| "WIRELESS_ROUTER"
+	| "SOCIAL_SECURITY_NUMBER"
+	| "SOFTWARE_LICENSE"
+	| "API_CREDENTIAL"
+	| "DATABASE"
+	| "DOCUMENT"
+	| "IDENTITY"
+	| "LOGIN"
+	| "SECURE_NOTE"
+	| "SERVER";
+
+export type PasswordStrength =
+	| "TERRIBLE"
+	| "WEAK"
+	| "FAIR"
+	| "GOOD"
+	| "VERY_GOOD"
+	| "EXCELLENT"
+	| "FANTASTIC";
+
+export type FieldAssignmentType =
+	| "password"
+	| "text"
+	| "email"
+	| "url"
+	| "date"
+	| "monthYear"
+	| "phone"
+	// Used for deleting a field
+	| "delete";
+
+export type FieldAssignment = [
+	field: string,
+	type: FieldAssignmentType,
+	value: string,
+];
+
+export interface FieldLabelSelector {
+	label?: string[];
+}
+export interface FieldTypeSelector {
+	type?: (
+		| "address"
+		| "concealed"
+		| "creditcardnumber"
+		| "creditcardtype"
+		| "date"
+		| "email"
+		| "file"
+		| "gender"
+		| "menu"
+		| "monthyear"
+		| "otp"
+		| "phone"
+		| "reference"
+		| "string"
+		| "url"
+	)[];
+}
+
+export interface Section {
+	id: string;
+}
+
+interface BaseField {
+	id: string;
+	type: string;
+	label: string;
+	section?: Section;
+	tags?: string[];
+}
+
+export type ValueField = BaseField & {
+	value: string;
 };
 
-export const inject = (
-	dataOrFile: string,
-	flags: CommandFlags<{
-		outFile: string;
-		fileMode: string;
-		force: boolean;
-	}> = {},
-	fromFile = false,
-) =>
-	cli.execute<string | void>(["inject"], {
-		flags: { ...flags, inFile: fromFile ? dataOrFile : undefined },
-		json: false,
-		stdin: fromFile ? "" : dataOrFile,
-	});
+export type GenericField = ValueField & {
+	type:
+		| "STRING"
+		| "URL"
+		| "ADDRESS"
+		| "DATE"
+		| "MONTH_YEAR"
+		| "EMAIL"
+		| "PHONE"
+		| "REFERENCE";
+};
+
+export type UsernameField = ValueField & {
+	type: "STRING";
+	purpose: "USERNAME";
+};
+
+export type NotesField = ValueField & {
+	type: "STRING";
+	purpose: "NOTES";
+};
+
+export type OtpField = ValueField & {
+	type: "OTP";
+	totp: string;
+};
+
+export type PasswordField = ValueField & {
+	type: "CONCEALED";
+	purpose: "PASSWORD";
+	entropy: number;
+	password_details: {
+		entropy: number;
+		generated: boolean;
+		strength: PasswordStrength;
+	};
+};
+
+export interface File {
+	id: string;
+	name: string;
+	size: number;
+	content_path: string;
+	section: Section;
+}
+
+export type Field =
+	| UsernameField
+	| PasswordField
+	| OtpField
+	| NotesField
+	| GenericField;
+
+export interface Item {
+	id: string;
+	title: string;
+	version: number;
+	vault: {
+		id: string;
+	};
+	category: OutputCategory;
+	last_edited_by: string;
+	created_at: string;
+	updated_at: string;
+	sections: Section[];
+	tags?: string[];
+	fields?: Field[];
+	files?: File[];
+	urls?: { primary: boolean; href: string }[];
+}
+
+export interface ItemTemplate {
+	title: string;
+	vault: {
+		id: string;
+	};
+	category: OutputCategory;
+	fields: Field[];
+}
+
+export interface ListItemTemplate {
+	uuid: string;
+	name: string;
+}
 
 export const item = {
 	/**
@@ -883,7 +818,7 @@ export const item = {
 			category: InputCategory;
 			dryRun: boolean;
 			generatePassword: string | boolean;
-			tags: Tags;
+			tags: string[];
 			template: string;
 			title: string;
 			url: string;
@@ -922,7 +857,7 @@ export const item = {
 		flags: CommandFlags<{
 			dryRun: boolean;
 			generatePassword: string | boolean;
-			tags: Tags;
+			tags: string[];
 			title: string;
 			url: string;
 			vault: string;
@@ -993,23 +928,10 @@ export const item = {
 			categories: InputCategory[];
 			includeArchive: boolean;
 			long: boolean;
-			tags: Tags;
+			tags: string[];
 			vault: string;
 		}> = {},
-	) =>
-		cli.execute<
-			{
-				id: string;
-				title: string;
-				version: number;
-				tags?: Tags;
-				vault: { id: string };
-				category: OutputCategory;
-				last_edited_by: string;
-				created_at: string;
-				updated_at: string;
-			}[]
-		>(["item", "list"], { flags }),
+	) => cli.execute<Item[]>(["item", "list"], { flags }),
 
 	/**
 	 * Share an item.
@@ -1038,22 +960,10 @@ export const item = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-get}
 		 */
 		get: (category: InputCategory, flags: CommandFlags = {}) =>
-			cli.execute<
-				{
-					title: string;
-					vault: {
-						id: string;
-					};
-					category: OutputCategory;
-					fields: (
-						| UsernameField
-						| PasswordField
-						| OtpField
-						| NotesField
-						| GenericField
-					)[];
-				}[]
-			>(["item", "template", "get"], { args: [category], flags }),
+			cli.execute<ItemTemplate[]>(["item", "template", "get"], {
+				args: [category],
+				flags,
+			}),
 
 		/**
 		 * Lists available item type templates.
@@ -1061,12 +971,130 @@ export const item = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-list}
 		 */
 		list: (flags: CommandFlags = {}) =>
-			cli.execute<{ uuid: string; name: string }[]>(
-				["item", "template", "list"],
-				{ flags },
-			),
+			cli.execute<ListItemTemplate[]>(["item", "template", "list"], { flags }),
 	},
 };
+
+// Section: Vaults
+
+export type VaultIcon =
+	| "airplane"
+	| "application"
+	| "art-supplies"
+	| "bankers-box"
+	| "brown-briefcase"
+	| "brown-gate"
+	| "buildings"
+	| "cabin"
+	| "castle"
+	| "circle-of-dots"
+	| "coffee"
+	| "color-wheel"
+	| "curtained-window"
+	| "document"
+	| "doughnut"
+	| "fence"
+	| "galaxy"
+	| "gears"
+	| "globe"
+	| "green-backpack"
+	| "green-gem"
+	| "handshake"
+	| "heart-with-monitor"
+	| "house"
+	| "id-card"
+	| "jet"
+	| "large-ship"
+	| "luggage"
+	| "plant"
+	| "porthole"
+	| "puzzle"
+	| "rainbow"
+	| "record"
+	| "round-door"
+	| "sandals"
+	| "scales"
+	| "screwdriver"
+	| "shop"
+	| "tall-window"
+	| "treasure-chest"
+	| "vault-door"
+	| "vehicle"
+	| "wallet"
+	| "wrench";
+
+export type VaultPermisson =
+	// Teams have three permissions
+	| "allow_viewing"
+	| "allow_editing"
+	| "allow_managing"
+	// Business has the above and more granular options
+	| "view_items"
+	| "view_and_copy_passwords"
+	| "view_item_history"
+	| "create_items"
+	| "edit_items"
+	| "archive_items"
+	| "delete_items"
+	| "import_items"
+	| "export_items"
+	| "copy_and_share_items"
+	| "print_items"
+	| "manage_vault";
+
+export type VaultType =
+	| "PERSONAL"
+	| "EVERYONE"
+	| "TRANSFER"
+	| "USER_CREATED"
+	| "UNKNOWN";
+
+export interface Vault {
+	id: string;
+	name: string;
+	attribute_version: number;
+	content_version: number;
+	type: VaultType;
+	created_at: string;
+	updated_at: string;
+	items?: number;
+}
+
+export type AbbreviatedVault = Pick<Vault, "id" | "name">;
+
+interface VaultAccess {
+	vault_id: string;
+	vault_name: string;
+	permissions: string;
+}
+
+export type VaultUserAccess = VaultAccess & {
+	user_id: string;
+	user_email: string;
+};
+
+export type VaultGroupAccess = VaultAccess & {
+	group_id: string;
+	group_name: string;
+};
+
+export interface VaultGroup {
+	id: string;
+	name: string;
+	description: string;
+	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	created_at: string;
+	permissions: VaultPermisson[];
+}
+
+export interface VaultUser {
+	id: string;
+	name: string;
+	email: string;
+	type: GroupRole;
+	state: UserState;
+	permissions: VaultPermisson[];
+}
 
 export const vault = {
 	/**
@@ -1081,16 +1109,7 @@ export const vault = {
 			description: string;
 			icon: VaultIcon;
 		}> = {},
-	) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			attribute_version: number;
-			content_version: number;
-			type: VaultType;
-			created_at: string;
-			updated_at: string;
-		}>(["vault", "create"], { args: [name], flags }),
+	) => cli.execute<Vault>(["vault", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a vault.
@@ -1130,16 +1149,7 @@ export const vault = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-get}
 	 */
 	get: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			attribute_version: number;
-			content_version: number;
-			items: number;
-			type: VaultType;
-			created_at: string;
-			updated_at: string;
-		}>(["vault", "get"], { args: [nameOrId], flags }),
+		cli.execute<Vault>(["vault", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List vaults.
@@ -1151,8 +1161,7 @@ export const vault = {
 			group: string;
 			user: string;
 		}> = {},
-	) =>
-		cli.execute<{ id: string; name: string }[]>(["vault", "list"], { flags }),
+	) => cli.execute<AbbreviatedVault[]>(["vault", "list"], { flags }),
 
 	group: {
 		/**
@@ -1167,30 +1176,9 @@ export const vault = {
 				vault: string;
 			}> = {},
 		) =>
-			cli.execute<{
-				vault_id: string;
-				vault_name: string;
-				group_id: string;
-				group_name: string;
-				permissions: string;
-			}>(["vault", "group", "grant"], { flags }),
-
-		/**
-		 * List all the groups that have access to the given vault
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-list}
-		 */
-		list: (vault: string, flags: CommandFlags = {}) =>
-			cli.execute<
-				{
-					id: string;
-					name: string;
-					description: string;
-					state: string; // TODO: narrow types, e.g. "ACTIVE"
-					created_at: string;
-					permissions: VaultPermisson[];
-				}[]
-			>(["vault", "group", "list"], { args: [vault], flags }),
+			cli.execute<VaultGroupAccess>(["vault", "group", "grant"], {
+				flags,
+			}),
 
 		/**
 		 * Revoke a group's permissions in a vault, in part or in full
@@ -1204,13 +1192,20 @@ export const vault = {
 				vault: string;
 			}> = {},
 		) =>
-			cli.execute<{
-				vault_id: string;
-				vault_name: string;
-				group_id: string;
-				group_name: string;
-				permissions: string;
-			}>(["vault", "group", "revoke"], { flags }),
+			cli.execute<VaultGroupAccess>(["vault", "group", "revoke"], {
+				flags,
+			}),
+
+		/**
+		 * List all the groups that have access to the given vault
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-list}
+		 */
+		list: (vault: string, flags: CommandFlags = {}) =>
+			cli.execute<VaultGroup[]>(["vault", "group", "list"], {
+				args: [vault],
+				flags,
+			}),
 	},
 
 	user: {
@@ -1225,31 +1220,7 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) =>
-			cli.execute<{
-				vault_id: string;
-				vault_name: string;
-				user_id: string;
-				user_email: string;
-				permissions: string;
-			}>(["vault", "user", "grant"], { flags }),
-
-		/**
-		 * List all users with access to the vault and their permissions
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-list}
-		 */
-		list: (vault: string, flags: CommandFlags = {}) =>
-			cli.execute<
-				{
-					id: string;
-					name: string;
-					email: string;
-					type: UserRole;
-					state: UserState;
-					permissions: VaultPermisson[];
-				}[]
-			>(["vault", "user", "list"], { args: [vault], flags }),
+		) => cli.execute<VaultUserAccess>(["vault", "user", "grant"], { flags }),
 
 		/**
 		 * Revoke a user's permissions in a vault, in part or in full
@@ -1262,16 +1233,54 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) =>
-			cli.execute<{
-				vault_id: string;
-				vault_name: string;
-				user_id: string;
-				user_email: string;
-				permissions: string;
-			}>(["vault", "user", "revoke"], { flags }),
+		) => cli.execute<VaultUserAccess>(["vault", "user", "revoke"], { flags }),
+
+		/**
+		 * List all users with access to the vault and their permissions
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-list}
+		 */
+		list: (vault: string, flags: CommandFlags = {}) =>
+			cli.execute<VaultUser[]>(["vault", "user", "list"], {
+				args: [vault],
+				flags,
+			}),
 	},
 };
+
+// Section: Users
+
+export type UserType = "MEMBER" | "GUEST" | "SERVICE_ACCOUNT" | "UNKNOWN";
+
+export type UserState =
+	| "ACTIVE"
+	| "PENDING"
+	| "DELETED"
+	| "SUSPENDED"
+	| "RECOVERY_STARTED"
+	| "RECOVERY_ACCEPTED"
+	| "TRANSFER_PENDING"
+	| "TRANSFER_STARTED"
+	| "TRANSFER_ACCEPTED"
+	| "EMAIL_VERIFIED_BUT_REGISTRATION_INCOMPLETE"
+	| "TEAM_REGISTRATION_INITIATED"
+	| "UNKNOWN";
+
+export interface User {
+	id: string;
+	name: string;
+	email: string;
+	type: UserType;
+	state: UserState;
+	created_at: string;
+	updated_at: string;
+	last_auth_at: string;
+}
+
+export type AbbreviatedUser = Pick<
+	User,
+	"id" | "name" | "email" | "type" | "state"
+>;
 
 export const user = {
 	/**
@@ -1333,17 +1342,7 @@ export const user = {
 			publicKey: boolean;
 			me: boolean;
 		}> = {},
-	) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			email: string;
-			type: UserType;
-			state: UserState;
-			created_at: string;
-			updated_at: string;
-			last_auth_at: string;
-		}>(["user", "get"], { args: [emailOrNameOrId], flags }),
+	) => cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * List users.
@@ -1355,14 +1354,7 @@ export const user = {
 			group: string;
 			vault: string;
 		}> = {},
-	) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			email: string;
-			type: UserType;
-			state: UserState;
-		}>(["user", "list"], { flags }),
+	) => cli.execute<AbbreviatedUser[]>(["user", "list"], { flags }),
 
 	/**
 	 * Provision a user in the authenticated account.
@@ -1379,17 +1371,7 @@ export const user = {
 				name: string;
 			}
 		>,
-	) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			email: string;
-			type: UserType;
-			state: UserState;
-			created_at: string;
-			updated_at: string;
-			last_auth_at: string;
-		}>(["user", "provision"], { flags }),
+	) => cli.execute<User>(["user", "provision"], { flags }),
 
 	/**
 	 * Reactivate a suspended user.
@@ -1419,6 +1401,41 @@ export const user = {
 		}),
 };
 
+// Section: Groups
+
+export type GroupRole = "MEMBER" | "MANAGER";
+
+export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
+
+export type GroupType =
+	| "ADMINISTRATORS"
+	| "OWNERS"
+	| "RECOVERY"
+	| "TEAM_MEMBERS"
+	| "USER_DEFINED"
+	| "UNKNOWN_TYPE";
+
+export interface Group {
+	id: string;
+	name: string;
+	description: string;
+	state: GroupState;
+	created_at: string;
+	updated_at: string;
+	type: GroupType;
+}
+
+export type CreatedGroup = Omit<Group, "description">;
+
+export type AppreviatedGroup = Pick<
+	Group,
+	"id" | "name" | "description" | "state" | "created_at"
+>;
+
+export type GroupUser = AbbreviatedUser & {
+	role: GroupRole;
+};
+
 export const group = {
 	/**
 	 * Create a group.
@@ -1426,14 +1443,7 @@ export const group = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-create}
 	 */
 	create: (name: string, flags: CommandFlags<{ description: string }> = {}) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			state: GroupState;
-			created_at: string;
-			updated_at: string;
-			type: GroupType;
-		}>(["group", "create"], { args: [name], flags }),
+		cli.execute<CreatedGroup>(["group", "create"], { args: [name], flags }),
 
 	/**
 	 * Remove a group.
@@ -1471,15 +1481,7 @@ export const group = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-get}
 	 */
 	get: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<{
-			id: string;
-			name: string;
-			description: string;
-			state: GroupState;
-			created_at: string;
-			updated_at: string;
-			type: GroupType;
-		}>(["group", "get"], { args: [nameOrId], flags }),
+		cli.execute<Group>(["group", "get"], { args: [nameOrId], flags }),
 
 	/**
 	 * List groups.
@@ -1491,16 +1493,7 @@ export const group = {
 			vault: string;
 			user: string;
 		}> = {},
-	) =>
-		cli.execute<
-			{
-				id: string;
-				name: string;
-				description: string;
-				state: GroupState;
-				created_at: string;
-			}[]
-		>(["group", "list"], { flags }),
+	) => cli.execute<AppreviatedGroup[]>(["group", "list"], { flags }),
 
 	user: {
 		/**
@@ -1511,7 +1504,7 @@ export const group = {
 		grant: (
 			flags: CommandFlags<{
 				group: string;
-				role: UserRole;
+				role: GroupRole;
 				user: string;
 			}> = {},
 		) => cli.execute<void>(["group", "user", "grant"], { flags, json: false }),
@@ -1522,16 +1515,10 @@ export const group = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-list}
 		 */
 		list: (group: string, flags: CommandFlags = {}) =>
-			cli.execute<
-				{
-					id: string;
-					name: string;
-					email: string;
-					type: UserType;
-					state: UserState;
-					role: UserRole;
-				}[]
-			>(["group", "user", "list"], { args: [group], flags }),
+			cli.execute<GroupUser[]>(["group", "user", "list"], {
+				args: [group],
+				flags,
+			}),
 
 		/**
 		 * Revoke a user's access to a vault or group.
