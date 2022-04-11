@@ -31,13 +31,17 @@ export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 	cli.globalFlags = flags;
 };
 
-// Section: Version
+// Section: CLI setup
+
+/**
+ * Validate that the user's CLI setup is valid for this wrapper.
+ */
+export const validateCli = async () => await cli.validate();
 
 /**
  * Retrieve the current version of the CLI.
  */
-export const version = () =>
-	cli.execute<string>([], { flags: { version: true }, json: false });
+export const version = () => cli.getVersion();
 
 // Section: Secret Injection
 

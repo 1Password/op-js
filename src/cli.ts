@@ -1,4 +1,7 @@
 import { spawnSync } from "child_process";
+import { lookpath } from "lookpath";
+import semverCoerce from "semver/functions/coerce";
+import semverSatisfies from "semver/functions/satisfies";
 import {
 	FieldAssignment,
 	FieldLabelSelector,
@@ -57,7 +60,30 @@ export const createFieldAssignment = ([
 ]: FieldAssignment): string => `"${field}[${type}]=${value}"`;
 
 export class CLI {
+	public static requiredVersion = ">=2.0.0";
 	public globalFlags: Partial<GlobalFlags> = {};
+
+	public getVersion(): string {
+		return this.execute<string>([], { flags: { version: true }, json: false });
+	}
+
+	public async validate() {
+		const cliExists = !!(await lookpath("op"));
+
+		if (!cliExists) {
+			throw new Error("Could not locate op CLI");
+		}
+
+		const version = this.getVersion();
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+		const semVersion = semverCoerce(version);
+
+		if (!semverSatisfies(semVersion, CLI.requiredVersion)) {
+			throw new Error(
+				`CLI version ${version} does not satisfy version requirement of ${CLI.requiredVersion}`,
+			);
+		}
+	}
 
 	public execute<TData extends string | Record<string, any> | void>(
 		command: string[],

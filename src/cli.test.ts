@@ -1,6 +1,8 @@
 import child_process from "child_process";
+import * as lookpath from "lookpath";
 import {
 	camelToHyphen,
+	CLI,
 	cli,
 	createFieldAssignment,
 	createFlags,
@@ -8,6 +10,9 @@ import {
 } from "./cli";
 
 jest.mock("child_process");
+jest.mock("lookpath");
+
+const fakeOpPath = "/path/to/op";
 
 const expectOpCommand = (
 	received: {
@@ -110,6 +115,82 @@ describe("createFieldAssignment", () => {
 });
 
 describe("cli", () => {
+	describe("validate", () => {
+		it("throws an error when the op cli is not found", async () => {
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(undefined);
+
+			await expect(cli.validate()).rejects.toEqual(
+				new Error("Could not locate op CLI"),
+			);
+
+			lookpathSpy.mockRestore();
+		});
+
+		it("throws an error when the cli does not meet the version requirements", async () => {
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			const spawnSpy = jest
+				.spyOn<any, any>(child_process, "spawnSync")
+				.mockReturnValue({
+					error: null,
+					stderr: "",
+					stdout: "1.0.0",
+				});
+
+			await expect(cli.validate()).rejects.toEqual(
+				new Error(
+					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.requiredVersion}`,
+				),
+			);
+
+			lookpathSpy.mockRestore();
+			spawnSpy.mockRestore();
+		});
+
+		it("does not throw when cli is fully valid", async () => {
+			CLI.requiredVersion = ">=2.0.0";
+
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			const spawnSpy = jest
+				.spyOn<any, any>(child_process, "spawnSync")
+				.mockReturnValue({
+					error: null,
+					stderr: "",
+					stdout: "2.1.0",
+				});
+
+			await expect(cli.validate()).resolves.toBeUndefined();
+
+			lookpathSpy.mockRestore();
+			spawnSpy.mockRestore();
+		});
+
+		it("can handle beta versions", async () => {
+			CLI.requiredVersion = ">=2.0.0";
+
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			const spawnSpy = jest
+				.spyOn<any, any>(child_process, "spawnSync")
+				.mockReturnValue({
+					error: null,
+					stderr: "",
+					stdout: "2.0.1.beta.12",
+				});
+
+			await expect(cli.validate()).resolves.toBeUndefined();
+
+			lookpathSpy.mockRestore();
+			spawnSpy.mockRestore();
+		});
+	});
+
 	describe("execute", () => {
 		it("constructs and calls an op command", () => {
 			const execute = executeSpy([
