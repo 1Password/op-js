@@ -1121,7 +1121,7 @@ export const vault = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-delete}
 	 */
 	delete: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<string>(["vault", "delete"], {
+		cli.execute<void>(["vault", "delete"], {
 			args: [nameOrId],
 			flags,
 			json: false,
@@ -1141,7 +1141,7 @@ export const vault = {
 			travelMode: "on" | "off";
 		}> = {},
 	) =>
-		cli.execute<string>(["vault", "edit"], {
+		cli.execute<void>(["vault", "edit"], {
 			args: [nameOrId],
 			flags,
 			json: false,
