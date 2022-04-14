@@ -1,5 +1,7 @@
 node_modules/
-dist/
 coverage/
 .husky/_/husky.sh
 1password-credentials.json
+
+# TODO: ignore dist/ once we publish to NPM
+# dist/

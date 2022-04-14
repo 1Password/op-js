@@ -4,6 +4,8 @@ This package is a simple JavaScript wrapper for the [1Password CLI](https://deve
 
 ## Installation
 
+> ⚠️ This package is not yet published to NPM, so the instructions below are invalid for now. Until it is publish, please add this dependency via its GitHub URL.
+
 Install using Yarn:
 
 ```shell
