@@ -345,7 +345,7 @@ export const eventsApi = {
 		flags: CommandFlags<{
 			expiresIn: string;
 			features: ("signinattempts" | "itemusages")[];
-		}>,
+		}> = {},
 	) =>
 		cli.execute<string>(["events-api", "create"], {
 			args: [name],

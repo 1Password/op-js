@@ -7,10 +7,15 @@
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"noImplicitAny": false,
-		"types": ["node", "jest"],
 		"baseUrl": ".",
-		"outDir": "./dist",
-		"declaration": true,
+		"types": [
+			"node",
+			"jest"
+		],
 	},
-	"include": ["src/index.ts", "src/cli.ts"],
+	"include": [
+		"jest.setup.ts",
+		"src/*.ts",
+		"tests/*.ts"
+	],
 }

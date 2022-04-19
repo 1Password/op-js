@@ -199,7 +199,7 @@ export declare const eventsApi: {
      *
      * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api#subcommands}
      */
-    create: (name: string, flags: CommandFlags<{
+    create: (name: string, flags?: CommandFlags<{
         expiresIn: string;
         features: ("signinattempts" | "itemusages")[];
     }>) => string;
