@@ -1,11 +1,15 @@
 src/
+tests/
 node_modules/
 tsconfig.json
+tsconfig.release.json
 jest.config.js
+jest.setup.ts
 test-bed.ts
+.github/
 .husky/
 .nvmrc
 .prettierrc
 .eslintrc.json
-.gitlab-ci.yml
 .gitignore
+.env
