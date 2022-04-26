@@ -60,7 +60,7 @@ export const createFieldAssignment = ([
 ]: FieldAssignment): string => `"${field}[${type}]=${value}"`;
 
 export class CLI {
-	public static requiredVersion = ">=2.0.0";
+	public static requiredVersion = ">=2.1.0";
 	public globalFlags: Partial<GlobalFlags> = {};
 
 	public getVersion(): string {
@@ -126,7 +126,7 @@ export class CLI {
 			stdin = `echo "${stdin}" | `;
 		}
 
-		if (process.env.NODE_ENV === "development") {
+		if (["development", "test"].includes(process.env.NODE_ENV)) {
 			console.info(`${stdin}op`, command.join(" "));
 		}
 

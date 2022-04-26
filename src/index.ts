@@ -200,6 +200,7 @@ export interface Document {
 	version: number;
 	vault: {
 		id: string;
+		name: string;
 	};
 	last_edited_by: string;
 	created_at: string;
@@ -717,6 +718,7 @@ interface BaseField {
 	id: string;
 	type: string;
 	label: string;
+	reference?: string;
 	section?: Section;
 	tags?: string[];
 }
@@ -828,7 +830,11 @@ export const item = {
 			url: string;
 			vault: string;
 		}> = {},
-	) => cli.execute<Item>(["item", "create"], { args: assignments, flags }),
+	) =>
+		cli.execute<Item>(["item", "create"], {
+			args: assignments,
+			flags,
+		}),
 
 	/**
 	 * Permanently delete an item.
