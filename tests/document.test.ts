@@ -26,7 +26,7 @@ describe("document", () => {
 					title: Joi.string().required(),
 					version: Joi.number().required(),
 					vault: {
-						id: Joi.string().required(),
+						id: Joi.string().required().allow(""),
 						name: Joi.string().allow(""),
 					},
 					last_edited_by: Joi.string().required(),

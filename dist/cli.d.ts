@@ -4,7 +4,7 @@ export declare type Flags = Record<string, FlagValue>;
 export declare const camelToHyphen: (str: string) => string;
 export declare const parseFlagValue: (value: FlagValue) => string;
 export declare const createFlags: (flags: Record<string, FlagValue>) => string[];
-export declare const createFieldAssignment: ([field, type, value,]: FieldAssignment) => string;
+export declare const createFieldAssignment: ([label, type, value,]: FieldAssignment) => string;
 export declare class CLI {
     static requiredVersion: string;
     globalFlags: Partial<GlobalFlags>;

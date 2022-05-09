@@ -54,13 +54,13 @@ export const createFlags = (flags: Record<string, FlagValue>): string[] =>
 		.map(([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`);
 
 export const createFieldAssignment = ([
-	field,
+	label,
 	type,
 	value,
-]: FieldAssignment): string => `"${field}[${type}]=${value}"`;
+]: FieldAssignment): string => `"${label}[${type}]=${value}"`;
 
 export class CLI {
-	public static requiredVersion = ">=2.1.0";
+	public static requiredVersion = ">=2.2.0";
 	public globalFlags: Partial<GlobalFlags> = {};
 
 	public getVersion(): string {
@@ -123,11 +123,15 @@ export class CLI {
 		// I know this isn't the right way to do
 		// this, but it's quick and dirty so idc
 		if (stdin.length > 0) {
-			stdin = `echo "${stdin}" | `;
+			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
 		}
 
 		if (["development", "test"].includes(process.env.NODE_ENV)) {
-			console.info(`${stdin}op`, command.join(" "));
+			process.stdout.write(
+				`\nCommand used:\n\u001B[93m${stdin}op ${command.join(
+					" ",
+				)}\u001B[39m\n`,
+			);
 		}
 
 		const result = spawnSync(`${stdin}op`, command, {

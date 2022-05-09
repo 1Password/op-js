@@ -682,7 +682,7 @@ export type FieldAssignmentType =
 	| "delete";
 
 export type FieldAssignment = [
-	field: string,
+	label: string,
 	type: FieldAssignmentType,
 	value: string,
 ];
@@ -773,6 +773,12 @@ export interface File {
 	section: Section;
 }
 
+export interface URL {
+	label?: string;
+	primary: boolean;
+	href: string;
+}
+
 export type Field =
 	| UsernameField
 	| PasswordField
@@ -783,19 +789,21 @@ export type Field =
 export interface Item {
 	id: string;
 	title: string;
-	version: number;
+	version?: number;
 	vault: {
 		id: string;
+		name: string;
 	};
 	category: OutputCategory;
-	last_edited_by: string;
+	last_edited_by?: string;
 	created_at: string;
 	updated_at: string;
-	sections: Section[];
+	additional_information?: string;
+	sections?: Section[];
 	tags?: string[];
 	fields?: Field[];
 	files?: File[];
-	urls?: { primary: boolean; href: string }[];
+	urls?: URL[];
 }
 
 export interface ItemTemplate {
@@ -832,8 +840,19 @@ export const item = {
 		}> = {},
 	) =>
 		cli.execute<Item>(["item", "create"], {
-			args: assignments,
+			args: ["-"],
 			flags,
+			// NOTE: There is an issue in the CLI that prevents us from using field assignments
+			// in `item create` through Node. I don't know what it is or why it's so specific,
+			// but until then we will need to pipe in the fields as a JSON object. This does not
+			// appear to impact `item edit`.
+			stdin: JSON.stringify({
+				fields: assignments.map(([label, type, value]) => ({
+					label,
+					type,
+					value,
+				})),
+			}),
 		}),
 
 	/**

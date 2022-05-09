@@ -352,7 +352,7 @@ export declare type OutputCategory = "EMAIL_ACCOUNT" | "MEDICAL_RECORD" | "PASSW
 export declare type PasswordStrength = "TERRIBLE" | "WEAK" | "FAIR" | "GOOD" | "VERY_GOOD" | "EXCELLENT" | "FANTASTIC";
 export declare type FieldAssignmentType = "password" | "text" | "email" | "url" | "date" | "monthYear" | "phone" | "delete";
 export declare type FieldAssignment = [
-    field: string,
+    label: string,
     type: FieldAssignmentType,
     value: string
 ];
@@ -408,26 +408,30 @@ export interface File {
     content_path: string;
     section: Section;
 }
+export interface URL {
+    label?: string;
+    primary: boolean;
+    href: string;
+}
 export declare type Field = UsernameField | PasswordField | OtpField | NotesField | GenericField;
 export interface Item {
     id: string;
     title: string;
-    version: number;
+    version?: number;
     vault: {
         id: string;
+        name: string;
     };
     category: OutputCategory;
-    last_edited_by: string;
+    last_edited_by?: string;
     created_at: string;
     updated_at: string;
-    sections: Section[];
+    additional_information?: string;
+    sections?: Section[];
     tags?: string[];
     fields?: Field[];
     files?: File[];
-    urls?: {
-        primary: boolean;
-        href: string;
-    }[];
+    urls?: URL[];
 }
 export interface ItemTemplate {
     title: string;
