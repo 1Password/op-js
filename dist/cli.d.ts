@@ -8,6 +8,7 @@ export declare const createFieldAssignment: ([label, type, value,]: FieldAssignm
 export declare class CLI {
     static requiredVersion: string;
     globalFlags: Partial<GlobalFlags>;
+    commandLogger?: (message: string) => void;
     getVersion(): string;
     validate(): Promise<void>;
     execute<TData extends string | Record<string, any> | void>(command: string[], { args, flags, stdin, json, }?: {

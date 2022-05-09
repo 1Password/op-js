@@ -9,6 +9,10 @@ export interface GlobalFlags {
     sessionToken: string;
 }
 /**
+ * Pass a function to call when the wrapper logs a CLI command.
+ */
+export declare const setCommandLogger: (commandLogger: (message: string) => void) => void;
+/**
  * Set any of the {@link GlobalFlags} on the CLI command.
  */
 export declare const setGlobalFlags: (flags: Partial<GlobalFlags>) => void;

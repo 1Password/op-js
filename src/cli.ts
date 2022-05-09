@@ -62,6 +62,7 @@ export const createFieldAssignment = ([
 export class CLI {
 	public static requiredVersion = ">=2.2.0";
 	public globalFlags: Partial<GlobalFlags> = {};
+	public commandLogger?: (message: string) => void;
 
 	public getVersion(): string {
 		return this.execute<string>([], { flags: { version: true }, json: false });
@@ -126,12 +127,8 @@ export class CLI {
 			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
 		}
 
-		if (["development", "test"].includes(process.env.NODE_ENV)) {
-			process.stdout.write(
-				`\nCommand used:\n\u001B[93m${stdin}op ${command.join(
-					" ",
-				)}\u001B[39m\n`,
-			);
+		if (this.commandLogger) {
+			this.commandLogger(`${stdin}op ${command.join(" ")}`);
 		}
 
 		const result = spawnSync(`${stdin}op`, command, {
