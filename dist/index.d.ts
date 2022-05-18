@@ -66,6 +66,7 @@ export interface ListAccount {
     url: string;
     email: string;
     user_uuid: string;
+    account_uuid: string;
     shorthand?: string;
 }
 export declare const account: {
@@ -354,7 +355,7 @@ export declare const connect: {
 export declare type InputCategory = "Email Account" | "Medical Record" | "Password" | "Bank Account" | "Membership" | "Reward Program" | "Credit Card" | "Driver License" | "Outdoor License" | "Passport" | "Wireless Router" | "Social Security Number" | "Software License" | "API Credential" | "Database" | "Document" | "Identity" | "Login" | "Secure Note" | "Server";
 export declare type OutputCategory = "EMAIL_ACCOUNT" | "MEDICAL_RECORD" | "PASSWORD" | "BANK_ACCOUNT" | "MEMBERSHIP" | "REWARD_PROGRAM" | "CREDIT_CARD" | "DRIVER_LICENSE" | "OUTDOOR_LICENSE" | "PASSPORT" | "WIRELESS_ROUTER" | "SOCIAL_SECURITY_NUMBER" | "SOFTWARE_LICENSE" | "API_CREDENTIAL" | "DATABASE" | "DOCUMENT" | "IDENTITY" | "LOGIN" | "SECURE_NOTE" | "SERVER";
 export declare type PasswordStrength = "TERRIBLE" | "WEAK" | "FAIR" | "GOOD" | "VERY_GOOD" | "EXCELLENT" | "FANTASTIC";
-export declare type FieldAssignmentType = "password" | "text" | "email" | "url" | "date" | "monthYear" | "phone" | "delete";
+export declare type FieldAssignmentType = "concealed" | "text" | "email" | "url" | "date" | "monthYear" | "phone" | "delete";
 export declare type FieldAssignment = [
     label: string,
     type: FieldAssignmentType,
