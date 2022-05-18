@@ -678,7 +678,7 @@ export type PasswordStrength =
 	| "FANTASTIC";
 
 export type FieldAssignmentType =
-	| "password"
+	| "concealed"
 	| "text"
 	| "email"
 	| "url"

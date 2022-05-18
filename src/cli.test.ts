@@ -108,8 +108,8 @@ describe("createFieldAssignment", () => {
 		expect(createFieldAssignment(["username", "text", "foo"])).toEqual(
 			'"username[text]=foo"',
 		);
-		expect(createFieldAssignment(["password", "password", "abc123"])).toEqual(
-			'"password[password]=abc123"',
+		expect(createFieldAssignment(["password", "concealed", "abc123"])).toEqual(
+			'"password[concealed]=abc123"',
 		);
 	});
 });
@@ -212,13 +212,13 @@ describe("cli", () => {
 				{
 					args: [
 						["username", "text", "foo"],
-						["password", "password", "abc123"],
+						["password", "concealed", "abc123"],
 					],
 				},
 			]);
 			expectOpCommand(
 				execute,
-				`foo "username[text]=foo" "password[password]=abc123"`,
+				`foo "username[text]=foo" "password[concealed]=abc123"`,
 			);
 		});
 
