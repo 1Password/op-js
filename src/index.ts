@@ -133,6 +133,7 @@ export interface ListAccount {
 	url: string;
 	email: string;
 	user_uuid: string;
+	account_uuid: string;
 	shorthand?: string;
 }
 
