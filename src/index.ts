@@ -689,10 +689,13 @@ export type FieldAssignmentType =
 	// Used for deleting a field
 	| "delete";
 
+export type FieldPurpose = "USERNAME" | "PASSWORD" | "NOTE";
+
 export type FieldAssignment = [
 	label: string,
 	type: FieldAssignmentType,
 	value: string,
+	purpose?: FieldPurpose,
 ];
 
 export interface FieldLabelSelector {
@@ -846,22 +849,35 @@ export const item = {
 			url: string;
 			vault: string;
 		}> = {},
-	) =>
-		cli.execute<Item>(["item", "create"], {
+	) => {
+		const { category, ...otherFlags } = flags;
+
+		return cli.execute<Item>(["item", "create"], {
 			args: ["-"],
-			flags,
+			// @ts-expect-error - Temporary fix
+			flags: otherFlags,
 			// NOTE: There is an issue in the CLI that prevents us from using field assignments
 			// in `item create` through Node. I don't know what it is or why it's so specific,
 			// but until then we will need to pipe in the fields as a JSON object. This does not
 			// appear to impact `item edit`.
 			stdin: JSON.stringify({
-				fields: assignments.map(([label, type, value]) => ({
-					label,
-					type,
-					value,
-				})),
+				category: category.toUpperCase(),
+				fields: assignments.map(([label, type, value, purpose]) => {
+					const data = {
+						label,
+						type,
+						value,
+					};
+
+					if (purpose) {
+						Object.assign(data, { purpose });
+					}
+
+					return data;
+				}),
 			}),
-		}),
+		});
+	},
 
 	/**
 	 * Permanently delete an item.

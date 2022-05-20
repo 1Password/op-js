@@ -356,10 +356,12 @@ export declare type InputCategory = "Email Account" | "Medical Record" | "Passwo
 export declare type OutputCategory = "EMAIL_ACCOUNT" | "MEDICAL_RECORD" | "PASSWORD" | "BANK_ACCOUNT" | "MEMBERSHIP" | "REWARD_PROGRAM" | "CREDIT_CARD" | "DRIVER_LICENSE" | "OUTDOOR_LICENSE" | "PASSPORT" | "WIRELESS_ROUTER" | "SOCIAL_SECURITY_NUMBER" | "SOFTWARE_LICENSE" | "API_CREDENTIAL" | "DATABASE" | "DOCUMENT" | "IDENTITY" | "LOGIN" | "SECURE_NOTE" | "SERVER";
 export declare type PasswordStrength = "TERRIBLE" | "WEAK" | "FAIR" | "GOOD" | "VERY_GOOD" | "EXCELLENT" | "FANTASTIC";
 export declare type FieldAssignmentType = "concealed" | "text" | "email" | "url" | "date" | "monthYear" | "phone" | "delete";
+export declare type FieldPurpose = "USERNAME" | "PASSWORD" | "NOTE";
 export declare type FieldAssignment = [
     label: string,
     type: FieldAssignmentType,
-    value: string
+    value: string,
+    purpose?: FieldPurpose
 ];
 export interface FieldLabelSelector {
     label?: string[];
