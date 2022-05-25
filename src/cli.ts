@@ -19,9 +19,8 @@ export type FlagValue =
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
 
-// 🟡todo this converts the first letter as well - we probably want to discriminate and prevent that to avoid ending up with a string like ---flag-name from FlagName.
 export const camelToHyphen = (str: string) =>
-	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
+	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {

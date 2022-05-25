@@ -59,6 +59,10 @@ describe("camelToHyphen", () => {
 	it("converts camel case to hyphens", () => {
 		expect(camelToHyphen("someFlag")).toEqual("some-flag");
 	});
+
+	it("correctly handles pascal case", () => {
+		expect(camelToHyphen("SomeFlag")).toEqual("some-flag");
+	});
 });
 
 describe("parseFlagValue", () => {
