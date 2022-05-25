@@ -9,6 +9,8 @@ import {
 	GlobalFlags,
 } from "./index";
 
+// 🔵todo Can we name this something more specific? JS could mean a whole lot of things so perhaps something along the lines of `1password-op-node`
+
 export type FlagValue =
 	| string
 	| string[]
@@ -17,6 +19,7 @@ export type FlagValue =
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
 
+// 🟡todo this converts the first letter as well - we probably want to discriminate and prevent that to avoid ending up with a string like ---flag-name from FlagName.
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
 
@@ -40,6 +43,7 @@ export const parseFlagValue = (value: FlagValue) => {
 			fields += (value.type || []).map((type) => `type=${type}`).join(",");
 		}
 
+		// 🟡todo we are not handling escaping of quotes which means that we can end up with a string like ="label=s"s"
 		if (fields.length > 0) {
 			return `="${fields}"`;
 		}
@@ -48,11 +52,14 @@ export const parseFlagValue = (value: FlagValue) => {
 	return "";
 };
 
+// 🔵todo could use Flags type here instead of repeating it.
 export const createFlags = (flags: Record<string, FlagValue>): string[] =>
 	Object.entries(flags)
 		.filter(([_, value]) => Boolean(value))
 		.map(([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`);
 
+// 🟡todo We're not handling escaping of special characters for field assignments.
+//     From the docs: If you need to use periods, equal signs, or backslashes in the name of a section or field, use a backslash character to escape them. Don't use backslashes to escape the value side of the assignment.
 export const createFieldAssignment = ([
 	label,
 	type,
@@ -68,6 +75,7 @@ export class CLI {
 		return this.execute<string>([], { flags: { version: true }, json: false });
 	}
 
+	// 🔵todo should a client be allowed to set their own minimum version?
 	public async validate() {
 		const cliExists = !!(await lookpath("op"));
 
@@ -102,11 +110,13 @@ export class CLI {
 	): TData {
 		for (const arg of args) {
 			if (typeof arg === "string") {
+				// 🟡todo We should be escaping quote characters in strings that we're passing in here.
 				command.push(`"${arg}"`);
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
 				command.push(createFieldAssignment(arg));
 			}
+			// 🟡todo we are dropping null args - comment as to why.
 		}
 
 		if (json) {
@@ -114,6 +124,7 @@ export class CLI {
 		}
 
 		command = [
+			// 🟡todo We're not sanitizing the commands coming through here - spawnSync + shell will act on any special-meaning characters.
 			...command,
 			...createFlags({
 				...this.globalFlags,
@@ -121,12 +132,12 @@ export class CLI {
 			}),
 		];
 
-		// I know this isn't the right way to do
-		// this, but it's quick and dirty so idc
+		// 🟡todo Try .input key of `spawnSync` options instead of this piping.
 		if (stdin.length > 0) {
 			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
 		}
 
+		// 🔴todo We could be passing passwords in plaintext as arguments through this. Eliminate logging.
 		if (this.commandLogger) {
 			this.commandLogger(`${stdin}op ${command.join(" ")}`);
 		}

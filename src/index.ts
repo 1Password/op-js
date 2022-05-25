@@ -365,6 +365,7 @@ export const eventsApi = {
 
 // Section: Connect
 
+// 🔵todo will we be doing the remaining type tightening todos before going public?
 export interface ConnectServer {
 	id: string;
 	name: string;
@@ -404,6 +405,7 @@ export const connect = {
 				}
 			>,
 		) =>
+			// 🔵todo is it worth early-returning if we're in a non-TS project and are missing required flags?
 			cli.execute<void>(["connect", "group", "grant"], {
 				flags,
 				json: false,
@@ -471,6 +473,8 @@ export const connect = {
 			nameOrId: string,
 			flags: CommandFlags<
 				{},
+				// todo For required flags, what if we made these a parameter instead of a flag in this object?
+				//   🔵It's disingenuous to the flags param, but it would be way more explicit that the param is required.
 				{
 					name: string;
 				}
@@ -624,7 +628,7 @@ export const connect = {
 };
 
 // Section: Items
-
+// 🟡todo missing: Crypto Wallet & SSH Key
 export type InputCategory =
 	| "Email Account"
 	| "Medical Record"
@@ -720,6 +724,30 @@ export interface FieldTypeSelector {
 		| "url"
 	)[];
 }
+
+// todo We have definitions for FieldType in `web-api` as such: 🟡
+//   https://gitlab.1password.io/dev/b5/b5/-/blob/d88e5a38c0a12231035a2067dfbb31252345cf8b/client/web-api/src/model/vault_item.ts#L858-876
+//   I don't know which of the above fields this should map to, however. Likely FieldTypeSelector 🤷
+//   Possibly also relates to the GenericField and specific field types below.
+// enum FieldType {
+// 	String = "string",
+// 	Concealed = "concealed",
+// 	Date = "date",
+// 	Phone = "phone",
+// 	Address = "address",
+// 	Url = "URL",
+// 	Email = "email",
+// 	MonthYear = "monthYear",
+// 	Gender = "gender",
+// 	CreditCardType = "cctype",
+// 	Reference = "reference",
+// 	Menu = "menu",
+// 	Country = "country",
+// 	Month = "month",
+// 	OneTimePassword = "totp",
+// 	File = "file",
+// 	SshKey = "sshKey",
+// }
 
 export interface Section {
 	id: string;
@@ -1222,6 +1250,7 @@ export const vault = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-grant}
 		 */
+		// 🟡todo we probably want to pass a `--no-input` flag here, in revoke, and in the equivalent user commands since we don't support interactive behavior.
 		grant: (
 			flags: CommandFlags<{
 				group: string;
@@ -1345,6 +1374,7 @@ export const user = {
 		emailOrNameOrId: string,
 		flags: CommandFlags<{ all: boolean }> = {},
 	) =>
+		// 🟡todo can you use an identifier with the --all flag? If not, we should prevent this via TS and a check.
 		cli.execute<void>(["user", "confirm"], {
 			args: [emailOrNameOrId],
 			flags,
@@ -1395,6 +1425,7 @@ export const user = {
 			publicKey: boolean;
 			me: boolean;
 		}> = {},
+		// 🔵todo This return type would change with either the `publicKey` or `fingerprint` commands, correct?
 	) => cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
 
 	/**
@@ -1458,8 +1489,10 @@ export const user = {
 
 export type GroupRole = "MEMBER" | "MANAGER";
 
+// 🔵todo B5book and the server only know about states A & D, what is Inactive?
 export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
 
+// 🔵todo we are missing the Security type.
 export type GroupType =
 	| "ADMINISTRATORS"
 	| "OWNERS"
