@@ -81,9 +81,9 @@ describe("parseFlagValue", () => {
 	it("parses type field selector values", () => {
 		expect(
 			parseFlagValue({
-				type: ["otp"],
+				type: ["OTP"],
 			}),
-		).toEqual('="type=otp"');
+		).toEqual('="type=OTP"');
 	});
 
 	it("parses label field selector values", () => {
