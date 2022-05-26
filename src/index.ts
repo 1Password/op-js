@@ -45,23 +45,38 @@ export const version = () => cli.getVersion();
 
 // Section: Secret Injection
 
-/**
- * Inject secrets into a config file.
- */
-export const inject = <TReturn extends string | void>(
-	dataOrFile: string,
-	flags: CommandFlags<{
-		outFile: string;
-		fileMode: string;
-		force: boolean;
-	}> = {},
-	fromFile = false,
-) =>
-	cli.execute<TReturn>(["inject"], {
-		flags: { ...flags, inFile: fromFile ? dataOrFile : undefined },
-		json: false,
-		stdin: fromFile ? "" : dataOrFile,
-	});
+export const inject = {
+	/**
+	 * Inject secrets into and return the data
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+	 */
+	data: (input: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["inject"], {
+			flags,
+			json: false,
+			stdin: input,
+		}),
+
+	/**
+	 * Inject secrets into data and write the result to a file
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+	 */
+	toFile: (
+		input: string,
+		outFile: string,
+		flags: CommandFlags<{
+			fileMode: string;
+			force: boolean;
+		}> = {},
+	) =>
+		cli.execute<void>(["inject"], {
+			flags: { ...flags, outFile },
+			json: false,
+			stdin: input,
+		}),
+};
 
 // Section: Reading Secret References
 
