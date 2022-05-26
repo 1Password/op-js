@@ -1,4 +1,4 @@
-# 1password-js
+# op-js
 
 This package is a simple JavaScript wrapper for the [1Password CLI](https://developer.1password.com/docs/cli). It provides methods for most of the CLI's [commands](https://developer.1password.com/docs/cli/reference), and in many cases extends the CLI's ability to authenticate using [biometrics](https://developer.1password.com/docs/cli/about-biometric-unlock) to whatever Node-based application you're building. It also includes TypeScript declarations.
 
@@ -7,13 +7,13 @@ This package is a simple JavaScript wrapper for the [1Password CLI](https://deve
 Install using Yarn:
 
 ```shell
-yarn add @1password/1password-js
+yarn add @1password/op-js
 ```
 
 Or using NPM:
 
 ```shell
-npm install @1password/1password-js
+npm install @1password/op-js
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ npm install @1password/1password-js
 After installation you can start using command methods:
 
 ```js
-import { inject, item, connect } from "@1password/1password-js";
+import { inject, item, connect } from "@1password/op-js";
 
 // Some command functions may be directly imported
 inject("input.txt", {
@@ -43,7 +43,7 @@ The CLI takes flags as `kebab-case`, however to align better with JS object conv
 All command methods support support [global command flags](https://developer.1password.com/docs/cli/reference#global-flags), as well as their own flags, but this package also provides a helper to set global command flags do you don't need to each time. For example:
 
 ```js
-import { setGlobalFlags } from "@1password/1password-js";
+import { setGlobalFlags } from "@1password/op-js";
 
 setGlobalFlags({
 	account: "example.1password.com",

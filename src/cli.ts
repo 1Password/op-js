@@ -9,8 +9,6 @@ import {
 	GlobalFlags,
 } from "./index";
 
-// 🔵todo Can we name this something more specific? JS could mean a whole lot of things so perhaps something along the lines of `1password-op-node`
-
 export type FlagValue =
 	| string
 	| string[]
