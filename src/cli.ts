@@ -135,14 +135,10 @@ export class CLI {
 			}),
 		];
 
-		// 🟡todo Try .input key of `spawnSync` options instead of this piping.
-		if (stdin.length > 0) {
-			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
-		}
-
-		const result = spawnSync(`${stdin}op`, command, {
+		const result = spawnSync(`op`, command, {
 			shell: true,
-			stdio: ["inherit", "pipe", "pipe"],
+			stdio: "pipe",
+			input: stdin,
 		});
 
 		if (result.error) {
