@@ -23,7 +23,7 @@ export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
 export const sanitizeInput = (str: string) =>
-	str.replace(/([\s"$'\\`])/g, "\\$1");
+	str.replace(/(["$'\\`])/g, "\\$1");
 
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {
