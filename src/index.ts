@@ -1324,18 +1324,25 @@ export type AbbreviatedUser = Pick<
 
 export const user = {
 	/**
-	 * Confirm users who have accepted their invitation to the 1Password account.
+	 * Confirm a user who has accepted their invitation to the 1Password account.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirm: (
-		emailOrNameOrId: string,
-		flags: CommandFlags<{ all: boolean }> = {},
-	) =>
-		// 🟡todo can you use an identifier with the --all flag? If not, we should prevent this via TS and a check.
+	confirm: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
 		cli.execute<void>(["user", "confirm"], {
 			args: [emailOrNameOrId],
 			flags,
+			json: false,
+		}),
+
+	/**
+	 * Confirm all users who have accepted their invitation to the 1Password account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
+	 */
+	confirmAll: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<void>(["user", "confirm"], {
+			flags: { all: true, ...flags },
 			json: false,
 		}),
 
