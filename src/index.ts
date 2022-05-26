@@ -1203,7 +1203,6 @@ export const vault = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-grant}
 		 */
-		// 🟡todo we probably want to pass a `--no-input` flag here, in revoke, and in the equivalent user commands since we don't support interactive behavior.
 		grant: (
 			flags: CommandFlags<{
 				group: string;
@@ -1212,7 +1211,7 @@ export const vault = {
 			}> = {},
 		) =>
 			cli.execute<VaultGroupAccess>(["vault", "group", "grant"], {
-				flags,
+				flags: { noInput: true, ...flags },
 			}),
 
 		/**
@@ -1228,7 +1227,7 @@ export const vault = {
 			}> = {},
 		) =>
 			cli.execute<VaultGroupAccess>(["vault", "group", "revoke"], {
-				flags,
+				flags: { noInput: true, ...flags },
 			}),
 
 		/**
@@ -1255,7 +1254,10 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) => cli.execute<VaultUserAccess>(["vault", "user", "grant"], { flags }),
+		) =>
+			cli.execute<VaultUserAccess>(["vault", "user", "grant"], {
+				flags: { noInput: true, ...flags },
+			}),
 
 		/**
 		 * Revoke a user's permissions in a vault, in part or in full
@@ -1268,7 +1270,10 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) => cli.execute<VaultUserAccess>(["vault", "user", "revoke"], { flags }),
+		) =>
+			cli.execute<VaultUserAccess>(["vault", "user", "revoke"], {
+				flags: { noInput: true, ...flags },
+			}),
 
 		/**
 		 * List all users with access to the vault and their permissions
