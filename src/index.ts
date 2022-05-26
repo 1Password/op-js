@@ -1476,7 +1476,6 @@ export const user = {
 
 export type GroupRole = "MEMBER" | "MANAGER";
 
-// 🔵todo B5book and the server only know about states A & D, what is Inactive?
 export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
 
 // 🔵todo we are missing the Security type.
