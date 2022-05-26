@@ -72,7 +72,6 @@ export const createFieldAssignment = ([
 export class CLI {
 	public static recommendedVersion = ">=2.2.0";
 	public globalFlags: Partial<GlobalFlags> = {};
-	public commandLogger?: (message: string) => void;
 
 	public getVersion(): string {
 		return this.execute<string>([], { flags: { version: true }, json: false });
@@ -139,11 +138,6 @@ export class CLI {
 		// 🟡todo Try .input key of `spawnSync` options instead of this piping.
 		if (stdin.length > 0) {
 			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
-		}
-
-		// 🔴todo We could be passing passwords in plaintext as arguments through this. Eliminate logging.
-		if (this.commandLogger) {
-			this.commandLogger(`${stdin}op ${command.join(" ")}`);
 		}
 
 		const result = spawnSync(`${stdin}op`, command, {

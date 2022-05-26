@@ -25,13 +25,6 @@ export interface GlobalFlags {
 }
 
 /**
- * Pass a function to call when the wrapper logs a CLI command.
- */
-export const setCommandLogger = (commandLogger: (message: string) => void) => {
-	cli.commandLogger = commandLogger;
-};
-
-/**
  * Set any of the {@link GlobalFlags} on the CLI command.
  */
 export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
