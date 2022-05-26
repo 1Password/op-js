@@ -652,6 +652,8 @@ export type PasswordStrength =
 	| "EXCELLENT"
 	| "FANTASTIC";
 
+// These are the possible field types you can
+// use to *create* an item
 export type FieldAssignmentType =
 	| "concealed"
 	| "text"
@@ -662,6 +664,27 @@ export type FieldAssignmentType =
 	| "phone"
 	// Used for deleting a field
 	| "delete";
+
+// These are the possible field types that can be returned
+// in an item, or used to query fields
+export type FieldType =
+	| "string"
+	| "concealed"
+	| "date"
+	| "phone"
+	| "address"
+	| "URL"
+	| "email"
+	| "monthYear"
+	| "gender"
+	| "cctype"
+	| "ccnum"
+	| "reference"
+	| "menu"
+	| "month"
+	| "OTP"
+	| "file"
+	| "sshKey";
 
 export type FieldPurpose = "USERNAME" | "PASSWORD" | "NOTE";
 
@@ -676,48 +699,8 @@ export interface FieldLabelSelector {
 	label?: string[];
 }
 export interface FieldTypeSelector {
-	type?: (
-		| "address"
-		| "concealed"
-		| "creditcardnumber"
-		| "creditcardtype"
-		| "date"
-		| "email"
-		| "file"
-		| "gender"
-		| "menu"
-		| "monthyear"
-		| "otp"
-		| "phone"
-		| "reference"
-		| "string"
-		| "url"
-	)[];
+	type?: FieldType[];
 }
-
-// todo We have definitions for FieldType in `web-api` as such: 🟡
-//   https://gitlab.1password.io/dev/b5/b5/-/blob/d88e5a38c0a12231035a2067dfbb31252345cf8b/client/web-api/src/model/vault_item.ts#L858-876
-//   I don't know which of the above fields this should map to, however. Likely FieldTypeSelector 🤷
-//   Possibly also relates to the GenericField and specific field types below.
-// enum FieldType {
-// 	String = "string",
-// 	Concealed = "concealed",
-// 	Date = "date",
-// 	Phone = "phone",
-// 	Address = "address",
-// 	Url = "URL",
-// 	Email = "email",
-// 	MonthYear = "monthYear",
-// 	Gender = "gender",
-// 	CreditCardType = "cctype",
-// 	Reference = "reference",
-// 	Menu = "menu",
-// 	Country = "country",
-// 	Month = "month",
-// 	OneTimePassword = "totp",
-// 	File = "file",
-// 	SshKey = "sshKey",
-// }
 
 export interface Section {
 	id: string;
@@ -725,7 +708,7 @@ export interface Section {
 
 interface BaseField {
 	id: string;
-	type: string;
+	type: FieldType;
 	label: string;
 	reference?: string;
 	section?: Section;
