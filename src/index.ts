@@ -399,11 +399,12 @@ export const connect = {
 				}
 			>,
 		) =>
-			// 🔵todo is it worth early-returning if we're in a non-TS project and are missing required flags?
-			cli.execute<void>(["connect", "group", "grant"], {
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "group")
+				.execute<void>(["connect", "group", "grant"], {
+					flags,
+					json: false,
+				}),
 
 		/**
 		 * Revoke a group's access to manage Secrets Automation.
@@ -421,10 +422,12 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<void>(["connect", "group", "revoke"], {
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "group")
+				.execute<void>(["connect", "group", "revoke"], {
+					flags,
+					json: false,
+				}),
 	},
 
 	server: {
@@ -474,11 +477,13 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<string>(["connect", "server", "edit"], {
-				args: [nameOrId],
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "name")
+				.execute<string>(["connect", "server", "edit"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
 
 		/**
 		 * Get details about a Connect server.
@@ -520,11 +525,13 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<string>(["connect", "token", "create"], {
-				args: [name],
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "server")
+				.execute<string>(["connect", "token", "create"], {
+					args: [name],
+					flags,
+					json: false,
+				}),
 
 		/**
 		 * Revoke a token for a Connect server.
@@ -559,11 +566,13 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<void>(["connect", "token", "edit"], {
-				args: [token],
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "name")
+				.execute<void>(["connect", "token", "edit"], {
+					args: [token],
+					flags,
+					json: false,
+				}),
 
 		/**
 		 * List tokens for Connect servers.
@@ -595,10 +604,12 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<void>(["connect", "vault", "grant"], {
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "server", "vault")
+				.execute<void>(["connect", "vault", "grant"], {
+					flags,
+					json: false,
+				}),
 
 		/**
 		 * Revoke a Connect server's access to a vault.
@@ -614,10 +625,12 @@ export const connect = {
 				}
 			>,
 		) =>
-			cli.execute<void>(["connect", "vault", "revoke"], {
-				flags,
-				json: false,
-			}),
+			cli
+				.requireFlags(flags, "server", "vault")
+				.execute<void>(["connect", "vault", "revoke"], {
+					flags,
+					json: false,
+				}),
 	},
 };
 
@@ -1449,7 +1462,10 @@ export const user = {
 				name: string;
 			}
 		>,
-	) => cli.execute<User>(["user", "provision"], { flags }),
+	) =>
+		cli
+			.requireFlags(flags, "email", "name")
+			.execute<User>(["user", "provision"], { flags }),
 
 	/**
 	 * Reactivate a suspended user.

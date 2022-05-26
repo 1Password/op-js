@@ -95,6 +95,16 @@ export class CLI {
 		}
 	}
 
+	public requireFlags(flags: Flags, ...keys: string[]) {
+		const missing = keys.filter((key) => !(key in flags));
+
+		if (missing.length > 0) {
+			throw new Error(`Missing required flags: ${missing.join(", ")}`);
+		}
+
+		return this;
+	}
+
 	public execute<TData extends string | Record<string, any> | void>(
 		command: string[],
 		{
