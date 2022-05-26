@@ -1364,19 +1364,42 @@ export const user = {
 	/**
 	 * Get details about a user.
 	 *
-	 * Omit the first param and set the `me` flag to get details about the current user.
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	get: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
+
+	/**
+	 * Get details about the current user.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	get: (
-		emailOrNameOrId: string | null,
-		flags: CommandFlags<{
-			fingerprint: boolean;
-			publicKey: boolean;
-			me: boolean;
-		}> = {},
-		// 🔵todo This return type would change with either the `publicKey` or `fingerprint` commands, correct?
-	) => cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
+	me: (flags: CommandFlags<{}> = {}) =>
+		cli.execute<User>(["user", "get"], { flags: { ...flags, me: true } }),
+
+	/**
+	 * Get the user's public key fingerprint.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["user", "get"], {
+			args: [emailOrNameOrId],
+			flags: { ...flags, fingerprint: true },
+			json: false,
+		}),
+
+	/**
+	 * Get the user's public key.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["user", "get"], {
+			args: [emailOrNameOrId],
+			flags: { ...flags, publicKey: true },
+			json: false,
+		}),
 
 	/**
 	 * List users.
