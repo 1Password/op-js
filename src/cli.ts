@@ -53,8 +53,7 @@ export const parseFlagValue = (value: FlagValue) => {
 	return "";
 };
 
-// 🔵todo could use Flags type here instead of repeating it.
-export const createFlags = (flags: Record<string, FlagValue>): string[] =>
+export const createFlags = (flags: Flags): string[] =>
 	Object.entries(flags)
 		.filter(([_, value]) => Boolean(value))
 		.map(
@@ -106,7 +105,7 @@ export class CLI {
 			json = true,
 		}: {
 			args?: (string | null | FieldAssignment)[];
-			flags?: Record<string, FlagValue>;
+			flags?: Flags;
 			stdin?: string;
 			json?: boolean;
 		} = {},
