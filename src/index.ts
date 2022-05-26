@@ -593,7 +593,6 @@ export const connect = {
 };
 
 // Section: Items
-// 🟡todo missing: Crypto Wallet & SSH Key
 export type InputCategory =
 	| "Email Account"
 	| "Medical Record"
@@ -614,7 +613,10 @@ export type InputCategory =
 	| "Identity"
 	| "Login"
 	| "Secure Note"
-	| "Server";
+	| "Server"
+	// Disabled until CLI gets this category
+	// | "Crypto Wallet"
+	| "SSH Key";
 
 export type OutputCategory =
 	| "EMAIL_ACCOUNT"
@@ -636,7 +638,10 @@ export type OutputCategory =
 	| "IDENTITY"
 	| "LOGIN"
 	| "SECURE_NOTE"
-	| "SERVER";
+	| "SERVER"
+	// Disabled until CLI gets this category
+	// | "CRYPTO_WALLET"
+	| "SSH_KEY";
 
 export type PasswordStrength =
 	| "TERRIBLE"
