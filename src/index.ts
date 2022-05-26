@@ -373,11 +373,17 @@ export const eventsApi = {
 
 // Section: Connect
 
-// 🔵todo will we be doing the remaining type tightening todos before going public?
+export type ConnectServerState = "ACTIVE" | "REVOKED";
+
+export interface VaultClaim {
+	id: string;
+	acl: VaultPermisson[];
+}
+
 export interface ConnectServer {
 	id: string;
 	name: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: UserState;
 	created_at: string;
 	creator_id: string;
 	tokens_version: number;
@@ -386,11 +392,11 @@ export interface ConnectServer {
 export interface ConnectServerToken {
 	id: string;
 	name: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: ConnectServerState;
 	issuer: string;
 	audience: string;
-	features: string[]; // TODO: narrow array types, e.g. "vaultaccess"
-	vaults: []; // TODO: what goes in this array?
+	features: string[];
+	vaults: VaultClaim[];
 	created_at: string;
 	integration_id: string;
 }
@@ -1116,7 +1122,7 @@ export interface VaultGroup {
 	id: string;
 	name: string;
 	description: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: GroupState;
 	created_at: string;
 	permissions: VaultPermisson[];
 }
