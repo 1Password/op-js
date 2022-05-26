@@ -146,7 +146,7 @@ describe("cli", () => {
 
 			await expect(cli.validate()).rejects.toEqual(
 				new Error(
-					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.requiredVersion}`,
+					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.recommendedVersion}`,
 				),
 			);
 
@@ -155,7 +155,7 @@ describe("cli", () => {
 		});
 
 		it("does not throw when cli is fully valid", async () => {
-			CLI.requiredVersion = ">=2.0.0";
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -175,7 +175,7 @@ describe("cli", () => {
 		});
 
 		it("can handle beta versions", async () => {
-			CLI.requiredVersion = ">=2.0.0";
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -189,6 +189,24 @@ describe("cli", () => {
 				});
 
 			await expect(cli.validate()).resolves.toBeUndefined();
+
+			lookpathSpy.mockRestore();
+			spawnSpy.mockRestore();
+		});
+
+		it("can take a custom version", async () => {
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			const spawnSpy = jest
+				.spyOn<any, any>(child_process, "spawnSync")
+				.mockReturnValue({
+					error: null,
+					stderr: "",
+					stdout: "2.1.0",
+				});
+
+			await expect(cli.validate(">=2.0.0")).resolves.toBeUndefined();
 
 			lookpathSpy.mockRestore();
 			spawnSpy.mockRestore();

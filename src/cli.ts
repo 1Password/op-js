@@ -69,7 +69,7 @@ export const createFieldAssignment = ([
 	`"${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}"`;
 
 export class CLI {
-	public static requiredVersion = ">=2.2.0";
+	public static recommendedVersion = ">=2.2.0";
 	public globalFlags: Partial<GlobalFlags> = {};
 	public commandLogger?: (message: string) => void;
 
@@ -77,8 +77,7 @@ export class CLI {
 		return this.execute<string>([], { flags: { version: true }, json: false });
 	}
 
-	// 🔵todo should a client be allowed to set their own minimum version?
-	public async validate() {
+	public async validate(requiredVersion: string = CLI.recommendedVersion) {
 		const cliExists = !!(await lookpath("op"));
 
 		if (!cliExists) {
@@ -89,9 +88,9 @@ export class CLI {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 		const semVersion = semverCoerce(version);
 
-		if (!semverSatisfies(semVersion, CLI.requiredVersion)) {
+		if (!semverSatisfies(semVersion, requiredVersion)) {
 			throw new Error(
-				`CLI version ${version} does not satisfy version requirement of ${CLI.requiredVersion}`,
+				`CLI version ${version} does not satisfy version requirement of ${CLI.recommendedVersion}`,
 			);
 		}
 	}

@@ -43,7 +43,8 @@ export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 /**
  * Validate that the user's CLI setup is valid for this wrapper.
  */
-export const validateCli = async () => await cli.validate();
+export const validateCli = async (requiredVersion?: string) =>
+	await cli.validate(requiredVersion);
 
 /**
  * Retrieve the current version of the CLI.
