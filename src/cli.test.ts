@@ -226,6 +226,30 @@ describe("cli", () => {
 			);
 		});
 
+		it("sanitizes input in commands, arguments, and flags", () => {
+			const execute = executeSpy([
+				['"foo'],
+				{
+					args: ['bar"'],
+					flags: { $lorem: "`ipsum`" },
+				},
+			]);
+			expectOpCommand(execute, `\\"foo "bar\\"" --\\$lorem="\\\`ipsum\\\`"`);
+		});
+
+		it("sanitizes field assignments", () => {
+			const execute = executeSpy([
+				["foo"],
+				{
+					args: [
+						// @ts-expect-error we're testing invalid input
+						["$username", "'text'", "\\foo"],
+					],
+				},
+			]);
+			expectOpCommand(execute, `foo "\\$username[\\'text\\']=\\\\foo"`);
+		});
+
 		it("throws if there's an error", () => {
 			const error = new Error("bar");
 			expect(() => executeSpy([["foo"]], { error })).toThrowError(error);

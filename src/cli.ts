@@ -22,9 +22,12 @@ export type Flags = Record<string, FlagValue>;
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
+export const sanitizeInput = (str: string) =>
+	str.replace(/([\s"$'\\`])/g, "\\$1");
+
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {
-		return `="${value}"`;
+		return `="${sanitizeInput(value)}"`;
 	}
 
 	if (Array.isArray(value)) {
@@ -42,9 +45,8 @@ export const parseFlagValue = (value: FlagValue) => {
 			fields += (value.type || []).map((type) => `type=${type}`).join(",");
 		}
 
-		// 🟡todo we are not handling escaping of quotes which means that we can end up with a string like ="label=s"s"
 		if (fields.length > 0) {
-			return `="${fields}"`;
+			return `="${sanitizeInput(fields)}"`;
 		}
 	}
 
@@ -55,15 +57,17 @@ export const parseFlagValue = (value: FlagValue) => {
 export const createFlags = (flags: Record<string, FlagValue>): string[] =>
 	Object.entries(flags)
 		.filter(([_, value]) => Boolean(value))
-		.map(([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`);
+		.map(
+			([flag, value]) =>
+				`--${camelToHyphen(sanitizeInput(flag))}${parseFlagValue(value)}`,
+		);
 
-// 🟡todo We're not handling escaping of special characters for field assignments.
-//     From the docs: If you need to use periods, equal signs, or backslashes in the name of a section or field, use a backslash character to escape them. Don't use backslashes to escape the value side of the assignment.
 export const createFieldAssignment = ([
 	label,
 	type,
 	value,
-]: FieldAssignment): string => `"${label}[${type}]=${value}"`;
+]: FieldAssignment): string =>
+	`"${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}"`;
 
 export class CLI {
 	public static requiredVersion = ">=2.2.0";
@@ -107,10 +111,11 @@ export class CLI {
 			json?: boolean;
 		} = {},
 	): TData {
+		command = command.map((part) => sanitizeInput(part));
+
 		for (const arg of args) {
 			if (typeof arg === "string") {
-				// 🟡todo We should be escaping quote characters in strings that we're passing in here.
-				command.push(`"${arg}"`);
+				command.push(`"${sanitizeInput(arg)}"`);
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
 				command.push(createFieldAssignment(arg));
@@ -123,7 +128,6 @@ export class CLI {
 		}
 
 		command = [
-			// 🟡todo We're not sanitizing the commands coming through here - spawnSync + shell will act on any special-meaning characters.
 			...command,
 			...createFlags({
 				...this.globalFlags,
