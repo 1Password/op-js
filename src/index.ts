@@ -1478,14 +1478,14 @@ export type GroupRole = "MEMBER" | "MANAGER";
 
 export type GroupState = "ACTIVE" | "DELETED" | "INACTIVE";
 
-// 🔵todo we are missing the Security type.
 export type GroupType =
 	| "ADMINISTRATORS"
 	| "OWNERS"
 	| "RECOVERY"
 	| "TEAM_MEMBERS"
 	| "USER_DEFINED"
-	| "UNKNOWN_TYPE";
+	| "UNKNOWN_TYPE"
+	| "SECURITY";
 
 export interface Group {
 	id: string;
