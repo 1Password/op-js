@@ -213,29 +213,6 @@ describe("cli", () => {
 		});
 	});
 
-	describe("requireFlags", () => {
-		it("throws an error when a required flag is not present", () => {
-			const flags = {
-				someFlag: "foo",
-			};
-
-			expect(() => cli.requireFlags(flags, "anotherFlag")).toThrowError(
-				new Error("Missing required flags: anotherFlag"),
-			);
-		});
-
-		it("does not throw when all required flags are present", () => {
-			const flags = {
-				someFlag: "foo",
-				anotherFlag: "bar",
-			};
-
-			expect(() =>
-				cli.requireFlags(flags, "someFlag", "anotherFlag"),
-			).not.toThrowError();
-		});
-	});
-
 	describe("execute", () => {
 		it("constructs and calls an op command", () => {
 			const execute = executeSpy([

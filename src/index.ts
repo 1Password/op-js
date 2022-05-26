@@ -1,9 +1,8 @@
 import { cli, Flags } from "./cli";
 
-type CommandFlags<
-	TOptional extends Flags = {},
-	TRequired extends Flags = {},
-> = Partial<TOptional & GlobalFlags> & TRequired;
+type CommandFlags<TOptional extends Flags = {}> = Partial<
+	TOptional & GlobalFlags
+>;
 
 // Section: Global Flags
 
@@ -389,22 +388,16 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-grant}
 		 */
 		grant: (
-			flags: CommandFlags<
-				{
-					allServers: boolean;
-					server: string;
-				},
-				{
-					group: string;
-				}
-			>,
+			group: string,
+			flags: CommandFlags<{
+				allServers: boolean;
+				server: string;
+			}> = {},
 		) =>
-			cli
-				.requireFlags(flags, "group")
-				.execute<void>(["connect", "group", "grant"], {
-					flags,
-					json: false,
-				}),
+			cli.execute<void>(["connect", "group", "grant"], {
+				flags: { ...flags, group },
+				json: false,
+			}),
 
 		/**
 		 * Revoke a group's access to manage Secrets Automation.
@@ -412,22 +405,16 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-revoke}
 		 */
 		revoke: (
-			flags: CommandFlags<
-				{
-					allServers: boolean;
-					server: string;
-				},
-				{
-					group: string;
-				}
-			>,
+			group: string,
+			flags: CommandFlags<{
+				allServers: boolean;
+				server: string;
+			}> = {},
 		) =>
-			cli
-				.requireFlags(flags, "group")
-				.execute<void>(["connect", "group", "revoke"], {
-					flags,
-					json: false,
-				}),
+			cli.execute<void>(["connect", "group", "revoke"], {
+				flags: { ...flags, group },
+				json: false,
+			}),
 	},
 
 	server: {
@@ -466,24 +453,12 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
 		 */
-		edit: (
-			nameOrId: string,
-			flags: CommandFlags<
-				{},
-				// todo For required flags, what if we made these a parameter instead of a flag in this object?
-				//   🔵It's disingenuous to the flags param, but it would be way more explicit that the param is required.
-				{
-					name: string;
-				}
-			>,
-		) =>
-			cli
-				.requireFlags(flags, "name")
-				.execute<string>(["connect", "server", "edit"], {
-					args: [nameOrId],
-					flags,
-					json: false,
-				}),
+		edit: (nameOrId: string, newName: string, flags: CommandFlags<{}> = {}) =>
+			cli.execute<string>(["connect", "server", "edit"], {
+				args: [nameOrId],
+				flags: { name: newName, ...flags },
+				json: false,
+			}),
 
 		/**
 		 * Get details about a Connect server.
@@ -515,23 +490,17 @@ export const connect = {
 		 */
 		create: (
 			name: string,
-			flags: CommandFlags<
-				{
-					expiresIn: string;
-					vaults: string[];
-				},
-				{
-					server: string;
-				}
-			>,
+			server: string,
+			flags: CommandFlags<{
+				expiresIn: string;
+				vaults: string[];
+			}> = {},
 		) =>
-			cli
-				.requireFlags(flags, "server")
-				.execute<string>(["connect", "token", "create"], {
-					args: [name],
-					flags,
-					json: false,
-				}),
+			cli.execute<string>(["connect", "token", "create"], {
+				args: [name],
+				flags: { server, ...flags },
+				json: false,
+			}),
 
 		/**
 		 * Revoke a token for a Connect server.
@@ -557,22 +526,16 @@ export const connect = {
 		 */
 		edit: (
 			token: string,
-			flags: CommandFlags<
-				{
-					server: string;
-				},
-				{
-					name: string;
-				}
-			>,
+			newName: string,
+			flags: CommandFlags<{
+				server: string;
+			}> = {},
 		) =>
-			cli
-				.requireFlags(flags, "name")
-				.execute<void>(["connect", "token", "edit"], {
-					args: [token],
-					flags,
-					json: false,
-				}),
+			cli.execute<void>(["connect", "token", "edit"], {
+				args: [token],
+				flags: { name: newName, ...flags },
+				json: false,
+			}),
 
 		/**
 		 * List tokens for Connect servers.
@@ -595,42 +558,22 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
 		 */
-		grant: (
-			flags: CommandFlags<
-				{},
-				{
-					server: string;
-					vault: string;
-				}
-			>,
-		) =>
-			cli
-				.requireFlags(flags, "server", "vault")
-				.execute<void>(["connect", "vault", "grant"], {
-					flags,
-					json: false,
-				}),
+		grant: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+			cli.execute<void>(["connect", "vault", "grant"], {
+				flags: { server, vault, ...flags },
+				json: false,
+			}),
 
 		/**
 		 * Revoke a Connect server's access to a vault.
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
 		 */
-		revoke: (
-			flags: CommandFlags<
-				{},
-				{
-					server: string;
-					vault: string;
-				}
-			>,
-		) =>
-			cli
-				.requireFlags(flags, "server", "vault")
-				.execute<void>(["connect", "vault", "revoke"], {
-					flags,
-					json: false,
-				}),
+		revoke: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+			cli.execute<void>(["connect", "vault", "revoke"], {
+				flags: { server, vault, ...flags },
+				json: false,
+			}),
 	},
 };
 
@@ -1453,19 +1396,15 @@ export const user = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
 	 */
 	provision: (
-		flags: CommandFlags<
-			{
-				language: string;
-			},
-			{
-				email: string;
-				name: string;
-			}
-		>,
+		email: string,
+		name: string,
+		flags: CommandFlags<{
+			language: string;
+		}>,
 	) =>
-		cli
-			.requireFlags(flags, "email", "name")
-			.execute<User>(["user", "provision"], { flags }),
+		cli.execute<User>(["user", "provision"], {
+			flags: { email, name, ...flags },
+		}),
 
 	/**
 	 * Reactivate a suspended user.
