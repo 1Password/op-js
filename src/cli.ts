@@ -50,6 +50,7 @@ export const parseFlagValue = (value: FlagValue) => {
 		}
 	}
 
+	// If we get here, it's a boolean and boolean CLI flags don't have a value
 	return "";
 };
 
@@ -118,7 +119,9 @@ export class CLI {
 			} else if (Array.isArray(arg)) {
 				command.push(createFieldAssignment(arg));
 			}
-			// 🟡todo we are dropping null args - comment as to why.
+
+			// arg can be null, but that's just so we can lazily
+			// set the value, safely dropping if it remains null
 		}
 
 		if (json) {
