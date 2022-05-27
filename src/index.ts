@@ -671,9 +671,9 @@ export type FieldAssignmentType =
 	// Used for deleting a field
 	| "delete";
 
-// These are the possible field types that can be returned
-// in an item, or used to query fields
-export type FieldType =
+// These are the possible field types you can
+// use when querying fields by type
+export type QueryFieldType =
 	| "string"
 	| "concealed"
 	| "date"
@@ -692,6 +692,27 @@ export type FieldType =
 	| "file"
 	| "sshKey";
 
+// These are the possible field types that can be
+// returned on a item's field
+export type ResponseFieldType =
+	| "UNKNOWN"
+	| "ADDRESS"
+	| "CONCEALED"
+	| "CREDIT_CARD_NUMBER"
+	| "CREDIT_CARD_TYPE"
+	| "DATE"
+	| "EMAIL"
+	| "GENDER"
+	| "MENU"
+	| "MONTH_YEAR"
+	| "OTP"
+	| "PHONE"
+	| "REFERENCE"
+	| "STRING"
+	| "URL"
+	| "FILE"
+	| "SSHKEY";
+
 export type FieldPurpose = "USERNAME" | "PASSWORD" | "NOTE";
 
 export type FieldAssignment = [
@@ -705,7 +726,7 @@ export interface FieldLabelSelector {
 	label?: string[];
 }
 export interface FieldTypeSelector {
-	type?: FieldType[];
+	type?: QueryFieldType[];
 }
 
 export interface Section {
@@ -714,7 +735,7 @@ export interface Section {
 
 interface BaseField {
 	id: string;
-	type: FieldType;
+	type: ResponseFieldType;
 	label: string;
 	reference?: string;
 	section?: Section;
