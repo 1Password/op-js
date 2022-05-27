@@ -3,6 +3,4 @@ coverage/
 .husky/_/husky.sh
 1password-credentials.json
 .env
-
-# TODO: ignore dist/ once we publish to NPM
-# dist/
+dist/
