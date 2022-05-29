@@ -4,3 +4,4 @@ coverage/
 1password-credentials.json
 .env
 dist/
+licenses/
