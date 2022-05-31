@@ -68,7 +68,7 @@ export const createFieldAssignment = ([
 	`"${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}"`;
 
 export class CLI {
-	public static recommendedVersion = ">=2.2.0";
+	public static recommendedVersion = ">=2.4.0";
 	public globalFlags: Partial<GlobalFlags> = {};
 
 	public getVersion(): string {
