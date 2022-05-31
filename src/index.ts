@@ -1367,7 +1367,7 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirmAll: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+	confirmAll: (flags: CommandFlags<{}> = {}) =>
 		cli.execute<void>(["user", "confirm"], {
 			flags: { all: true, ...flags },
 			json: false,
