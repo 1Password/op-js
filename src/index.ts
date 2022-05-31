@@ -72,7 +72,7 @@ export const inject = {
 		}> = {},
 	) =>
 		cli.execute<void>(["inject"], {
-			flags: { ...flags, outFile },
+			flags: { outFile, ...flags },
 			json: false,
 			stdin: input,
 		}),
@@ -105,7 +105,7 @@ export const read = {
 	) =>
 		cli.execute<string>(["read"], {
 			args: [reference],
-			flags: { ...flags, outFile: outputPath },
+			flags: { outFile: outputPath, ...flags },
 			json: false,
 		}),
 };
@@ -327,8 +327,8 @@ export const document = {
 		cli.execute<void>(["document", "get"], {
 			args: [nameOrId],
 			flags: {
-				...flags,
 				output: outputPath,
+				...flags,
 			},
 			json: false,
 		}),
@@ -416,7 +416,7 @@ export const connect = {
 			}> = {},
 		) =>
 			cli.execute<void>(["connect", "group", "grant"], {
-				flags: { ...flags, group },
+				flags: { group, ...flags },
 				json: false,
 			}),
 
@@ -433,7 +433,7 @@ export const connect = {
 			}> = {},
 		) =>
 			cli.execute<void>(["connect", "group", "revoke"], {
-				flags: { ...flags, group },
+				flags: { group, ...flags },
 				json: false,
 			}),
 	},
@@ -957,7 +957,7 @@ export const item = {
 	) =>
 		cli.execute<string>(["item", "get"], {
 			args: [nameOrIdOrLink],
-			flags: { ...flags, otp: true },
+			flags: { otp: true, ...flags },
 			json: false,
 		}),
 
@@ -975,7 +975,7 @@ export const item = {
 	) =>
 		cli.execute<string>(["item", "get"], {
 			args: [nameOrIdOrLink],
-			flags: { ...flags, shareLink: true },
+			flags: { shareLink: true, ...flags },
 			json: false,
 		}),
 
@@ -1417,7 +1417,7 @@ export const user = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
 	me: (flags: CommandFlags<{}> = {}) =>
-		cli.execute<User>(["user", "get"], { flags: { ...flags, me: true } }),
+		cli.execute<User>(["user", "get"], { flags: { me: true, ...flags } }),
 
 	/**
 	 * Get the user's public key fingerprint.
@@ -1427,7 +1427,7 @@ export const user = {
 	fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
 		cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
-			flags: { ...flags, fingerprint: true },
+			flags: { fingerprint: true, ...flags },
 			json: false,
 		}),
 
@@ -1439,7 +1439,7 @@ export const user = {
 	publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
 		cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
-			flags: { ...flags, publicKey: true },
+			flags: { publicKey: true, ...flags },
 			json: false,
 		}),
 
