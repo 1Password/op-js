@@ -14,7 +14,7 @@
 	},
 	"license": "MIT",
 	"scripts": {
-		"build": "yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
+		"build": "license-checker-rseidelsohn --direct --files licenses && yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
 		"compile": "esbuild --bundle --platform=node --outdir=dist src/index.js",
 		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
@@ -46,6 +46,7 @@
 		"husky": "^7.0.4",
 		"jest": "^27.5.1",
 		"joi": "^17.6.0",
+		"license-checker-rseidelsohn": "^3.1.0",
 		"lint-staged": "^12.3.7",
 		"prettier-plugin-organize-imports": "^2.3.4",
 		"ts-jest": "^27.1.4",
