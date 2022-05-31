@@ -133,7 +133,7 @@ export class CLI {
 			}),
 		];
 
-		const result = spawnSync(`op`, command, {
+		const result = spawnSync("op", command, {
 			shell: true,
 			stdio: "pipe",
 			input: stdin,
