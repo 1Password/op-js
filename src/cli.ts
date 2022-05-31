@@ -18,11 +18,14 @@ export type FlagValue =
 export type Flags = Record<string, FlagValue>;
 
 export const camelToHyphen = (str: string) =>
-	str.replace(/([A-Z])/g, (g) => `-${g[0].toLowerCase()}`);
+	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
+
+export const sanitizeInput = (str: string) =>
+	str.replace(/(["$'\\`])/g, "\\$1");
 
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {
-		return `="${value}"`;
+		return `="${sanitizeInput(value)}"`;
 	}
 
 	if (Array.isArray(value)) {
@@ -41,34 +44,38 @@ export const parseFlagValue = (value: FlagValue) => {
 		}
 
 		if (fields.length > 0) {
-			return `="${fields}"`;
+			return `="${sanitizeInput(fields)}"`;
 		}
 	}
 
+	// If we get here, it's a boolean and boolean CLI flags don't have a value
 	return "";
 };
 
-export const createFlags = (flags: Record<string, FlagValue>): string[] =>
+export const createFlags = (flags: Flags): string[] =>
 	Object.entries(flags)
 		.filter(([_, value]) => Boolean(value))
-		.map(([flag, value]) => `--${camelToHyphen(flag)}${parseFlagValue(value)}`);
+		.map(
+			([flag, value]) =>
+				`--${camelToHyphen(sanitizeInput(flag))}${parseFlagValue(value)}`,
+		);
 
 export const createFieldAssignment = ([
 	label,
 	type,
 	value,
-]: FieldAssignment): string => `"${label}[${type}]=${value}"`;
+]: FieldAssignment): string =>
+	`"${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}"`;
 
 export class CLI {
-	public static requiredVersion = ">=2.2.0";
+	public static recommendedVersion = ">=2.2.0";
 	public globalFlags: Partial<GlobalFlags> = {};
-	public commandLogger?: (message: string) => void;
 
 	public getVersion(): string {
 		return this.execute<string>([], { flags: { version: true }, json: false });
 	}
 
-	public async validate() {
+	public async validate(requiredVersion: string = CLI.recommendedVersion) {
 		const cliExists = !!(await lookpath("op"));
 
 		if (!cliExists) {
@@ -79,9 +86,9 @@ export class CLI {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 		const semVersion = semverCoerce(version);
 
-		if (!semverSatisfies(semVersion, CLI.requiredVersion)) {
+		if (!semverSatisfies(semVersion, requiredVersion)) {
 			throw new Error(
-				`CLI version ${version} does not satisfy version requirement of ${CLI.requiredVersion}`,
+				`CLI version ${version} does not satisfy version requirement of ${CLI.recommendedVersion}`,
 			);
 		}
 	}
@@ -95,18 +102,23 @@ export class CLI {
 			json = true,
 		}: {
 			args?: (string | null | FieldAssignment)[];
-			flags?: Record<string, FlagValue>;
+			flags?: Flags;
 			stdin?: string;
 			json?: boolean;
 		} = {},
 	): TData {
+		command = command.map((part) => sanitizeInput(part));
+
 		for (const arg of args) {
 			if (typeof arg === "string") {
-				command.push(`"${arg}"`);
+				command.push(`"${sanitizeInput(arg)}"`);
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
 				command.push(createFieldAssignment(arg));
 			}
+
+			// arg can be null, but that's just so we can lazily
+			// set the value, safely dropping if it remains null
 		}
 
 		if (json) {
@@ -121,19 +133,10 @@ export class CLI {
 			}),
 		];
 
-		// I know this isn't the right way to do
-		// this, but it's quick and dirty so idc
-		if (stdin.length > 0) {
-			stdin = `echo "${stdin.replace(/"/g, '\\"')}" | `;
-		}
-
-		if (this.commandLogger) {
-			this.commandLogger(`${stdin}op ${command.join(" ")}`);
-		}
-
-		const result = spawnSync(`${stdin}op`, command, {
+		const result = spawnSync("op", command, {
 			shell: true,
-			stdio: ["inherit", "pipe", "pipe"],
+			stdio: "pipe",
+			input: stdin,
 		});
 
 		if (result.error) {

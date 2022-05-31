@@ -59,6 +59,10 @@ describe("camelToHyphen", () => {
 	it("converts camel case to hyphens", () => {
 		expect(camelToHyphen("someFlag")).toEqual("some-flag");
 	});
+
+	it("correctly handles pascal case", () => {
+		expect(camelToHyphen("SomeFlag")).toEqual("some-flag");
+	});
 });
 
 describe("parseFlagValue", () => {
@@ -77,9 +81,9 @@ describe("parseFlagValue", () => {
 	it("parses type field selector values", () => {
 		expect(
 			parseFlagValue({
-				type: ["otp"],
+				type: ["OTP"],
 			}),
-		).toEqual('="type=otp"');
+		).toEqual('="type=OTP"');
 	});
 
 	it("parses label field selector values", () => {
@@ -142,7 +146,7 @@ describe("cli", () => {
 
 			await expect(cli.validate()).rejects.toEqual(
 				new Error(
-					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.requiredVersion}`,
+					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.recommendedVersion}`,
 				),
 			);
 
@@ -151,7 +155,7 @@ describe("cli", () => {
 		});
 
 		it("does not throw when cli is fully valid", async () => {
-			CLI.requiredVersion = ">=2.0.0";
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -171,7 +175,7 @@ describe("cli", () => {
 		});
 
 		it("can handle beta versions", async () => {
-			CLI.requiredVersion = ">=2.0.0";
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -185,6 +189,24 @@ describe("cli", () => {
 				});
 
 			await expect(cli.validate()).resolves.toBeUndefined();
+
+			lookpathSpy.mockRestore();
+			spawnSpy.mockRestore();
+		});
+
+		it("can take a custom version", async () => {
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			const spawnSpy = jest
+				.spyOn<any, any>(child_process, "spawnSync")
+				.mockReturnValue({
+					error: null,
+					stderr: "",
+					stdout: "2.1.0",
+				});
+
+			await expect(cli.validate(">=2.0.0")).resolves.toBeUndefined();
 
 			lookpathSpy.mockRestore();
 			spawnSpy.mockRestore();
@@ -220,6 +242,30 @@ describe("cli", () => {
 				execute,
 				`foo "username[text]=foo" "password[concealed]=abc123"`,
 			);
+		});
+
+		it("sanitizes input in commands, arguments, and flags", () => {
+			const execute = executeSpy([
+				['"foo'],
+				{
+					args: ['bar"'],
+					flags: { $lorem: "`ipsum`" },
+				},
+			]);
+			expectOpCommand(execute, `\\"foo "bar\\"" --\\$lorem="\\\`ipsum\\\`"`);
+		});
+
+		it("sanitizes field assignments", () => {
+			const execute = executeSpy([
+				["foo"],
+				{
+					args: [
+						// @ts-expect-error we're testing invalid input
+						["$username", "'text'", "\\foo"],
+					],
+				},
+			]);
+			expectOpCommand(execute, `foo "\\$username[\\'text\\']=\\\\foo"`);
 		});
 
 		it("throws if there's an error", () => {

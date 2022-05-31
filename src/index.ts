@@ -1,9 +1,8 @@
 import { cli, Flags } from "./cli";
 
-type CommandFlags<
-	TOptional extends Flags = {},
-	TRequired extends Flags = {},
-> = Partial<TOptional & GlobalFlags> & TRequired;
+type CommandFlags<TOptional extends Flags = {}> = Partial<
+	TOptional & GlobalFlags
+>;
 
 // Section: Global Flags
 
@@ -25,13 +24,6 @@ export interface GlobalFlags {
 }
 
 /**
- * Pass a function to call when the wrapper logs a CLI command.
- */
-export const setCommandLogger = (commandLogger: (message: string) => void) => {
-	cli.commandLogger = commandLogger;
-};
-
-/**
  * Set any of the {@link GlobalFlags} on the CLI command.
  */
 export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
@@ -43,7 +35,8 @@ export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 /**
  * Validate that the user's CLI setup is valid for this wrapper.
  */
-export const validateCli = async () => await cli.validate();
+export const validateCli = async (requiredVersion?: string) =>
+	await cli.validate(requiredVersion);
 
 /**
  * Retrieve the current version of the CLI.
@@ -52,23 +45,38 @@ export const version = () => cli.getVersion();
 
 // Section: Secret Injection
 
-/**
- * Inject secrets into a config file.
- */
-export const inject = <TReturn extends string | void>(
-	dataOrFile: string,
-	flags: CommandFlags<{
-		outFile: string;
-		fileMode: string;
-		force: boolean;
-	}> = {},
-	fromFile = false,
-) =>
-	cli.execute<TReturn>(["inject"], {
-		flags: { ...flags, inFile: fromFile ? dataOrFile : undefined },
-		json: false,
-		stdin: fromFile ? "" : dataOrFile,
-	});
+export const inject = {
+	/**
+	 * Inject secrets into and return the data
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+	 */
+	data: (input: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["inject"], {
+			flags,
+			json: false,
+			stdin: input,
+		}),
+
+	/**
+	 * Inject secrets into data and write the result to a file
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+	 */
+	toFile: (
+		input: string,
+		outFile: string,
+		flags: CommandFlags<{
+			fileMode: string;
+			force: boolean;
+		}> = {},
+	) =>
+		cli.execute<void>(["inject"], {
+			flags: { outFile, ...flags },
+			json: false,
+			stdin: input,
+		}),
+};
 
 // Section: Reading Secret References
 
@@ -97,7 +105,7 @@ export const read = {
 	) =>
 		cli.execute<string>(["read"], {
 			args: [reference],
-			flags: { ...flags, outFile: outputPath },
+			flags: { outFile: outputPath, ...flags },
 			json: false,
 		}),
 };
@@ -319,8 +327,8 @@ export const document = {
 		cli.execute<void>(["document", "get"], {
 			args: [nameOrId],
 			flags: {
-				...flags,
 				output: outputPath,
+				...flags,
 			},
 			json: false,
 		}),
@@ -365,10 +373,17 @@ export const eventsApi = {
 
 // Section: Connect
 
+export type ConnectServerState = "ACTIVE" | "REVOKED";
+
+export interface VaultClaim {
+	id: string;
+	acl: VaultPermisson[];
+}
+
 export interface ConnectServer {
 	id: string;
 	name: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: UserState;
 	created_at: string;
 	creator_id: string;
 	tokens_version: number;
@@ -377,11 +392,11 @@ export interface ConnectServer {
 export interface ConnectServerToken {
 	id: string;
 	name: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: ConnectServerState;
 	issuer: string;
 	audience: string;
-	features: string[]; // TODO: narrow array types, e.g. "vaultaccess"
-	vaults: []; // TODO: what goes in this array?
+	features: string[];
+	vaults: VaultClaim[];
 	created_at: string;
 	integration_id: string;
 }
@@ -394,18 +409,14 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-grant}
 		 */
 		grant: (
-			flags: CommandFlags<
-				{
-					allServers: boolean;
-					server: string;
-				},
-				{
-					group: string;
-				}
-			>,
+			group: string,
+			flags: CommandFlags<{
+				allServers: boolean;
+				server: string;
+			}> = {},
 		) =>
 			cli.execute<void>(["connect", "group", "grant"], {
-				flags,
+				flags: { group, ...flags },
 				json: false,
 			}),
 
@@ -415,18 +426,14 @@ export const connect = {
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-revoke}
 		 */
 		revoke: (
-			flags: CommandFlags<
-				{
-					allServers: boolean;
-					server: string;
-				},
-				{
-					group: string;
-				}
-			>,
+			group: string,
+			flags: CommandFlags<{
+				allServers: boolean;
+				server: string;
+			}> = {},
 		) =>
 			cli.execute<void>(["connect", "group", "revoke"], {
-				flags,
+				flags: { group, ...flags },
 				json: false,
 			}),
 	},
@@ -467,18 +474,10 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
 		 */
-		edit: (
-			nameOrId: string,
-			flags: CommandFlags<
-				{},
-				{
-					name: string;
-				}
-			>,
-		) =>
+		edit: (nameOrId: string, newName: string, flags: CommandFlags<{}> = {}) =>
 			cli.execute<string>(["connect", "server", "edit"], {
 				args: [nameOrId],
-				flags,
+				flags: { name: newName, ...flags },
 				json: false,
 			}),
 
@@ -512,19 +511,15 @@ export const connect = {
 		 */
 		create: (
 			name: string,
-			flags: CommandFlags<
-				{
-					expiresIn: string;
-					vaults: string[];
-				},
-				{
-					server: string;
-				}
-			>,
+			server: string,
+			flags: CommandFlags<{
+				expiresIn: string;
+				vaults: string[];
+			}> = {},
 		) =>
 			cli.execute<string>(["connect", "token", "create"], {
 				args: [name],
-				flags,
+				flags: { server, ...flags },
 				json: false,
 			}),
 
@@ -552,18 +547,14 @@ export const connect = {
 		 */
 		edit: (
 			token: string,
-			flags: CommandFlags<
-				{
-					server: string;
-				},
-				{
-					name: string;
-				}
-			>,
+			newName: string,
+			flags: CommandFlags<{
+				server: string;
+			}> = {},
 		) =>
 			cli.execute<void>(["connect", "token", "edit"], {
 				args: [token],
-				flags,
+				flags: { name: newName, ...flags },
 				json: false,
 			}),
 
@@ -588,17 +579,9 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
 		 */
-		grant: (
-			flags: CommandFlags<
-				{},
-				{
-					server: string;
-					vault: string;
-				}
-			>,
-		) =>
+		grant: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
 			cli.execute<void>(["connect", "vault", "grant"], {
-				flags,
+				flags: { server, vault, ...flags },
 				json: false,
 			}),
 
@@ -607,24 +590,15 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
 		 */
-		revoke: (
-			flags: CommandFlags<
-				{},
-				{
-					server: string;
-					vault: string;
-				}
-			>,
-		) =>
+		revoke: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
 			cli.execute<void>(["connect", "vault", "revoke"], {
-				flags,
+				flags: { server, vault, ...flags },
 				json: false,
 			}),
 	},
 };
 
 // Section: Items
-
 export type InputCategory =
 	| "Email Account"
 	| "Medical Record"
@@ -645,7 +619,10 @@ export type InputCategory =
 	| "Identity"
 	| "Login"
 	| "Secure Note"
-	| "Server";
+	| "Server"
+	// Disabled until CLI gets this category
+	// | "Crypto Wallet"
+	| "SSH Key";
 
 export type OutputCategory =
 	| "EMAIL_ACCOUNT"
@@ -667,7 +644,10 @@ export type OutputCategory =
 	| "IDENTITY"
 	| "LOGIN"
 	| "SECURE_NOTE"
-	| "SERVER";
+	| "SERVER"
+	// Disabled until CLI gets this category
+	// | "CRYPTO_WALLET"
+	| "SSH_KEY";
 
 export type PasswordStrength =
 	| "TERRIBLE"
@@ -678,6 +658,8 @@ export type PasswordStrength =
 	| "EXCELLENT"
 	| "FANTASTIC";
 
+// These are the possible field types you can
+// use to *create* an item
 export type FieldAssignmentType =
 	| "concealed"
 	| "text"
@@ -688,6 +670,48 @@ export type FieldAssignmentType =
 	| "phone"
 	// Used for deleting a field
 	| "delete";
+
+// These are the possible field types you can
+// use when querying fields by type
+export type QueryFieldType =
+	| "string"
+	| "concealed"
+	| "date"
+	| "phone"
+	| "address"
+	| "URL"
+	| "email"
+	| "monthYear"
+	| "gender"
+	| "cctype"
+	| "ccnum"
+	| "reference"
+	| "menu"
+	| "month"
+	| "OTP"
+	| "file"
+	| "sshKey";
+
+// These are the possible field types that can be
+// returned on a item's field
+export type ResponseFieldType =
+	| "UNKNOWN"
+	| "ADDRESS"
+	| "CONCEALED"
+	| "CREDIT_CARD_NUMBER"
+	| "CREDIT_CARD_TYPE"
+	| "DATE"
+	| "EMAIL"
+	| "GENDER"
+	| "MENU"
+	| "MONTH_YEAR"
+	| "OTP"
+	| "PHONE"
+	| "REFERENCE"
+	| "STRING"
+	| "URL"
+	| "FILE"
+	| "SSHKEY";
 
 export type FieldPurpose = "USERNAME" | "PASSWORD" | "NOTE";
 
@@ -702,23 +726,7 @@ export interface FieldLabelSelector {
 	label?: string[];
 }
 export interface FieldTypeSelector {
-	type?: (
-		| "address"
-		| "concealed"
-		| "creditcardnumber"
-		| "creditcardtype"
-		| "date"
-		| "email"
-		| "file"
-		| "gender"
-		| "menu"
-		| "monthyear"
-		| "otp"
-		| "phone"
-		| "reference"
-		| "string"
-		| "url"
-	)[];
+	type?: QueryFieldType[];
 }
 
 export interface Section {
@@ -727,7 +735,7 @@ export interface Section {
 
 interface BaseField {
 	id: string;
-	type: string;
+	type: ResponseFieldType;
 	label: string;
 	reference?: string;
 	section?: Section;
@@ -949,7 +957,7 @@ export const item = {
 	) =>
 		cli.execute<string>(["item", "get"], {
 			args: [nameOrIdOrLink],
-			flags: { ...flags, otp: true },
+			flags: { otp: true, ...flags },
 			json: false,
 		}),
 
@@ -967,7 +975,7 @@ export const item = {
 	) =>
 		cli.execute<string>(["item", "get"], {
 			args: [nameOrIdOrLink],
-			flags: { ...flags, shareLink: true },
+			flags: { shareLink: true, ...flags },
 			json: false,
 		}),
 
@@ -1135,7 +1143,7 @@ export interface VaultGroup {
 	id: string;
 	name: string;
 	description: string;
-	state: string; // TODO: narrow types, e.g. "ACTIVE"
+	state: GroupState;
 	created_at: string;
 	permissions: VaultPermisson[];
 }
@@ -1230,7 +1238,7 @@ export const vault = {
 			}> = {},
 		) =>
 			cli.execute<VaultGroupAccess>(["vault", "group", "grant"], {
-				flags,
+				flags: { noInput: true, ...flags },
 			}),
 
 		/**
@@ -1246,7 +1254,7 @@ export const vault = {
 			}> = {},
 		) =>
 			cli.execute<VaultGroupAccess>(["vault", "group", "revoke"], {
-				flags,
+				flags: { noInput: true, ...flags },
 			}),
 
 		/**
@@ -1273,7 +1281,10 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) => cli.execute<VaultUserAccess>(["vault", "user", "grant"], { flags }),
+		) =>
+			cli.execute<VaultUserAccess>(["vault", "user", "grant"], {
+				flags: { noInput: true, ...flags },
+			}),
 
 		/**
 		 * Revoke a user's permissions in a vault, in part or in full
@@ -1286,7 +1297,10 @@ export const vault = {
 				permissions: VaultPermisson[];
 				vault: string;
 			}> = {},
-		) => cli.execute<VaultUserAccess>(["vault", "user", "revoke"], { flags }),
+		) =>
+			cli.execute<VaultUserAccess>(["vault", "user", "revoke"], {
+				flags: { noInput: true, ...flags },
+			}),
 
 		/**
 		 * List all users with access to the vault and their permissions
@@ -1337,17 +1351,25 @@ export type AbbreviatedUser = Pick<
 
 export const user = {
 	/**
-	 * Confirm users who have accepted their invitation to the 1Password account.
+	 * Confirm a user who has accepted their invitation to the 1Password account.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirm: (
-		emailOrNameOrId: string,
-		flags: CommandFlags<{ all: boolean }> = {},
-	) =>
+	confirm: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
 		cli.execute<void>(["user", "confirm"], {
 			args: [emailOrNameOrId],
 			flags,
+			json: false,
+		}),
+
+	/**
+	 * Confirm all users who have accepted their invitation to the 1Password account.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
+	 */
+	confirmAll: (flags: CommandFlags<{}> = {}) =>
+		cli.execute<void>(["user", "confirm"], {
+			flags: { all: true, ...flags },
 			json: false,
 		}),
 
@@ -1384,18 +1406,42 @@ export const user = {
 	/**
 	 * Get details about a user.
 	 *
-	 * Omit the first param and set the `me` flag to get details about the current user.
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	get: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
+
+	/**
+	 * Get details about the current user.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	get: (
-		emailOrNameOrId: string | null,
-		flags: CommandFlags<{
-			fingerprint: boolean;
-			publicKey: boolean;
-			me: boolean;
-		}> = {},
-	) => cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
+	me: (flags: CommandFlags<{}> = {}) =>
+		cli.execute<User>(["user", "get"], { flags: { me: true, ...flags } }),
+
+	/**
+	 * Get the user's public key fingerprint.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["user", "get"], {
+			args: [emailOrNameOrId],
+			flags: { fingerprint: true, ...flags },
+			json: false,
+		}),
+
+	/**
+	 * Get the user's public key.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+	 */
+	publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+		cli.execute<string>(["user", "get"], {
+			args: [emailOrNameOrId],
+			flags: { publicKey: true, ...flags },
+			json: false,
+		}),
 
 	/**
 	 * List users.
@@ -1415,16 +1461,15 @@ export const user = {
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
 	 */
 	provision: (
-		flags: CommandFlags<
-			{
-				language: string;
-			},
-			{
-				email: string;
-				name: string;
-			}
-		>,
-	) => cli.execute<User>(["user", "provision"], { flags }),
+		email: string,
+		name: string,
+		flags: CommandFlags<{
+			language: string;
+		}>,
+	) =>
+		cli.execute<User>(["user", "provision"], {
+			flags: { email, name, ...flags },
+		}),
 
 	/**
 	 * Reactivate a suspended user.
@@ -1466,7 +1511,8 @@ export type GroupType =
 	| "RECOVERY"
 	| "TEAM_MEMBERS"
 	| "USER_DEFINED"
-	| "UNKNOWN_TYPE";
+	| "UNKNOWN_TYPE"
+	| "SECURITY";
 
 export interface Group {
 	id: string;

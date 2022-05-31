@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { setCommandLogger, setGlobalFlags } from "./src";
+import { setGlobalFlags } from "./src";
 
 declare global {
 	namespace jest {
@@ -35,10 +35,6 @@ if (process.env.npm_lifecycle_event === "test:integration") {
 			);
 		}
 	}
-
-	setCommandLogger((message) =>
-		process.stdout.write(`\nCommand used:\n\u001B[93m${message}\u001B[39m\n`),
-	);
 
 	setGlobalFlags({
 		account: process.env.OP_ACCOUNT,
