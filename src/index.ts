@@ -248,7 +248,7 @@ export const document = {
 		fromFile = false,
 	) =>
 		cli.execute<CreatedDocument>(["document", "create"], {
-			args: [fromFile ? dataOrFile : "-"],
+			args: [fromFile ? dataOrFile : ""],
 			flags,
 			stdin: fromFile ? "" : dataOrFile,
 		}),
@@ -288,7 +288,7 @@ export const document = {
 		fromFile = false,
 	) =>
 		cli.execute<void>(["document", "edit"], {
-			args: [nameOrId, fromFile ? dataOrFile : "-"],
+			args: [nameOrId, fromFile ? dataOrFile : ""],
 			flags,
 			stdin: fromFile ? "" : dataOrFile,
 		}),
@@ -859,7 +859,6 @@ export const item = {
 		}> = {},
 	) =>
 		cli.execute<Item>(["item", "create"], {
-			args: ["-"],
 			flags,
 			// NOTE: There is an issue in the CLI that prevents us from using field assignments
 			// in `item create` through Node. I don't know what it is or why it's so specific,
