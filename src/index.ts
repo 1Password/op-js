@@ -208,6 +208,23 @@ export const account = {
 		}),
 };
 
+// Section: Who Am I
+
+export const whoami = (): ListAccount | null => {
+	try {
+		return cli.execute<ListAccount>(["whoami"]);
+	} catch (error) {
+		if (
+			error instanceof Error &&
+			error.message.includes("no signed in accounts")
+		) {
+			return null;
+		} else {
+			throw error;
+		}
+	}
+};
+
 // Section: Documents
 
 export interface Document {
