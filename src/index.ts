@@ -857,19 +857,15 @@ export const item = {
 			url: string;
 			vault: string;
 		}> = {},
-	) => {
-		const { category, ...otherFlags } = flags;
-
-		return cli.execute<Item>(["item", "create"], {
+	) =>
+		cli.execute<Item>(["item", "create"], {
 			args: ["-"],
-			// @ts-expect-error - Temporary fix
-			flags: otherFlags,
+			flags,
 			// NOTE: There is an issue in the CLI that prevents us from using field assignments
 			// in `item create` through Node. I don't know what it is or why it's so specific,
 			// but until then we will need to pipe in the fields as a JSON object. This does not
 			// appear to impact `item edit`.
 			stdin: JSON.stringify({
-				category: category.toUpperCase(),
 				fields: assignments.map(([label, type, value, purpose]) => {
 					const data = {
 						label,
@@ -884,8 +880,7 @@ export const item = {
 					return data;
 				}),
 			}),
-		});
-	},
+		}),
 
 	/**
 	 * Permanently delete an item.
