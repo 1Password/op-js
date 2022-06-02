@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+.husky/_/husky.sh
+1password-credentials.json
+.env
+dist/
+licenses/

@@ -1,0 +1,59 @@
+{
+	"name": "@1password/op-js",
+	"version": "0.1.0",
+	"description": "A typed JS wrapper for the 1Password CLI",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist/index.js",
+		"dist/index.d.ts"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/1Password/op-js"
+	},
+	"license": "MIT",
+	"scripts": {
+		"build": "license-checker-rseidelsohn --direct --files licenses && yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
+		"compile": "esbuild --bundle --platform=node --outdir=dist src/index.js",
+		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
+		"prepare": "husky install",
+		"prettier": "prettier --check 'src/*.ts'",
+		"test:unit": "jest --testMatch '<rootDir>/src/*.test.ts'",
+		"test:integration": "jest --testMatch '<rootDir>/tests/*.test.ts' --setupFilesAfterEnv '<rootDir>/jest.setup.ts'",
+		"typecheck": "tsc -p tsconfig.release.json --noEmit",
+		"watch": "yarn compile --watch"
+	},
+	"prettier": "@1password/front-end-style/prettierrc.json",
+	"lint-staged": {
+		"src/*.ts": [
+			"prettier --write",
+			"eslint -c .eslintrc.json --fix"
+		]
+	},
+	"devDependencies": {
+		"@1password/front-end-style": "^6.0.0",
+		"@types/jest": "^27.4.1",
+		"@types/node": "^17.0.23",
+		"@types/semver": "^7.3.9",
+		"@typescript-eslint/eslint-plugin": "^5.17.0",
+		"esbuild": "^0.14.29",
+		"eslint-plugin-jsdoc": "^38.1.4",
+		"eslint-plugin-no-unsanitized": "^4.0.1",
+		"eslint-plugin-prettier": "^4.0.0",
+		"eslint-plugin-sonarjs": "^0.13.0",
+		"eslint-plugin-unicorn": "^40.1.0",
+		"husky": "^7.0.4",
+		"jest": "^27.5.1",
+		"joi": "^17.6.0",
+		"license-checker-rseidelsohn": "^3.1.0",
+		"lint-staged": "^12.3.7",
+		"prettier-plugin-organize-imports": "^2.3.4",
+		"ts-jest": "^27.1.4",
+		"typescript": "^4.6.3"
+	},
+	"dependencies": {
+		"lookpath": "^1.2.2",
+		"semver": "^7.3.6"
+	}
+}

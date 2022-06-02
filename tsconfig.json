@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "AMD",
+		"allowJs": true,
+		"esModuleInterop": true,
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"noImplicitAny": false,
+		"baseUrl": ".",
+		"types": [
+			"node",
+			"jest"
+		],
+	},
+	"include": [
+		"jest.setup.ts",
+		"src/*.ts",
+		"tests/*.ts"
+	],
+}
