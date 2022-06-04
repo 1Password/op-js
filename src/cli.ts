@@ -17,6 +17,56 @@ export type FlagValue =
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
 
+export class ValidationError extends Error {
+	public constructor(
+		type: "not-found" | "version",
+		public requiredVersion?: string,
+		public currentVersion?: string,
+	) {
+		let message: string;
+		switch (type) {
+			case "not-found":
+				message = "Could not find `op` executable";
+				break;
+			case "version":
+				message = `CLI version ${currentVersion} does not satisfy required version ${requiredVersion}`;
+				break;
+		}
+
+		super(message);
+		this.name = "ValidationError";
+	}
+}
+
+export class ExecutionError extends Error {
+	public constructor(message: string, public status: number) {
+		super(message);
+		this.name = "ExecutionError";
+	}
+}
+
+export class CLIError extends ExecutionError {
+	static errorRegex = /\[ERROR] (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (.+)/;
+	public timestamp?: Date;
+
+	public constructor(public originalMessage: string, status: number) {
+		const errorMatch = originalMessage.match(CLIError.errorRegex);
+		let parsedMessage: string;
+		let parsedTimestamp: Date;
+
+		if (errorMatch) {
+			parsedMessage = errorMatch[2];
+			parsedTimestamp = new Date(errorMatch[1]);
+		} else {
+			parsedMessage = "Unknown error";
+		}
+
+		super(parsedMessage, status);
+		this.name = "CLIError";
+		this.timestamp = parsedTimestamp;
+	}
+}
+
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
@@ -79,7 +129,7 @@ export class CLI {
 		const cliExists = !!(await lookpath("op"));
 
 		if (!cliExists) {
-			throw new Error("Could not locate op CLI");
+			throw new ValidationError("not-found");
 		}
 
 		const version = this.getVersion();
@@ -87,9 +137,7 @@ export class CLI {
 		const semVersion = semverCoerce(version);
 
 		if (!semverSatisfies(semVersion, requiredVersion)) {
-			throw new Error(
-				`CLI version ${version} does not satisfy version requirement of ${CLI.recommendedVersion}`,
-			);
+			throw new ValidationError("version", requiredVersion, version);
 		}
 	}
 
@@ -140,21 +188,21 @@ export class CLI {
 			);
 		}
 
-		const result = spawnSync("op", command, {
+		const { status, error, stdout, stderr } = spawnSync("op", command, {
 			stdio: "pipe",
 			input,
 		});
 
-		if (result.error) {
-			throw result.error;
+		if (error) {
+			throw new ExecutionError(error.message, status);
 		}
 
-		const stderr = result.stderr.toString();
-		if (stderr.length > 0) {
-			throw new Error(stderr);
+		const cliError = stderr.toString();
+		if (cliError.length > 0) {
+			throw new CLIError(cliError, status);
 		}
 
-		const output = result.stdout.toString().trim();
+		const output = stdout.toString().trim();
 
 		if (output.length === 0) {
 			return;

@@ -4,9 +4,12 @@ import {
 	camelToHyphen,
 	CLI,
 	cli,
+	CLIError,
 	createFieldAssignment,
 	createFlags,
+	ExecutionError,
 	parseFlagValue,
+	ValidationError,
 } from "./cli";
 
 jest.mock("child_process");
@@ -54,6 +57,65 @@ export const executeSpy = (
 		response,
 	};
 };
+
+describe("ValidationError", () => {
+	describe("not-found", () => {
+		it("sets the correct message", () => {
+			const error = new ValidationError("not-found");
+			expect(error.message).toBe("Could not find `op` executable");
+		});
+	});
+
+	describe("version", () => {
+		const requiredVersion = "3.2.1";
+		const currentVersion = "1.2.3";
+
+		it("sets the correct message", () => {
+			const error = new ValidationError(
+				"version",
+				requiredVersion,
+				currentVersion,
+			);
+			expect(error.message).toBe(
+				`CLI version ${currentVersion} does not satisfy required version ${requiredVersion}`,
+			);
+		});
+
+		it("attaches the current and required versions", () => {
+			const error = new ValidationError(
+				"version",
+				requiredVersion,
+				currentVersion,
+			);
+			expect(error.requiredVersion).toBe(requiredVersion);
+			expect(error.currentVersion).toBe(currentVersion);
+		});
+	});
+});
+
+describe("CLIError", () => {
+	const dateTime = "2022/06/04 17:59:15";
+	const message = "authorization prompt dismissed, please try again";
+
+	it("attaches the status code", () => {
+		const error = new CLIError("", 1);
+		expect(error.status).toBe(1);
+	});
+
+	it("parses an error message from op CLI", () => {
+		const error = new CLIError(`[ERROR] ${dateTime} ${message}`, 1);
+		expect(error.timestamp).toEqual(new Date(dateTime));
+		expect(error.message).toEqual(message);
+	});
+
+	it("gracefully handles not being able to parse op error", () => {
+		const invalidError = "invalid error";
+		const error = new CLIError(invalidError, 1);
+		expect(error.timestamp).toBeUndefined();
+		expect(error.message).toEqual("Unknown error");
+		expect(error.originalMessage).toEqual(invalidError);
+	});
+});
 
 describe("camelToHyphen", () => {
 	it("converts camel case to hyphens", () => {
@@ -126,7 +188,7 @@ describe("cli", () => {
 				.mockResolvedValue(undefined);
 
 			await expect(cli.validate()).rejects.toEqual(
-				new Error("Could not locate op CLI"),
+				new ValidationError("not-found"),
 			);
 
 			lookpathSpy.mockRestore();
@@ -145,9 +207,7 @@ describe("cli", () => {
 				});
 
 			await expect(cli.validate()).rejects.toEqual(
-				new Error(
-					`CLI version 1.0.0 does not satisfy version requirement of ${CLI.recommendedVersion}`,
-				),
+				new ValidationError("version", CLI.recommendedVersion, "1.0.0"),
 			);
 
 			lookpathSpy.mockRestore();
@@ -269,14 +329,16 @@ describe("cli", () => {
 		});
 
 		it("throws if there's an error", () => {
-			const error = new Error("bar");
-			expect(() => executeSpy([["foo"]], { error })).toThrowError(error);
+			const message = "bar";
+			expect(() =>
+				executeSpy([["foo"]], { error: new Error(message) }),
+			).toThrowError(new ExecutionError(message, 0));
 		});
 
 		it("throws if there's a stderr", () => {
 			const stderr = "bar";
 			expect(() => executeSpy([["foo"]], { stderr })).toThrowError(
-				new Error(stderr),
+				new CLIError(stderr, 0),
 			);
 		});
 
