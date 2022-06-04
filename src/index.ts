@@ -267,7 +267,7 @@ export const document = {
 		cli.execute<CreatedDocument>(["document", "create"], {
 			args: [fromFile ? dataOrFile : ""],
 			flags,
-			stdin: fromFile ? "" : dataOrFile,
+			stdin: fromFile ? undefined : dataOrFile,
 		}),
 
 	/**
@@ -307,7 +307,7 @@ export const document = {
 		cli.execute<void>(["document", "edit"], {
 			args: [nameOrId, fromFile ? dataOrFile : ""],
 			flags,
-			stdin: fromFile ? "" : dataOrFile,
+			stdin: fromFile ? undefined : dataOrFile,
 		}),
 
 	/**
@@ -881,7 +881,7 @@ export const item = {
 			// in `item create` through Node. I don't know what it is or why it's so specific,
 			// but until then we will need to pipe in the fields as a JSON object. This does not
 			// appear to impact `item edit`.
-			stdin: JSON.stringify({
+			stdin: {
 				fields: assignments.map(([label, type, value, purpose]) => {
 					const data = {
 						label,
@@ -895,7 +895,7 @@ export const item = {
 
 					return data;
 				}),
-			}),
+			},
 		}),
 
 	/**

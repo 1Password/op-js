@@ -98,15 +98,16 @@ export class CLI {
 		{
 			args = [],
 			flags = {},
-			stdin = "",
+			stdin,
 			json = true,
 		}: {
 			args?: (string | null | FieldAssignment)[];
 			flags?: Flags;
-			stdin?: string;
+			stdin?: string | Record<string, any>;
 			json?: boolean;
 		} = {},
 	): TData {
+		let input: NodeJS.ArrayBufferView;
 		command = command.map((part) => sanitizeInput(part));
 
 		for (const arg of args) {
@@ -133,10 +134,16 @@ export class CLI {
 			}),
 		];
 
+		if (stdin) {
+			input = Buffer.from(
+				typeof stdin === "string" ? stdin : JSON.stringify(stdin),
+			);
+		}
+
 		const result = spawnSync("op", command, {
 			shell: true,
 			stdio: "pipe",
-			input: stdin,
+			input,
 		});
 
 		if (result.error) {
