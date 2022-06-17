@@ -21,7 +21,7 @@ const expectOpCommand = (
 	expected: string,
 ): void => {
 	const actual = `${received.call[0]} ${received.call[1].join(" ")}`;
-	expected = `op ${expected} --format="json"`;
+	expected = `op ${expected} --format=json`;
 
 	expect(actual).toBe(expected);
 };
@@ -67,11 +67,11 @@ describe("camelToHyphen", () => {
 
 describe("parseFlagValue", () => {
 	it("parses string type values", () => {
-		expect(parseFlagValue("foo")).toEqual('="foo"');
+		expect(parseFlagValue("foo")).toEqual("=foo");
 	});
 
 	it("parses string array type values", () => {
-		expect(parseFlagValue(["foo", "bar"])).toEqual('="foo,bar"');
+		expect(parseFlagValue(["foo", "bar"])).toEqual("=foo,bar");
 	});
 
 	it("parses boolean type values", () => {
@@ -83,7 +83,7 @@ describe("parseFlagValue", () => {
 			parseFlagValue({
 				type: ["OTP"],
 			}),
-		).toEqual('="type=OTP"');
+		).toEqual("=type=OTP");
 	});
 
 	it("parses label field selector values", () => {
@@ -91,29 +91,29 @@ describe("parseFlagValue", () => {
 			parseFlagValue({
 				label: ["username", "password"],
 			}),
-		).toEqual('="label=username,label=password"');
+		).toEqual("=label=username,label=password");
 	});
 });
 
 describe("createFlags", () => {
 	it("creates flags from a flag object", () => {
-		expect(createFlags({ someFlag: "foo" })).toEqual(['--some-flag="foo"']);
+		expect(createFlags({ someFlag: "foo" })).toEqual(["--some-flag=foo"]);
 	});
 
 	it("ignores null and falsey values", () => {
 		expect(
 			createFlags({ someFlag: "foo", anotherFlag: false, andAnother: null }),
-		).toEqual(['--some-flag="foo"']);
+		).toEqual(["--some-flag=foo"]);
 	});
 });
 
 describe("createFieldAssignment", () => {
 	it("creates a field assignment from a field assignment object", () => {
 		expect(createFieldAssignment(["username", "text", "foo"])).toEqual(
-			'"username[text]=foo"',
+			"username[text]=foo",
 		);
 		expect(createFieldAssignment(["password", "concealed", "abc123"])).toEqual(
-			'"password[concealed]=abc123"',
+			"password[concealed]=abc123",
 		);
 	});
 });
@@ -224,7 +224,7 @@ describe("cli", () => {
 			]);
 			expectOpCommand(
 				execute,
-				`example command "howdy" --foo="bar" --lorem --howdy="dolor,sit"`,
+				`example command howdy --foo=bar --lorem --howdy=dolor,sit`,
 			);
 		});
 
@@ -240,7 +240,7 @@ describe("cli", () => {
 			]);
 			expectOpCommand(
 				execute,
-				`foo "username[text]=foo" "password[concealed]=abc123"`,
+				`foo username[text]=foo password[concealed]=abc123`,
 			);
 		});
 
@@ -252,7 +252,7 @@ describe("cli", () => {
 					flags: { $lorem: "`ipsum`" },
 				},
 			]);
-			expectOpCommand(execute, `\\"foo "bar\\"" --\\$lorem="\\\`ipsum\\\`"`);
+			expectOpCommand(execute, `\\"foo bar\\" --\\$lorem=\\\`ipsum\\\``);
 		});
 
 		it("sanitizes field assignments", () => {
@@ -265,7 +265,7 @@ describe("cli", () => {
 					],
 				},
 			]);
-			expectOpCommand(execute, `foo "\\$username[\\'text\\']=\\\\foo"`);
+			expectOpCommand(execute, `foo \\$username[\\'text\\']=\\\\foo`);
 		});
 
 		it("throws if there's an error", () => {
@@ -303,10 +303,7 @@ describe("cli", () => {
 			};
 
 			const execute = executeSpy([["foo"]]);
-			expectOpCommand(
-				execute,
-				`foo --account="my.b5test.com" --iso-timestamps`,
-			);
+			expectOpCommand(execute, `foo --account=my.b5test.com --iso-timestamps`);
 		});
 	});
 });

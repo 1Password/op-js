@@ -25,11 +25,11 @@ export const sanitizeInput = (str: string) =>
 
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {
-		return `="${sanitizeInput(value)}"`;
+		return `=${sanitizeInput(value)}`;
 	}
 
 	if (Array.isArray(value)) {
-		return `="${value.join(",")}"`;
+		return `=${value.join(",")}`;
 	}
 
 	if (typeof value === "object") {
@@ -44,7 +44,7 @@ export const parseFlagValue = (value: FlagValue) => {
 		}
 
 		if (fields.length > 0) {
-			return `="${sanitizeInput(fields)}"`;
+			return `=${sanitizeInput(fields)}`;
 		}
 	}
 
@@ -65,7 +65,7 @@ export const createFieldAssignment = ([
 	type,
 	value,
 ]: FieldAssignment): string =>
-	`"${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}"`;
+	`${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}`;
 
 export class CLI {
 	public static recommendedVersion = ">=2.4.0";
@@ -112,7 +112,7 @@ export class CLI {
 
 		for (const arg of args) {
 			if (typeof arg === "string") {
-				command.push(`"${sanitizeInput(arg)}"`);
+				command.push(sanitizeInput(arg));
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
 				command.push(createFieldAssignment(arg));
@@ -141,7 +141,6 @@ export class CLI {
 		}
 
 		const result = spawnSync("op", command, {
-			shell: true,
 			stdio: "pipe",
 			input,
 		});
