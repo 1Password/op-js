@@ -84,6 +84,7 @@ There are roughly 70 commands available for use, so you're encouraged to check o
 - `vault` - Manage account vaults
 - `user` - Manage account users
 - `group` - Manage groups and their users
+- `whoami` - Get details about the authenticated account
 
 ## License
 
