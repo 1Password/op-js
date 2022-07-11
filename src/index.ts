@@ -1,4 +1,4 @@
-import { cli, Flags } from "./cli";
+import { cli, ClientInfo, Flags } from "./cli";
 
 type CommandFlags<TOptional extends Flags = {}> = Partial<
 	TOptional & GlobalFlags
@@ -22,6 +22,14 @@ export interface GlobalFlags {
 	isoTimestamps: boolean;
 	sessionToken: string;
 }
+
+/**
+ * Set user agent information passed to the CLI.
+ *
+ * Note: this is intended for internal usage; using could result in unexpected behaviour
+ */
+export const setClientInfo = (clientInfo: ClientInfo) =>
+	cli.setClientInfo(clientInfo);
 
 /**
  * Set any of the {@link GlobalFlags} on the CLI command.

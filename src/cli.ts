@@ -2,6 +2,7 @@ import { spawnSync } from "child_process";
 import { lookpath } from "lookpath";
 import semverCoerce from "semver/functions/coerce";
 import semverSatisfies from "semver/functions/satisfies";
+import { version } from "../package.json";
 import {
 	FieldAssignment,
 	FieldLabelSelector,
@@ -16,6 +17,12 @@ export type FlagValue =
 	| FieldLabelSelector
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
+
+export interface ClientInfo {
+	name: string;
+	id: string;
+	build: string;
+}
 
 export class ValidationError extends Error {
 	public constructor(
@@ -67,6 +74,12 @@ export class CLIError extends ExecutionError {
 	}
 }
 
+export const semverToInt = (input: string) =>
+	input
+		.split(".")
+		.map((n) => n.padStart(2, "0"))
+		.join("");
+
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
@@ -117,9 +130,20 @@ export const createFieldAssignment = ([
 ]: FieldAssignment): string =>
 	`${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}`;
 
+export const defaultClientInfo: ClientInfo = {
+	name: "1Password for JavaScript",
+	id: "JS",
+	build: semverToInt(version),
+};
+
 export class CLI {
 	public static recommendedVersion = ">=2.4.0";
+	public clientInfo: ClientInfo = defaultClientInfo;
 	public globalFlags: Partial<GlobalFlags> = {};
+
+	public setClientInfo(clientInfo: ClientInfo) {
+		this.clientInfo = clientInfo;
+	}
 
 	public getVersion(): string {
 		return this.execute<string>([], { flags: { version: true }, json: false });
@@ -191,6 +215,11 @@ export class CLI {
 		const { status, error, stdout, stderr } = spawnSync("op", command, {
 			stdio: "pipe",
 			input,
+			env: {
+				OP_INTEGRATION_NAME: this.clientInfo.name,
+				OP_INTEGRATION_ID: this.clientInfo.id,
+				OP_INTEGRATION_BUILDNUMBER: this.clientInfo.build,
+			},
 		});
 
 		if (error) {
