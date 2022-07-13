@@ -216,6 +216,7 @@ export class CLI {
 			stdio: "pipe",
 			input,
 			env: {
+				...process.env,
 				OP_INTEGRATION_NAME: this.clientInfo.name,
 				OP_INTEGRATION_ID: this.clientInfo.id,
 				OP_INTEGRATION_BUILDNUMBER: this.clientInfo.build,

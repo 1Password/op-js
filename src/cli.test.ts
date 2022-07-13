@@ -212,11 +212,13 @@ describe("cli", () => {
 			cli.setClientInfo(clientInfo);
 
 			const execute = executeSpy([["foo"]]);
-			expect(execute.call[2].env).toEqual({
-				OP_INTEGRATION_NAME: clientInfo.name,
-				OP_INTEGRATION_ID: clientInfo.id,
-				OP_INTEGRATION_BUILDNUMBER: clientInfo.build,
-			});
+			expect(execute.call[2].env).toEqual(
+				expect.objectContaining({
+					OP_INTEGRATION_NAME: clientInfo.name,
+					OP_INTEGRATION_ID: clientInfo.id,
+					OP_INTEGRATION_BUILDNUMBER: clientInfo.build,
+				}),
+			);
 
 			// Reset client info
 			cli.setClientInfo(defaultClientInfo);
@@ -400,11 +402,13 @@ describe("cli", () => {
 
 		it("passes in user agent env vars, using default client info", () => {
 			const execute = executeSpy([["foo"]]);
-			expect(execute.call[2].env).toEqual({
-				OP_INTEGRATION_NAME: defaultClientInfo.name,
-				OP_INTEGRATION_ID: defaultClientInfo.id,
-				OP_INTEGRATION_BUILDNUMBER: defaultClientInfo.build,
-			});
+			expect(execute.call[2].env).toEqual(
+				expect.objectContaining({
+					OP_INTEGRATION_NAME: defaultClientInfo.name,
+					OP_INTEGRATION_ID: defaultClientInfo.id,
+					OP_INTEGRATION_BUILDNUMBER: defaultClientInfo.build,
+				}),
+			);
 		});
 	});
 
