@@ -7,8 +7,10 @@ import {
 	CLIError,
 	createFieldAssignment,
 	createFlags,
+	defaultClientInfo,
 	ExecutionError,
 	parseFlagValue,
+	semverToInt,
 	ValidationError,
 } from "./cli";
 
@@ -17,9 +19,19 @@ jest.mock("lookpath");
 
 const fakeOpPath = "/path/to/op";
 
+type cliCallArgs = [
+	string,
+	string[],
+	{
+		stdio: string;
+		input: string;
+		env: Record<string, string>;
+	},
+];
+
 const expectOpCommand = (
 	received: {
-		call: [string, string[]];
+		call: cliCallArgs;
 	},
 	expected: string,
 ): void => {
@@ -49,7 +61,7 @@ export const executeSpy = (
 
 	const response = cli.execute(...params);
 	const spy = child_process.spawnSync as jest.Mock;
-	const call = spy.mock.calls[0] as [string, string[]];
+	const call = spy.mock.calls[0] as cliCallArgs;
 	spy.mockReset();
 
 	return {
@@ -117,6 +129,15 @@ describe("CLIError", () => {
 	});
 });
 
+describe("semverToInt", () => {
+	it("converts a semver string to build number", () => {
+		expect(semverToInt("0.1.2")).toBe("000102");
+		expect(semverToInt("1.2.3")).toBe("010203");
+		expect(semverToInt("12.2.39")).toBe("120239");
+		expect(semverToInt("2.1.284")).toBe("0201284");
+	});
+});
+
 describe("camelToHyphen", () => {
 	it("converts camel case to hyphens", () => {
 		expect(camelToHyphen("someFlag")).toEqual("some-flag");
@@ -181,6 +202,27 @@ describe("createFieldAssignment", () => {
 });
 
 describe("cli", () => {
+	describe("setClientInfo", () => {
+		it("allows you to specify custom user agent details", () => {
+			const clientInfo = {
+				name: "foo-bar",
+				id: "FOO",
+				build: "120239",
+			};
+			cli.setClientInfo(clientInfo);
+
+			const execute = executeSpy([["foo"]]);
+			expect(execute.call[2].env).toEqual({
+				OP_INTEGRATION_NAME: clientInfo.name,
+				OP_INTEGRATION_ID: clientInfo.id,
+				OP_INTEGRATION_BUILDNUMBER: clientInfo.build,
+			});
+
+			// Reset client info
+			cli.setClientInfo(defaultClientInfo);
+		});
+	});
+
 	describe("validate", () => {
 		it("throws an error when the op cli is not found", async () => {
 			const lookpathSpy = jest
@@ -354,6 +396,15 @@ describe("cli", () => {
 				stdout: message,
 			});
 			expect(execute.response).toEqual(message);
+		});
+
+		it("passes in user agent env vars, using default client info", () => {
+			const execute = executeSpy([["foo"]]);
+			expect(execute.call[2].env).toEqual({
+				OP_INTEGRATION_NAME: defaultClientInfo.name,
+				OP_INTEGRATION_ID: defaultClientInfo.id,
+				OP_INTEGRATION_BUILDNUMBER: defaultClientInfo.build,
+			});
 		});
 	});
 
