@@ -751,9 +751,9 @@
   integrity sha512-ReVR2rLTV1kvtlWFyuot+d1pkpG2Fw/XKE3PDAdj57rbM97ttSp9JZ2UsP+2EHTylra9cUf6JA7tGwW1INzUrA==
 
 "@types/semver@^7.3.9":
-  version "7.3.10"
-  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.10.tgz#5f19ee40cbeff87d916eedc8c2bfe2305d957f73"
-  integrity sha512-zsv3fsC7S84NN6nPK06u79oWgrPVd0NvOyqgghV1haPaFcVxIrP4DLomRwGAXk0ui4HZA7mOcSFL98sMVW9viw==
+  version "7.3.12"
+  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.3.12.tgz#920447fdd78d76b19de0438b7f60df3c4a80bf1c"
+  integrity sha512-WwA1MW0++RfXmCr12xeYOOC5baSC9mSb0ZqCquFzKhcoF4TvHu5MKOuXsncgZcpVFhB1pXd5hZmM0ryAoCp12A==
 
 "@types/stack-utils@^2.0.0":
   version "2.0.1"
@@ -2043,10 +2043,10 @@ eslint-plugin-sonarjs@^0.10.0:
   resolved "https://registry.yarnpkg.com/eslint-plugin-sonarjs/-/eslint-plugin-sonarjs-0.10.0.tgz#2b520c6d0dbdecbea98cd82f5cb84fc5c3d2b954"
   integrity sha512-FBRIBmWQh2UAfuLSnuYEfmle33jIup9hfkR0X8pkfjeCKNpHUG8qyZI63ahs3aw8CJrv47QJ9ccdK3ZxKH016A==
 
-eslint-plugin-sonarjs@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-sonarjs/-/eslint-plugin-sonarjs-0.14.0.tgz#112d159ba7516a2a69bb1a6d6cab782e23bca259"
-  integrity sha512-0X0q3fB8ghppms19cR2oIK2ajoFp7DEy3AVGDqO7WX02r1aWOzkrHa+veatGZw+R7amgBvfcF0qHCG66p9Zoag==
+eslint-plugin-sonarjs@^0.15.0:
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-sonarjs/-/eslint-plugin-sonarjs-0.15.0.tgz#f9c904f143f4e2336f2923be08399b32b5bd2781"
+  integrity sha512-LuxHdAe6VqSbi1phsUvNjbmXLuvlobmryQJJNyQYbdubCfz6K8tmgoqNiJPnz0pP2AbYDbtuPm0ajOMgMrC+dQ==
 
 eslint-plugin-unicorn@^22.0.0:
   version "22.0.0"
