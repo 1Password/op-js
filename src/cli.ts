@@ -137,7 +137,7 @@ export const defaultClientInfo: ClientInfo = {
 };
 
 export class CLI {
-	public static recommendedVersion = ">=2.4.0";
+	public static recommendedVersion = ">=2.6.2";
 	public clientInfo: ClientInfo = defaultClientInfo;
 	public globalFlags: Partial<GlobalFlags> = {};
 
