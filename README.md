@@ -54,7 +54,7 @@ Note that you should not try to set the `--format` flag as this is set under the
 
 ### Validating the CLI
 
-Since this package depends on the 1Password CLI it's up to the user to install it, and the types may depend on a specific version. There is a function that your application can call to validate that the user has the CLI installed at a specific version:
+Since this package depends on the 1Password CLI it's up to the user to install it, and the types may depend on a specific version. The minimum supported CLI version is 2.6.2. There is a function that your application can call to validate that the user has the CLI installed at a specific version:
 
 ```js
 import { validateCli } from "@1password/op-js";

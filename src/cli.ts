@@ -26,7 +26,7 @@ export interface ClientInfo {
 
 export class ValidationError extends Error {
 	public constructor(
-		type: "not-found" | "version",
+		type: "not-found" | "version" | "min-supported-version",
 		public requiredVersion?: string,
 		public currentVersion?: string,
 	) {
@@ -37,6 +37,9 @@ export class ValidationError extends Error {
 				break;
 			case "version":
 				message = `CLI version ${currentVersion} does not satisfy required version ${requiredVersion}`;
+				break;
+			case "min-supported-version":
+				message = `CLI version ${currentVersion} does not satisfy the minimum supported version ${requiredVersion}`;
 				break;
 		}
 
@@ -138,6 +141,7 @@ export const defaultClientInfo: ClientInfo = {
 
 export class CLI {
 	public static recommendedVersion = ">=2.6.2";
+	public static minimumSupportedVersion = ">=2.6.2";
 	public clientInfo: ClientInfo = defaultClientInfo;
 	public globalFlags: Partial<GlobalFlags> = {};
 
@@ -154,6 +158,16 @@ export class CLI {
 
 		if (!cliExists) {
 			throw new ValidationError("not-found");
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+		const requiredVersionSemVer = semverCoerce(requiredVersion);
+		if (!semverSatisfies(requiredVersionSemVer, CLI.minimumSupportedVersion)) {
+			throw new ValidationError(
+				"min-supported-version",
+				CLI.minimumSupportedVersion,
+				requiredVersion,
+			);
 		}
 
 		const version = this.getVersion();
