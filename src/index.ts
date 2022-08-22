@@ -885,27 +885,8 @@ export const item = {
 	) =>
 		cli.execute<Item>(["item", "create"], {
 			flags,
-			// NOTE: There is an issue in the CLI that prevents us from using field assignments
-			// in `item create` through Node. I don't know what it is or why it's so specific,
-			// but until then we will need to pipe in the fields as a JSON object. This does not
-			// appear to impact `item edit`.
-			stdin: {
-				fields: assignments.map(([label, type, value, purpose]) => {
-					const data = {
-						label,
-						type,
-						value,
-					};
-
-					if (purpose) {
-						Object.assign(data, { purpose });
-					}
-
-					return data;
-				}),
-			},
+			args: assignments,
 		}),
-
 	/**
 	 * Permanently delete an item.
 	 *
