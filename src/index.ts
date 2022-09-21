@@ -20,7 +20,7 @@ export interface GlobalFlags {
 		| "s_jis"
 		| "gbk";
 	isoTimestamps: boolean;
-	sessionToken: string;
+	session: string;
 }
 
 /**
