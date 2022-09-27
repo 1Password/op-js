@@ -1,3 +1,5 @@
+import semverCoerce from "semver/functions/coerce";
+import semverSatisfies from "semver/functions/satisfies";
 import { cli, ClientInfo, Flags } from "./cli";
 
 type CommandFlags<TOptional extends Flags = {}> = Partial<
@@ -243,7 +245,7 @@ export interface Document {
 		id: string;
 		name: string;
 	};
-	last_edited_by: string;
+	last_edited_by?: string;
 	created_at: string;
 	updated_at: string;
 	"overview.ainfo"?: string;
@@ -803,8 +805,8 @@ export type PasswordField = ValueField & {
 	purpose: "PASSWORD";
 	entropy: number;
 	password_details: {
-		entropy: number;
-		generated: boolean;
+		entropy?: number;
+		generated?: boolean;
 		strength: PasswordStrength;
 	};
 };
@@ -882,11 +884,44 @@ export const item = {
 			url: string;
 			vault: string;
 		}> = {},
-	) =>
-		cli.execute<Item>(["item", "create"], {
+	) => {
+		const options: {
+			flags: Flags;
+			args?: FieldAssignment[];
+			stdin?: Record<string, any>;
+		} = {
 			flags,
-			args: assignments,
-		}),
+		};
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+		const version = semverCoerce(cli.getVersion());
+
+		// Prior to 2.6.2 the CLI didn't handle field assignments correctly
+		// within scripts, so if we're below that version we need to pipe the
+		// fields in via stdin
+		if (semverSatisfies(version, ">=2.6.2")) {
+			options.args = assignments;
+		} else {
+			options.stdin = {
+				fields: assignments.map(([label, type, value, purpose]) => {
+					const data = {
+						label,
+						type,
+						value,
+					};
+
+					if (purpose) {
+						Object.assign(data, { purpose });
+					}
+
+					return data;
+				}),
+			};
+		}
+
+		return cli.execute<Item>(["item", "create"], options);
+	},
+
 	/**
 	 * Permanently delete an item.
 	 *

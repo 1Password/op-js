@@ -29,7 +29,7 @@ describe("document", () => {
 						id: Joi.string().required().allow(""),
 						name: Joi.string().allow(""),
 					},
-					last_edited_by: Joi.string().required(),
+					last_edited_by: Joi.string().optional(),
 					created_at: Joi.string().required(),
 					updated_at: Joi.string().required(),
 					"overview.ainfo": Joi.string(),
