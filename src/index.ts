@@ -896,6 +896,9 @@ export const item = {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 		const version = semverCoerce(cli.getVersion());
 
+		// Prior to 2.6.2 the CLI didn't handle field assignments correctly
+		// within scripts, so if we're below that version we need to pipe the
+		// fields in via stdin
 		if (semverSatisfies(version, ">=2.6.2")) {
 			options.args = assignments;
 		} else {
