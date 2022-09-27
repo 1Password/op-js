@@ -1,3 +1,5 @@
+import semverCoerce from "semver/functions/coerce";
+import semverSatisfies from "semver/functions/satisfies";
 import { cli, ClientInfo, Flags } from "./cli";
 
 type CommandFlags<TOptional extends Flags = {}> = Partial<
@@ -882,14 +884,22 @@ export const item = {
 			url: string;
 			vault: string;
 		}> = {},
-	) =>
-		cli.execute<Item>(["item", "create"], {
+	) => {
+		const options: {
+			flags: Flags;
+			args?: FieldAssignment[];
+			stdin?: Record<string, any>;
+		} = {
 			flags,
-			// NOTE: There is an issue in the CLI that prevents us from using field assignments
-			// in `item create` through Node. I don't know what it is or why it's so specific,
-			// but until then we will need to pipe in the fields as a JSON object. This does not
-			// appear to impact `item edit`.
-			stdin: {
+		};
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+		const version = semverCoerce(cli.getVersion());
+
+		if (semverSatisfies(version, ">=2.6.2")) {
+			options.args = assignments;
+		} else {
+			options.stdin = {
 				fields: assignments.map(([label, type, value, purpose]) => {
 					const data = {
 						label,
@@ -903,8 +913,11 @@ export const item = {
 
 					return data;
 				}),
-			},
-		}),
+			};
+		}
+
+		return cli.execute<Item>(["item", "create"], options);
+	},
 
 	/**
 	 * Permanently delete an item.
