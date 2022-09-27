@@ -805,8 +805,8 @@ export type PasswordField = ValueField & {
 	purpose: "PASSWORD";
 	entropy: number;
 	password_details: {
-		entropy: number;
-		generated: boolean;
+		entropy?: number;
+		generated?: boolean;
 		strength: PasswordStrength;
 	};
 };

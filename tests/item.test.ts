@@ -34,8 +34,8 @@ const itemSchema = Joi.object({
 			tags: Joi.array().items(Joi.string().required()).optional(),
 			entropy: Joi.number().optional(),
 			password_details: Joi.object({
-				entropy: Joi.number().required(),
-				generated: Joi.boolean().required(),
+				entropy: Joi.number().optional(),
+				generated: Joi.boolean().optional(),
 				strength: Joi.string().required(),
 			})
 				.optional()
