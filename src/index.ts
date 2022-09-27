@@ -1,6 +1,6 @@
 import semverCoerce from "semver/functions/coerce";
 import semverSatisfies from "semver/functions/satisfies";
-import { cli, ClientInfo, Flags } from "./cli";
+import { cli, ClientInfo, CLIError, Flags } from "./cli";
 
 type CommandFlags<TOptional extends Flags = {}> = Partial<
 	TOptional & GlobalFlags
@@ -224,10 +224,7 @@ export const whoami = (): ListAccount | null => {
 	try {
 		return cli.execute<ListAccount>(["whoami"]);
 	} catch (error) {
-		if (
-			error instanceof Error &&
-			error.message.includes("no signed in accounts")
-		) {
+		if (error instanceof CLIError && error.message.includes("signed in")) {
 			return null;
 		} else {
 			throw error;
