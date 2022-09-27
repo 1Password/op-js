@@ -245,7 +245,7 @@ export interface Document {
 		id: string;
 		name: string;
 	};
-	last_edited_by: string;
+	last_edited_by?: string;
 	created_at: string;
 	updated_at: string;
 	"overview.ainfo"?: string;
