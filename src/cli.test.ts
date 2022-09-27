@@ -259,7 +259,7 @@ describe("cli", () => {
 		});
 
 		it("does not throw when cli is fully valid", async () => {
-			CLI.recommendedVersion = CLI.minimumSupportedVersion;
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -269,7 +269,7 @@ describe("cli", () => {
 				.mockReturnValue({
 					error: null,
 					stderr: "",
-					stdout: CLI.minimumSupportedVersion,
+					stdout: "2.1.0",
 				});
 
 			await expect(cli.validate()).resolves.toBeUndefined();
@@ -279,7 +279,7 @@ describe("cli", () => {
 		});
 
 		it("can handle beta versions", async () => {
-			CLI.recommendedVersion = CLI.minimumSupportedVersion;
+			CLI.recommendedVersion = ">=2.0.0";
 
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
@@ -289,7 +289,7 @@ describe("cli", () => {
 				.mockReturnValue({
 					error: null,
 					stderr: "",
-					stdout: `${CLI.minimumSupportedVersion}.beta.12`,
+					stdout: "2.0.1.beta.12",
 				});
 
 			await expect(cli.validate()).resolves.toBeUndefined();
@@ -307,10 +307,10 @@ describe("cli", () => {
 				.mockReturnValue({
 					error: null,
 					stderr: "",
-					stdout: CLI.minimumSupportedVersion,
+					stdout: "2.1.0",
 				});
 
-			await expect(cli.validate(">=2.6.2")).resolves.toBeUndefined();
+			await expect(cli.validate(">=2.0.0")).resolves.toBeUndefined();
 
 			lookpathSpy.mockRestore();
 			spawnSpy.mockRestore();
