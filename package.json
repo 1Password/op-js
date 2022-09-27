@@ -19,7 +19,7 @@
 		"prepare": "husky install",
 		"prettier": "prettier --check 'src/*.ts'",
 		"test:unit": "jest --testMatch '<rootDir>/src/*.test.ts'",
-		"test:integration": "jest --testMatch '<rootDir>/tests/*.test.ts' --setupFilesAfterEnv '<rootDir>/jest.setup.ts'",
+		"test:integration": "jest --testMatch '<rootDir>/tests/*.test.ts' --setupFilesAfterEnv '<rootDir>/jest.setup.ts' --runInBand",
 		"typecheck": "tsc -p tsconfig.release.json --noEmit",
 		"watch": "yarn compile --watch"
 	},
