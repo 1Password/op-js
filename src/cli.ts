@@ -27,7 +27,7 @@ export interface ClientInfo {
 
 export class ValidationError extends Error {
 	public constructor(
-		type: "not-found" | "version",
+		public type: "not-found" | "version",
 		public requiredVersion?: string,
 		public currentVersion?: string,
 	) {
