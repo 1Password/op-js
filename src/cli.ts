@@ -17,7 +17,7 @@ export type FlagValue =
 	| FieldLabelSelector
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
-type Arg = string | null | FieldAssignment;
+type Arg = string | FieldAssignment;
 
 export interface ClientInfo {
 	name: string;
