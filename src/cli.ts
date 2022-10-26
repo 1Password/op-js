@@ -183,10 +183,9 @@ export class CLI {
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
 				parts.push(createFieldAssignment(arg));
+			} else {
+				throw new TypeError("Invalid argument");
 			}
-
-			// arg can be null, but that's just so we can lazily
-			// set the value, safely dropping if it remains null
 		}
 
 		if (json) {

@@ -348,6 +348,17 @@ describe("cli", () => {
 			);
 		});
 
+		it("throws on invalid args", () => {
+			expect(() =>
+				executeSpy([
+					["foo"],
+					{
+						args: [null],
+					},
+				]),
+			).toThrowError(new TypeError("Invalid argument"));
+		});
+
 		it("sanitizes input in commands, arguments, and flags", () => {
 			const execute = executeSpy([
 				['"foo'],
