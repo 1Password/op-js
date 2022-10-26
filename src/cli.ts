@@ -17,6 +17,7 @@ export type FlagValue =
 	| FieldLabelSelector
 	| FieldTypeSelector;
 export type Flags = Record<string, FlagValue>;
+type Arg = string | FieldAssignment;
 
 export interface ClientInfo {
 	name: string;
@@ -85,6 +86,9 @@ export const camelToHyphen = (str: string) =>
 
 export const sanitizeInput = (str: string) =>
 	str.replace(/(["$'\\`])/g, "\\$1");
+
+const equalArray = (a: any[], b: any[]) =>
+	a.length === b.length && a.every((val, index) => val === b[index]);
 
 export const parseFlagValue = (value: FlagValue) => {
 	if (typeof value === "string") {
@@ -165,46 +169,74 @@ export class CLI {
 		}
 	}
 
-	public execute<TData extends string | Record<string, any> | void>(
-		command: string[],
-		{
-			args = [],
-			flags = {},
-			stdin,
-			json = true,
-		}: {
-			args?: (string | null | FieldAssignment)[];
-			flags?: Flags;
-			stdin?: string | Record<string, any>;
-			json?: boolean;
-		} = {},
-	): TData {
-		let input: NodeJS.ArrayBufferView;
-		command = command.map((part) => sanitizeInput(part));
+	private createParts(
+		subCommand: string[],
+		args: Arg[],
+		flags: Flags,
+		json: boolean,
+	): string[] {
+		const parts = subCommand.map((part) => sanitizeInput(part));
 
 		for (const arg of args) {
 			if (typeof arg === "string") {
-				command.push(sanitizeInput(arg));
+				parts.push(sanitizeInput(arg));
 				// If it's an array assume it's a field assignment
 			} else if (Array.isArray(arg)) {
-				command.push(createFieldAssignment(arg));
+				parts.push(createFieldAssignment(arg));
+			} else {
+				throw new TypeError("Invalid argument");
 			}
-
-			// arg can be null, but that's just so we can lazily
-			// set the value, safely dropping if it remains null
 		}
 
 		if (json) {
 			flags = { ...flags, format: "json" };
 		}
 
-		command = [
-			...command,
+		// Version >=2.6.2 of the CLI changed how it handled piped input
+		// in order to fix an issue with item creation, but in the process
+		// it broke piping for other commands. We have a macOS/Linux-only
+		// workaround, but not one for Windows, so for now we cannot support
+		// the inject command on Windows past this version until the CLI
+		// team fixes the issue.
+		if (equalArray(subCommand, ["inject"])) {
+			const version = semverCoerce(cli.getVersion());
+			if (semverSatisfies(version, ">=2.6.2")) {
+				if (process.platform === "win32") {
+					throw new ExecutionError(
+						"Inject is not supported on Windows for version >=2.6.2 of the CLI",
+						1,
+					);
+				} else {
+					flags = { ...flags, inFile: "/dev/stdin" };
+				}
+			}
+		}
+
+		return [
+			...parts,
 			...createFlags({
 				...this.globalFlags,
 				...flags,
 			}),
 		];
+	}
+
+	public execute<TData extends string | Record<string, any> | void>(
+		subCommand: string[],
+		{
+			args = [],
+			flags = {},
+			stdin,
+			json = true,
+		}: {
+			args?: Arg[];
+			flags?: Flags;
+			stdin?: string | Record<string, any>;
+			json?: boolean;
+		} = {},
+	): TData {
+		let input: NodeJS.ArrayBufferView;
+		const parts = this.createParts(subCommand, args, flags, json);
 
 		if (stdin) {
 			input = Buffer.from(
@@ -212,7 +244,7 @@ export class CLI {
 			);
 		}
 
-		const { status, error, stdout, stderr } = spawnSync("op", command, {
+		const { status, error, stdout, stderr } = spawnSync("op", parts, {
 			stdio: "pipe",
 			input,
 			env: {
