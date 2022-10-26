@@ -2,7 +2,12 @@ import semverCoerce from "semver/functions/coerce";
 import semverSatisfies from "semver/functions/satisfies";
 import { cli, ClientInfo, CLIError, Flags } from "./cli";
 
-export { CLIError, ExecutionError, ValidationError } from "./cli";
+export {
+	CLIError,
+	ExecutionError,
+	ValidationError,
+	ValidationErrorType,
+} from "./cli";
 
 type CommandFlags<TOptional extends Flags = {}> = Partial<
 	TOptional & GlobalFlags
