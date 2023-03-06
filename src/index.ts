@@ -47,6 +47,17 @@ export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
 	cli.globalFlags = flags;
 };
 
+/**
+ * Set a Connect host and token
+ *
+ * Alternative to running with `OP_CONNECT_HOST` and `OP_CONNECT_TOKEN` set
+ *
+ * {@link https://developer.1password.com/docs/connect/}
+ */
+export const setConnect = (host: string, token: string) => {
+	cli.connect = { host, token };
+};
+
 // Section: CLI setup
 
 /**
