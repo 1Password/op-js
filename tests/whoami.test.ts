@@ -1,9 +1,11 @@
 import Joi from "joi";
-import { whoami } from "../src";
+import { createOpjs } from "./test-utils";
 
 describe("whoami", () => {
 	it("returns the authenticated user", () => {
-		const result = whoami();
+		const cli = createOpjs();
+
+		const result = cli.whoami();
 		expect(result).toMatchSchema(
 			Joi.alternatives(
 				// If you're not authenticated, you'll get null

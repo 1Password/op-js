@@ -1,10 +1,15 @@
-import { existsSync, rmSync } from "fs";
+import { existsSync, readFileSync, rmSync } from "fs";
 import Joi from "joi";
-import { document } from "../src";
+import { createOpjs, MALICIOUS_STRING } from "./test-utils";
 
 describe("document", () => {
 	it("CRUDs documents", () => {
-		const create = document.create("Created Value", {
+		const cli = createOpjs();
+
+		const initialValue =
+			"1Password's proven dual-key encryption protects your logins, payment cards, and more.";
+
+		const create = cli.document.create(initialValue, {
 			vault: process.env.OP_VAULT,
 			title: "Created Document",
 			fileName: "created-doc.txt",
@@ -18,7 +23,7 @@ describe("document", () => {
 			}).required(),
 		);
 
-		const list = document.list({ vault: process.env.OP_VAULT });
+		const list = cli.document.list({ vault: process.env.OP_VAULT });
 		expect(list).toMatchSchema(
 			Joi.array()
 				.items({
@@ -37,22 +42,25 @@ describe("document", () => {
 				.required(),
 		);
 
-		const edit = document.edit(create.uuid, "Updated Value", {
-			title: "Updated Value",
+		const edit = cli.document.edit(create.uuid, MALICIOUS_STRING, {
+			title: MALICIOUS_STRING,
 			fileName: "updated-doc.txt",
 		});
 		expect(edit).toBeUndefined();
 
-		const get = document.get(create.uuid);
+		const get = cli.document.get(create.uuid);
 		expect(get).toMatchSchema(Joi.string().required());
 
 		const fileName = `${__dirname}/test.txt`;
-		const toFile = document.toFile(create.uuid, `${__dirname}/test.txt`);
+		const toFile = cli.document.toFile(create.uuid, `${__dirname}/test.txt`);
 		expect(toFile).toBeUndefined();
+
 		expect(existsSync(fileName)).toBe(true);
+		const fileValue = readFileSync(fileName, "utf-8");
+		expect(fileValue).toEqual(MALICIOUS_STRING);
 		rmSync(fileName);
 
-		const del = document.delete(create.uuid);
+		const del = cli.document.delete(create.uuid);
 		expect(del).toBeUndefined();
 	});
 });

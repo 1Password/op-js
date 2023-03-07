@@ -17,6 +17,7 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-unsafe-argument": "off",
 				"@typescript-eslint/naming-convention": "off",
+				"import/order": "off",
 				"import/no-unresolved": [
 					"error",
 					{

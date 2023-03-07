@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { item } from "../src";
+import { createOpjs, MALICIOUS_STRING } from "./test-utils";
 
 const itemSchema = Joi.object({
 	id: Joi.string().required(),
@@ -64,7 +64,9 @@ const itemSchema = Joi.object({
 
 describe("item", () => {
 	it("CRUDs items", () => {
-		const create = item.create([["username", "text", "created"]], {
+		const cli = createOpjs();
+
+		const create = cli.item.create([["username", "text", "created"]], {
 			vault: process.env.OP_VAULT,
 			category: "Login",
 			title: "Created Login",
@@ -72,15 +74,21 @@ describe("item", () => {
 		});
 		expect(create).toMatchSchema(itemSchema);
 
-		const edit = item.edit(create.id, [["username", "text", "updated"]], {
-			title: "Updated Login",
-		});
+		const edit = cli.item.edit(
+			create.id,
+			[["username", "text", MALICIOUS_STRING]],
+			{
+				title: MALICIOUS_STRING,
+			},
+		);
 		expect(edit).toMatchSchema(itemSchema);
 
-		const get = item.get(create.id);
+		const get = cli.item.get(create.id, {
+			includeArchive: true,
+		});
 		expect(get).toMatchSchema(itemSchema);
 
-		const del = item.delete(create.id);
+		const del = cli.item.delete(create.id);
 		expect(del).toBeUndefined();
 	});
 });

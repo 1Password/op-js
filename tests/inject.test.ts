@@ -1,11 +1,12 @@
 import Joi from "joi";
-import { inject, item } from "../src";
+import { createOpjs, MALICIOUS_STRING } from "./test-utils";
 
 describe("inject", () => {
 	describe("data", () => {
 		it("returns injected data", () => {
-			const value = "bar";
-			const injectable = item.create([["foo", "text", value]], {
+			const cli = createOpjs();
+
+			const injectable = cli.item.create([["foo", "text", MALICIOUS_STRING]], {
 				vault: process.env.OP_VAULT,
 				category: "Login",
 				title: "Injectable",
@@ -14,11 +15,11 @@ describe("inject", () => {
 				(f) => f.label === "foo",
 			).reference;
 
-			const result = inject.data(`foo ${reference}`);
+			const result = cli.inject.data(`foo ${reference}`);
 			expect(result).toMatchSchema(Joi.string().required());
-			expect(result).toEqual(`foo ${value}`);
+			expect(result).toEqual(`foo ${MALICIOUS_STRING}`);
 
-			item.delete(injectable.id);
+			cli.item.delete(injectable.id);
 		});
 	});
 });
