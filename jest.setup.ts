@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { setGlobalFlags } from "./src";
 
 declare global {
 	namespace jest {
@@ -35,8 +34,4 @@ if (process.env.npm_lifecycle_event === "test:integration") {
 			);
 		}
 	}
-
-	setGlobalFlags({
-		account: process.env.OP_ACCOUNT,
-	});
 }

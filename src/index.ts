@@ -1,21 +1,13 @@
+import { lookpath } from "lookpath";
 import semverCoerce from "semver/functions/coerce";
 import semverSatisfies from "semver/functions/satisfies";
-import { cli, ClientInfo, CLIError, Flags } from "./cli";
+import { version } from "../package.json";
+import Command from "./command";
+import { CLIError, ExecutionError, ValidationError } from "./errors";
+import { type Flags } from "./flag";
+import { semverToInt } from "./utils";
 
-export {
-	CLIError,
-	ExecutionError,
-	ValidationError,
-	ValidationErrorType,
-} from "./cli";
-
-type CommandFlags<TOptional extends Flags = {}> = Partial<
-	TOptional & GlobalFlags
->;
-
-// Section: Global Flags
-
-export interface GlobalFlags {
+export interface GlobalFlags extends Flags {
 	account: string;
 	cache: boolean;
 	config: string;
@@ -32,113 +24,16 @@ export interface GlobalFlags {
 	session: string;
 }
 
-/**
- * Set user agent information passed to the CLI.
- *
- * Note: this is intended for internal usage; using could result in unexpected behaviour
- */
-export const setClientInfo = (clientInfo: ClientInfo) =>
-	cli.setClientInfo(clientInfo);
+export type CommandFlags<
+	TOptional extends Flags = {},
+	TExtras extends Record<string, any> = {},
+> = Partial<TOptional & TExtras & GlobalFlags>;
 
-/**
- * Set any of the {@link GlobalFlags} on the CLI command.
- */
-export const setGlobalFlags = (flags: Partial<GlobalFlags>) => {
-	cli.globalFlags = flags;
-};
-
-/**
- * Set a Connect host and token
- *
- * Alternative to running with `OP_CONNECT_HOST` and `OP_CONNECT_TOKEN` set
- *
- * {@link https://developer.1password.com/docs/connect/}
- */
-export const setConnect = (host: string, token: string) => {
-	cli.connect = { host, token };
-};
-
-// Section: CLI setup
-
-/**
- * Validate that the user's CLI setup is valid for this wrapper.
- */
-export const validateCli = async (requiredVersion?: string) =>
-	await cli.validate(requiredVersion);
-
-/**
- * Retrieve the current version of the CLI.
- */
-export const version = () => cli.getVersion();
-
-// Section: Secret Injection
-
-export const inject = {
-	/**
-	 * Inject secrets into and return the data
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
-	 */
-	data: (input: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<string>(["inject"], {
-			flags,
-			json: false,
-			stdin: input,
-		}),
-
-	/**
-	 * Inject secrets into data and write the result to a file
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
-	 */
-	toFile: (
-		input: string,
-		outFile: string,
-		flags: CommandFlags<{
-			fileMode: string;
-			force: boolean;
-		}> = {},
-	) =>
-		cli.execute<void>(["inject"], {
-			flags: { outFile, ...flags },
-			json: false,
-			stdin: input,
-		}),
-};
-
-// Section: Reading Secret References
-
-export const read = {
-	/**
-	 * Read a secret by secret reference and return its value
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
-	 */
-	parse: (
-		reference: string,
-		flags: CommandFlags<{ noNewline: boolean }> = {},
-	) => cli.execute<string>(["read"], { args: [reference], flags, json: false }),
-
-	/**
-	 * Read a secret by secret reference and save it to a file
-	 *
-	 * Returns the path to the file.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
-	 */
-	toFile: (
-		reference: string,
-		outputPath: string,
-		flags: CommandFlags<{ noNewline: boolean }> = {},
-	) =>
-		cli.execute<string>(["read"], {
-			args: [reference],
-			flags: { outFile: outputPath, ...flags },
-			json: false,
-		}),
-};
-
-// Section: Accounts
+interface Integration {
+	name: string;
+	id: string;
+	build: string;
+}
 
 export type AccountType =
 	| "BUSINESS"
@@ -173,85 +68,6 @@ export interface ListAccount {
 	shorthand?: string;
 }
 
-export const account = {
-	/**
-	 * Add a new 1Password account to sign in to for the first time.
-	 *
-	 * TODO: This cannot yet be implemented from the JS wrapper because it
-	 * requires interactive input from the CLI, which we do not support.
-	 *
-	 * add: (
-	 * 	flags: CommandFlags<
-	 * 		{
-	 * 			raw: boolean;
-	 * 			shorthand: string;
-	 * 			signin: boolean;
-	 * 		},
-	 * 		{
-	 * 			address: string;
-	 * 			email: string;
-	 * 			secretKey: string;
-	 * 		}
-	 * 	>,
-	 * ) =>
-	 * 	cli.execute<string>(["account", "add"], {
-	 * 		flags,
-	 * 		json: false,
-	 * 	}),
-	 */
-
-	/**
-	 * Remove a 1Password account from this device.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-forget}
-	 */
-	forget: (
-		account: string | null,
-		flags: CommandFlags<{ all: boolean }> = {},
-	) =>
-		cli.execute<string>(["account", "forget"], {
-			args: [account],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Get details about your account.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-get}
-	 */
-	get: (flags: CommandFlags = {}) =>
-		cli.execute<Account>(["account", "get"], {
-			flags,
-		}),
-
-	/**
-	 * List users and accounts set up on this device.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-list}
-	 */
-	list: (flags: CommandFlags = {}) =>
-		cli.execute<ListAccount[]>(["account", "list"], {
-			flags,
-		}),
-};
-
-// Section: Who Am I
-
-export const whoami = (): ListAccount | null => {
-	try {
-		return cli.execute<ListAccount>(["whoami"]);
-	} catch (error) {
-		if (error instanceof CLIError && error.message.includes("signed in")) {
-			return null;
-		} else {
-			throw error;
-		}
-	}
-};
-
-// Section: Documents
-
 export interface Document {
 	id: string;
 	title: string;
@@ -272,148 +88,6 @@ export interface CreatedDocument {
 	updatedAt: string;
 	vaultUuid: string;
 }
-
-export const document = {
-	/**
-	 * Create a document item with data or a file on disk.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-create}
-	 */
-	create: (
-		dataOrFile: string,
-		flags: CommandFlags<{
-			fileName: string;
-			tags: string[];
-			title: string;
-			vault: string;
-		}> = {},
-		fromFile = false,
-	) =>
-		cli.execute<CreatedDocument>(["document", "create"], {
-			args: [fromFile ? dataOrFile : ""],
-			flags,
-			stdin: fromFile ? undefined : dataOrFile,
-		}),
-
-	/**
-	 * Permanently delete a document.
-	 *
-	 * Set `archive` to move it to the Archive instead.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-delete}
-	 */
-	delete: (
-		nameOrId: string,
-		flags: CommandFlags<{ archive: boolean; vault: string }> = {},
-	) =>
-		cli.execute<void>(["document", "delete"], {
-			args: [nameOrId],
-			flags,
-		}),
-
-	/**
-	 * Update a document.
-	 *
-	 * Replaces the file contents with the provided file path or data.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-edit}
-	 */
-	edit: (
-		nameOrId: string,
-		dataOrFile: string,
-		flags: CommandFlags<{
-			fileName: string;
-			tags: string[];
-			title: string;
-			vault: string;
-		}> = {},
-		fromFile = false,
-	) =>
-		cli.execute<void>(["document", "edit"], {
-			args: [nameOrId, fromFile ? dataOrFile : ""],
-			flags,
-			stdin: fromFile ? undefined : dataOrFile,
-		}),
-
-	/**
-	 * Download a document and return its contents.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
-	 */
-	get: (
-		nameOrId: string,
-		flags: CommandFlags<{
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<string>(["document", "get"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Download a document and save it to a file.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
-	 */
-	toFile: (
-		nameOrId: string,
-		outputPath: string,
-		flags: CommandFlags<{
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<void>(["document", "get"], {
-			args: [nameOrId],
-			flags: {
-				output: outputPath,
-				...flags,
-			},
-			json: false,
-		}),
-
-	/**
-	 * List documents.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-list}
-	 */
-	list: (
-		flags: CommandFlags<{
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<Document[]>(["document", "list"], {
-			flags,
-		}),
-};
-
-// Section: Events API
-
-export const eventsApi = {
-	/**
-	 * Create an Events API integration token.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api#subcommands}
-	 */
-	create: (
-		name: string,
-		flags: CommandFlags<{
-			expiresIn: string;
-			features: ("signinattempts" | "itemusages")[];
-		}> = {},
-	) =>
-		cli.execute<string>(["events-api", "create"], {
-			args: [name],
-			flags,
-			json: false,
-		}),
-};
-
-// Section: Connect
 
 export type ConnectServerState = "ACTIVE" | "REVOKED";
 
@@ -443,204 +117,6 @@ export interface ConnectServerToken {
 	integration_id: string;
 }
 
-export const connect = {
-	group: {
-		/**
-		 * Grant a group access to manage Secrets Automation.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-grant}
-		 */
-		grant: (
-			group: string,
-			flags: CommandFlags<{
-				allServers: boolean;
-				server: string;
-			}> = {},
-		) =>
-			cli.execute<void>(["connect", "group", "grant"], {
-				flags: { group, ...flags },
-				json: false,
-			}),
-
-		/**
-		 * Revoke a group's access to manage Secrets Automation.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-revoke}
-		 */
-		revoke: (
-			group: string,
-			flags: CommandFlags<{
-				allServers: boolean;
-				server: string;
-			}> = {},
-		) =>
-			cli.execute<void>(["connect", "group", "revoke"], {
-				flags: { group, ...flags },
-				json: false,
-			}),
-	},
-
-	server: {
-		/**
-		 * Add a 1Password Connect server to your account and generate a credentials file for it.
-		 *
-		 * Creates a credentials file in the CWD.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-create}
-		 */
-		create: (
-			name: string,
-			flags: CommandFlags<{
-				vaults: string[];
-			}> = {},
-		) =>
-			cli.execute<string>(["connect", "server", "create"], {
-				args: [name],
-				flags,
-				json: false,
-			}),
-
-		/**
-		 * Remove a Connect server.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-delete}
-		 */
-		delete: (nameOrId: string, flags: CommandFlags = {}) =>
-			cli.execute<void>(["connect", "server", "delete"], {
-				args: [nameOrId],
-				flags,
-			}),
-
-		/**
-		 * Rename a Connect server.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
-		 */
-		edit: (nameOrId: string, newName: string, flags: CommandFlags<{}> = {}) =>
-			cli.execute<string>(["connect", "server", "edit"], {
-				args: [nameOrId],
-				flags: { name: newName, ...flags },
-				json: false,
-			}),
-
-		/**
-		 * Get details about a Connect server.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-get}
-		 */
-		get: (nameOrId: string, flags: CommandFlags = {}) =>
-			cli.execute<ConnectServer>(["connect", "server", "get"], {
-				args: [nameOrId],
-				flags,
-			}),
-
-		/**
-		 * Get a list of Connect servers.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-list}
-		 */
-		list: (flags: CommandFlags = {}) =>
-			cli.execute<ConnectServer[]>(["connect", "server", "list"], {
-				flags,
-			}),
-	},
-
-	token: {
-		/**
-		 * Issue a new token for a Connect server.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-create}
-		 */
-		create: (
-			name: string,
-			server: string,
-			flags: CommandFlags<{
-				expiresIn: string;
-				vaults: string[];
-			}> = {},
-		) =>
-			cli.execute<string>(["connect", "token", "create"], {
-				args: [name],
-				flags: { server, ...flags },
-				json: false,
-			}),
-
-		/**
-		 * Revoke a token for a Connect server.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-delete}
-		 */
-		delete: (
-			token: string,
-			flags: CommandFlags<{
-				server: string;
-			}> = {},
-		) =>
-			cli.execute<void>(["connect", "token", "delete"], {
-				args: [token],
-				flags,
-				json: false,
-			}),
-
-		/**
-		 * Rename a Connect token.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-edit}
-		 */
-		edit: (
-			token: string,
-			newName: string,
-			flags: CommandFlags<{
-				server: string;
-			}> = {},
-		) =>
-			cli.execute<void>(["connect", "token", "edit"], {
-				args: [token],
-				flags: { name: newName, ...flags },
-				json: false,
-			}),
-
-		/**
-		 * List tokens for Connect servers.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-list}
-		 */
-		list: (
-			flags: CommandFlags<{
-				server: string;
-			}> = {},
-		) =>
-			cli.execute<ConnectServerToken[]>(["connect", "token", "list"], {
-				flags,
-			}),
-	},
-
-	vault: {
-		/**
-		 * Grant a Connect server access to a vault.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
-		 */
-		grant: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
-			cli.execute<void>(["connect", "vault", "grant"], {
-				flags: { server, vault, ...flags },
-				json: false,
-			}),
-
-		/**
-		 * Revoke a Connect server's access to a vault.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
-		 */
-		revoke: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
-			cli.execute<void>(["connect", "vault", "revoke"], {
-				flags: { server, vault, ...flags },
-				json: false,
-			}),
-	},
-};
-
-// Section: Items
 export type InputCategory =
 	| "Email Account"
 	| "Medical Record"
@@ -881,213 +357,6 @@ export interface ListItemTemplate {
 	name: string;
 }
 
-export const item = {
-	/**
-	 * Create an item.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-create}
-	 */
-	create: (
-		assignments: FieldAssignment[],
-		flags: CommandFlags<{
-			category: InputCategory;
-			dryRun: boolean;
-			generatePassword: string | boolean;
-			tags: string[];
-			template: string;
-			title: string;
-			url: string;
-			vault: string;
-		}> = {},
-	) => {
-		const options: {
-			flags: Flags;
-			args?: FieldAssignment[];
-			stdin?: Record<string, any>;
-		} = {
-			flags,
-		};
-
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-		const version = semverCoerce(cli.getVersion());
-
-		// Prior to 2.6.2 the CLI didn't handle field assignments correctly
-		// within scripts, so if we're below that version we need to pipe the
-		// fields in via stdin
-		if (semverSatisfies(version, ">=2.6.2")) {
-			options.args = assignments;
-		} else {
-			options.stdin = {
-				fields: assignments.map(([label, type, value, purpose]) => {
-					const data = {
-						label,
-						type,
-						value,
-					};
-
-					if (purpose) {
-						Object.assign(data, { purpose });
-					}
-
-					return data;
-				}),
-			};
-		}
-
-		return cli.execute<Item>(["item", "create"], options);
-	},
-
-	/**
-	 * Permanently delete an item.
-	 *
-	 * Set `archive` to move it to the Archive instead.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-delete}
-	 */
-	delete: (
-		nameOrIdOrLink: string,
-		flags: CommandFlags<{
-			archive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<void>(["item", "delete"], {
-			args: [nameOrIdOrLink],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Edit an item's details.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-edit}
-	 */
-	edit: (
-		nameOrIdOrLink: string,
-		assignments: FieldAssignment[],
-		flags: CommandFlags<{
-			dryRun: boolean;
-			generatePassword: string | boolean;
-			tags: string[];
-			title: string;
-			url: string;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<Item>(["item", "edit"], {
-			args: [nameOrIdOrLink, ...assignments],
-			flags,
-		}),
-
-	/**
-	 * Return details about an item.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
-	 */
-	get: (
-		nameOrIdOrLink: string,
-		flags: CommandFlags<{
-			fields: FieldLabelSelector | FieldTypeSelector;
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) => cli.execute<Item>(["item", "get"], { args: [nameOrIdOrLink], flags }),
-
-	/**
-	 * Output the primary one-time password for this item.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
-	 */
-	otp: (
-		nameOrIdOrLink: string,
-		flags: CommandFlags<{
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<string>(["item", "get"], {
-			args: [nameOrIdOrLink],
-			flags: { otp: true, ...flags },
-			json: false,
-		}),
-
-	/**
-	 * Get a shareable link for the item.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
-	 */
-	shareLink: (
-		nameOrIdOrLink: string,
-		flags: CommandFlags<{
-			includeArchive: boolean;
-			vault: string;
-		}> = {},
-	) =>
-		cli.execute<string>(["item", "get"], {
-			args: [nameOrIdOrLink],
-			flags: { shareLink: true, ...flags },
-			json: false,
-		}),
-
-	/**
-	 * List items.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-list}
-	 */
-	list: (
-		flags: CommandFlags<{
-			categories: InputCategory[];
-			includeArchive: boolean;
-			long: boolean;
-			tags: string[];
-			vault: string;
-		}> = {},
-	) => cli.execute<Item[]>(["item", "list"], { flags }),
-
-	/**
-	 * Share an item.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-share}
-	 */
-	share: (
-		nameOrId: string,
-		flags: CommandFlags<{
-			emails: string[];
-			expiry: string;
-			vault: string;
-			viewOnce: boolean;
-		}> = {},
-	) =>
-		cli.execute<string>(["item", "share"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	template: {
-		/**
-		 * Return a template for an item type.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-get}
-		 */
-		get: (category: InputCategory, flags: CommandFlags = {}) =>
-			cli.execute<ItemTemplate[]>(["item", "template", "get"], {
-				args: [category],
-				flags,
-			}),
-
-		/**
-		 * Lists available item type templates.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-list}
-		 */
-		list: (flags: CommandFlags = {}) =>
-			cli.execute<ListItemTemplate[]>(["item", "template", "list"], { flags }),
-	},
-};
-
-// Section: Vaults
-
 export type VaultIcon =
 	| "airplane"
 	| "application"
@@ -1207,166 +476,6 @@ export interface VaultUser {
 	permissions: VaultPermisson[];
 }
 
-export const vault = {
-	/**
-	 * Create a new vault
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-create}
-	 */
-	create: (
-		name: string,
-		flags: CommandFlags<{
-			allowAdminsToManage: "true" | "false";
-			description: string;
-			icon: VaultIcon;
-		}> = {},
-	) => cli.execute<Vault>(["vault", "create"], { args: [name], flags }),
-
-	/**
-	 * Remove a vault.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-delete}
-	 */
-	delete: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<void>(["vault", "delete"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Edit a vault's name, description, icon or Travel Mode status.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-edit}
-	 */
-	edit: (
-		nameOrId: string,
-		flags: CommandFlags<{
-			description: string;
-			icon: VaultIcon;
-			name: string;
-			travelMode: "on" | "off";
-		}> = {},
-	) =>
-		cli.execute<void>(["vault", "edit"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Get details about a vault.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-get}
-	 */
-	get: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<Vault>(["vault", "get"], { args: [nameOrId], flags }),
-
-	/**
-	 * List vaults.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-list}
-	 */
-	list: (
-		flags: CommandFlags<{
-			group: string;
-			user: string;
-		}> = {},
-	) => cli.execute<AbbreviatedVault[]>(["vault", "list"], { flags }),
-
-	group: {
-		/**
-		 * Grant a group permissions in a vault.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-grant}
-		 */
-		grant: (
-			flags: CommandFlags<{
-				group: string;
-				permissions: VaultPermisson[];
-				vault: string;
-			}> = {},
-		) =>
-			cli.execute<VaultGroupAccess>(["vault", "group", "grant"], {
-				flags: { noInput: true, ...flags },
-			}),
-
-		/**
-		 * Revoke a group's permissions in a vault, in part or in full
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-revoke}
-		 */
-		revoke: (
-			flags: CommandFlags<{
-				group: string;
-				permissions: VaultPermisson[];
-				vault: string;
-			}> = {},
-		) =>
-			cli.execute<VaultGroupAccess>(["vault", "group", "revoke"], {
-				flags: { noInput: true, ...flags },
-			}),
-
-		/**
-		 * List all the groups that have access to the given vault
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-list}
-		 */
-		list: (vault: string, flags: CommandFlags = {}) =>
-			cli.execute<VaultGroup[]>(["vault", "group", "list"], {
-				args: [vault],
-				flags,
-			}),
-	},
-
-	user: {
-		/**
-		 * Grant a user permissions in a vault
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-grant}
-		 */
-		grant: (
-			flags: CommandFlags<{
-				user: string;
-				permissions: VaultPermisson[];
-				vault: string;
-			}> = {},
-		) =>
-			cli.execute<VaultUserAccess>(["vault", "user", "grant"], {
-				flags: { noInput: true, ...flags },
-			}),
-
-		/**
-		 * Revoke a user's permissions in a vault, in part or in full
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-revoke}
-		 */
-		revoke: (
-			flags: CommandFlags<{
-				user: string;
-				permissions: VaultPermisson[];
-				vault: string;
-			}> = {},
-		) =>
-			cli.execute<VaultUserAccess>(["vault", "user", "revoke"], {
-				flags: { noInput: true, ...flags },
-			}),
-
-		/**
-		 * List all users with access to the vault and their permissions
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-list}
-		 */
-		list: (vault: string, flags: CommandFlags = {}) =>
-			cli.execute<VaultUser[]>(["vault", "user", "list"], {
-				args: [vault],
-				flags,
-			}),
-	},
-};
-
-// Section: Users
-
 export type UserType = "MEMBER" | "GUEST" | "SERVICE_ACCOUNT" | "UNKNOWN";
 
 export type UserState =
@@ -1398,158 +507,6 @@ export type AbbreviatedUser = Pick<
 	User,
 	"id" | "name" | "email" | "type" | "state"
 >;
-
-export const user = {
-	/**
-	 * Confirm a user who has accepted their invitation to the 1Password account.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
-	 */
-	confirm: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<void>(["user", "confirm"], {
-			args: [emailOrNameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Confirm all users who have accepted their invitation to the 1Password account.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
-	 */
-	confirmAll: (flags: CommandFlags<{}> = {}) =>
-		cli.execute<void>(["user", "confirm"], {
-			flags: { all: true, ...flags },
-			json: false,
-		}),
-
-	/**
-	 * Remove a user and all their data from the account.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-delete}
-	 */
-	delete: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<void>(["user", "delete"], {
-			args: [emailOrNameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Change a user's name or Travel Mode status
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-edit}
-	 */
-	edit: (
-		emailOrNameOrId: string,
-		flags: CommandFlags<{
-			name: string;
-			travelMode: "on" | "off";
-		}> = {},
-	) =>
-		cli.execute<void>(["user", "edit"], {
-			args: [emailOrNameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Get details about a user.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
-	 */
-	get: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
-
-	/**
-	 * Get details about the current user.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
-	 */
-	me: (flags: CommandFlags<{}> = {}) =>
-		cli.execute<User>(["user", "get"], { flags: { me: true, ...flags } }),
-
-	/**
-	 * Get the user's public key fingerprint.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
-	 */
-	fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<string>(["user", "get"], {
-			args: [emailOrNameOrId],
-			flags: { fingerprint: true, ...flags },
-			json: false,
-		}),
-
-	/**
-	 * Get the user's public key.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
-	 */
-	publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<string>(["user", "get"], {
-			args: [emailOrNameOrId],
-			flags: { publicKey: true, ...flags },
-			json: false,
-		}),
-
-	/**
-	 * List users.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-list}
-	 */
-	list: (
-		flags: CommandFlags<{
-			group: string;
-			vault: string;
-		}> = {},
-	) => cli.execute<AbbreviatedUser[]>(["user", "list"], { flags }),
-
-	/**
-	 * Provision a user in the authenticated account.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
-	 */
-	provision: (
-		email: string,
-		name: string,
-		flags: CommandFlags<{
-			language: string;
-		}>,
-	) =>
-		cli.execute<User>(["user", "provision"], {
-			flags: { email, name, ...flags },
-		}),
-
-	/**
-	 * Reactivate a suspended user.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-reactivate}
-	 */
-	reactivate: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<void>(["user", "reactivate"], {
-			args: [emailOrNameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Suspend a user.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-suspend}
-	 */
-	suspend: (
-		emailOrNameOrId: string,
-		flags: CommandFlags<{ deauthorizeDevicesAfter: string }> = {},
-	) =>
-		cli.execute<void>(["user", "suspend"], {
-			args: [emailOrNameOrId],
-			flags,
-			json: false,
-		}),
-};
-
-// Section: Groups
 
 export type GroupRole = "MEMBER" | "MANAGER";
 
@@ -1585,100 +542,1261 @@ export type GroupUser = AbbreviatedUser & {
 	role: GroupRole;
 };
 
-export const group = {
-	/**
-	 * Create a group.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-create}
-	 */
-	create: (name: string, flags: CommandFlags<{ description: string }> = {}) =>
-		cli.execute<CreatedGroup>(["group", "create"], { args: [name], flags }),
-
-	/**
-	 * Remove a group.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-delete}
-	 */
-	delete: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<void>(["group", "delete"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Change a group's name or description.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-edit}
-	 */
-	edit: (
-		nameOrId: string,
-		flags: CommandFlags<{
-			description: string;
-			name: string;
-		}> = {},
-	) =>
-		cli.execute<void>(["group", "edit"], {
-			args: [nameOrId],
-			flags,
-			json: false,
-		}),
-
-	/**
-	 * Get details about a group.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-get}
-	 */
-	get: (nameOrId: string, flags: CommandFlags = {}) =>
-		cli.execute<Group>(["group", "get"], { args: [nameOrId], flags }),
-
-	/**
-	 * List groups.
-	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-list}
-	 */
-	list: (
-		flags: CommandFlags<{
-			vault: string;
-			user: string;
-		}> = {},
-	) => cli.execute<AppreviatedGroup[]>(["group", "list"], { flags }),
-
-	user: {
-		/**
-		 * Grant a user access to a group.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-grant}
-		 */
-		grant: (
-			flags: CommandFlags<{
-				group: string;
-				role: GroupRole;
-				user: string;
-			}> = {},
-		) => cli.execute<void>(["group", "user", "grant"], { flags, json: false }),
-
-		/**
-		 * Retrieve users that belong to a group.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-list}
-		 */
-		list: (group: string, flags: CommandFlags = {}) =>
-			cli.execute<GroupUser[]>(["group", "user", "list"], {
-				args: [group],
-				flags,
-			}),
-
-		/**
-		 * Revoke a user's access to a vault or group.
-		 *
-		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-revoke}
-		 */
-		revoke: (
-			flags: CommandFlags<{
-				group: string;
-				user: string;
-			}> = {},
-		) => cli.execute<void>(["group", "user", "grant"], { flags, json: false }),
-	},
+const defaultIntegration: Integration = {
+	name: "1Password for JavaScript",
+	id: "JS",
+	build: semverToInt(version),
 };
+
+export const createFieldAssignment = ([
+	label,
+	type,
+	value,
+]: FieldAssignment): string => `${label}[${type}]=${value}`;
+
+export interface ConnectInfo {
+	host: string;
+	token: string;
+}
+
+export interface Options {
+	globalFlags?: Partial<GlobalFlags>;
+	requiredVersion?: string;
+	connectInfo?: ConnectInfo;
+	integration?: Integration;
+}
+
+export default class OPJS {
+	public static recommendedVersion = ">=2.4.0";
+	private requiredVersion: string;
+	private command: Command;
+
+	public constructor({
+		globalFlags = {},
+		requiredVersion = OPJS.recommendedVersion,
+		integration = defaultIntegration,
+		connectInfo,
+	}: Options = {}) {
+		this.requiredVersion = requiredVersion;
+
+		this.command = new Command(globalFlags, {
+			OP_INTEGRATION_NAME: integration.name,
+			OP_INTEGRATION_ID: integration.id,
+			OP_INTEGRATION_BUILDNUMBER: integration.build,
+			...(connectInfo && {
+				OP_CONNECT_HOST: connectInfo.host,
+				OP_CONNECT_TOKEN: connectInfo.token,
+			}),
+		});
+	}
+
+	/**
+	 * Validate that the CLI is installed and meets the required version.
+	 */
+	public async validate(requiredVersion?: string) {
+		requiredVersion = requiredVersion || this.requiredVersion;
+
+		const cliExists = !!(await lookpath("op"));
+
+		if (!cliExists) {
+			throw new ValidationError("not-found");
+		}
+
+		const semVersion = semverCoerce(this.version);
+
+		if (!semverSatisfies(semVersion, requiredVersion)) {
+			throw new ValidationError("version", requiredVersion, this.version);
+		}
+	}
+
+	/**
+	 * Return the version of the `op` executable being used.
+	 */
+	public get version() {
+		return this.command.execute<string>([], {
+			flags: { version: true },
+			json: false,
+		});
+	}
+
+	public get inject() {
+		// Version >=2.6.2 of the CLI changed how it handled piped input
+		// in order to fix an issue with item creation, but in the process
+		// it broke piping for other commands. We have a macOS/Linux-only
+		// workaround, but not one for Windows, so for now we cannot support
+		// the inject command on Windows past this version until the CLI
+		// team fixes the issue.
+		//
+		// eslint-disable-next-line unicorn/consistent-function-scoping
+		const modifyFlags = (flags: Flags) => {
+			if (semverSatisfies(this.version, ">=2.6.2")) {
+				if (process.platform === "win32") {
+					throw new ExecutionError(
+						"Inject is not supported on Windows for version >=2.6.2 of the CLI",
+						1,
+					);
+				} else {
+					return { ...flags, inFile: "/dev/stdin" };
+				}
+			} else {
+				return flags;
+			}
+		};
+
+		return {
+			/**
+			 * Inject secrets into and return the data
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+			 */
+			data: (input: string, flags: CommandFlags<{}> = {}) =>
+				this.command.execute<string>(["inject"], {
+					flags: modifyFlags(flags),
+					json: false,
+					stdin: input,
+				}),
+
+			/**
+			 * Inject secrets into data and write the result to a file
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
+			 */
+			toFile: (
+				input: string,
+				outFile: string,
+				flags: CommandFlags<{
+					fileMode: string;
+					force: boolean;
+				}> = {},
+			) =>
+				this.command.execute<void>(["inject"], {
+					flags: modifyFlags({ outFile, ...flags }),
+					json: false,
+					stdin: input,
+				}),
+		};
+	}
+
+	public get read() {
+		return {
+			/**
+			 * Read a secret by secret reference and return its value
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
+			 */
+			parse: (
+				reference: string,
+				flags: CommandFlags<{ noNewline: boolean }> = {},
+			) =>
+				this.command.execute<string>(["read"], {
+					args: [reference],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Read a secret by secret reference and save it to a file
+			 *
+			 * Returns the path to the file.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/commands/read}
+			 */
+			toFile: (
+				reference: string,
+				outputPath: string,
+				flags: CommandFlags<{ noNewline: boolean }> = {},
+			) =>
+				this.command.execute<string>(["read"], {
+					args: [reference],
+					flags: { outFile: outputPath, ...flags },
+					json: false,
+				}),
+		};
+	}
+
+	public get account() {
+		return {
+			/**
+			 * Remove a 1Password account from this device.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-forget}
+			 */
+			forget: (
+				account: string | null,
+				flags: CommandFlags<{ all: boolean }> = {},
+			) =>
+				this.command.execute<string>(["account", "forget"], {
+					args: [account],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Get details about your account.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-get}
+			 */
+			get: (flags: CommandFlags = {}) =>
+				this.command.execute<Account>(["account", "get"], {
+					flags,
+				}),
+
+			/**
+			 * List users and accounts set up on this device.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-list}
+			 */
+			list: (flags: CommandFlags = {}) =>
+				this.command.execute<ListAccount[]>(["account", "list"], {
+					flags,
+				}),
+		};
+	}
+
+	public whoami(): ListAccount | null {
+		try {
+			return this.command.execute<ListAccount>(["whoami"]);
+		} catch (error) {
+			if (error instanceof CLIError && error.message.includes("signed in")) {
+				return null;
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	public get document() {
+		return {
+			/**
+			 * Create a document item with data or a file on disk.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-create}
+			 */
+			create: (
+				dataOrFile: string,
+				flags: CommandFlags<{
+					fileName: string;
+					tags: string[];
+					title: string;
+					vault: string;
+				}> = {},
+				fromFile = false,
+			) =>
+				this.command.execute<CreatedDocument>(["document", "create"], {
+					args: [fromFile ? dataOrFile : ""],
+					flags,
+					stdin: fromFile ? undefined : dataOrFile,
+				}),
+
+			/**
+			 * Permanently delete a document.
+			 *
+			 * Set `archive` to move it to the Archive instead.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-delete}
+			 */
+			delete: (
+				nameOrId: string,
+				flags: CommandFlags<{ archive: boolean; vault: string }> = {},
+			) =>
+				this.command.execute<void>(["document", "delete"], {
+					args: [nameOrId],
+					flags,
+				}),
+
+			/**
+			 * Update a document.
+			 *
+			 * Replaces the file contents with the provided file path or data.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-edit}
+			 */
+			edit: (
+				nameOrId: string,
+				dataOrFile: string,
+				flags: CommandFlags<{
+					fileName: string;
+					tags: string[];
+					title: string;
+					vault: string;
+				}> = {},
+				fromFile = false,
+			) =>
+				this.command.execute<void>(["document", "edit"], {
+					args: [nameOrId, fromFile ? dataOrFile : ""],
+					flags,
+					stdin: fromFile ? undefined : dataOrFile,
+				}),
+
+			/**
+			 * Download a document and return its contents.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
+			 */
+			get: (
+				nameOrId: string,
+				flags: CommandFlags<{
+					includeArchive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<string>(["document", "get"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Download a document and save it to a file.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-get}
+			 */
+			toFile: (
+				nameOrId: string,
+				outputPath: string,
+				flags: CommandFlags<{
+					includeArchive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<void>(["document", "get"], {
+					args: [nameOrId],
+					flags: {
+						output: outputPath,
+						...flags,
+					},
+					json: false,
+				}),
+
+			/**
+			 * List documents.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/document#document-list}
+			 */
+			list: (
+				flags: CommandFlags<{
+					includeArchive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<Document[]>(["document", "list"], {
+					flags,
+				}),
+		};
+	}
+
+	public get eventsApi() {
+		return {
+			/**
+			 * Create an Events API integration token.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api#subcommands}
+			 */
+			create: (
+				name: string,
+				flags: CommandFlags<{
+					expiresIn: string;
+					features: ("signinattempts" | "itemusages")[];
+				}> = {},
+			) =>
+				this.command.execute<string>(["events-api", "create"], {
+					args: [name],
+					flags,
+					json: false,
+				}),
+		};
+	}
+
+	public get connect() {
+		return {
+			group: {
+				/**
+				 * Grant a group access to manage Secrets Automation.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-grant}
+				 */
+				grant: (
+					group: string,
+					flags: CommandFlags<{
+						allServers: boolean;
+						server: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["connect", "group", "grant"], {
+						flags: { group, ...flags },
+						json: false,
+					}),
+
+				/**
+				 * Revoke a group's access to manage Secrets Automation.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-group-revoke}
+				 */
+				revoke: (
+					group: string,
+					flags: CommandFlags<{
+						allServers: boolean;
+						server: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["connect", "group", "revoke"], {
+						flags: { group, ...flags },
+						json: false,
+					}),
+			},
+
+			server: {
+				/**
+				 * Add a 1Password Connect server to your account and generate a credentials file for it.
+				 *
+				 * Creates a credentials file in the CWD.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-create}
+				 */
+				create: (
+					name: string,
+					flags: CommandFlags<{
+						vaults: string[];
+					}> = {},
+				) =>
+					this.command.execute<string>(["connect", "server", "create"], {
+						args: [name],
+						flags,
+						json: false,
+					}),
+
+				/**
+				 * Remove a Connect server.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-delete}
+				 */
+				delete: (nameOrId: string, flags: CommandFlags = {}) =>
+					this.command.execute<void>(["connect", "server", "delete"], {
+						args: [nameOrId],
+						flags,
+					}),
+
+				/**
+				 * Rename a Connect server.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
+				 */
+				edit: (
+					nameOrId: string,
+					newName: string,
+					flags: CommandFlags<{}> = {},
+				) =>
+					this.command.execute<string>(["connect", "server", "edit"], {
+						args: [nameOrId],
+						flags: { name: newName, ...flags },
+						json: false,
+					}),
+
+				/**
+				 * Get details about a Connect server.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-get}
+				 */
+				get: (nameOrId: string, flags: CommandFlags = {}) =>
+					this.command.execute<ConnectServer>(["connect", "server", "get"], {
+						args: [nameOrId],
+						flags,
+					}),
+
+				/**
+				 * Get a list of Connect servers.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-list}
+				 */
+				list: (flags: CommandFlags = {}) =>
+					this.command.execute<ConnectServer[]>(["connect", "server", "list"], {
+						flags,
+					}),
+			},
+
+			token: {
+				/**
+				 * Issue a new token for a Connect server.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-create}
+				 */
+				create: (
+					name: string,
+					server: string,
+					flags: CommandFlags<{
+						expiresIn: string;
+						vaults: string[];
+					}> = {},
+				) =>
+					this.command.execute<string>(["connect", "token", "create"], {
+						args: [name],
+						flags: { server, ...flags },
+						json: false,
+					}),
+
+				/**
+				 * Revoke a token for a Connect server.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-delete}
+				 */
+				delete: (
+					token: string,
+					flags: CommandFlags<{
+						server: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["connect", "token", "delete"], {
+						args: [token],
+						flags,
+						json: false,
+					}),
+
+				/**
+				 * Rename a Connect token.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-edit}
+				 */
+				edit: (
+					token: string,
+					newName: string,
+					flags: CommandFlags<{
+						server: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["connect", "token", "edit"], {
+						args: [token],
+						flags: { name: newName, ...flags },
+						json: false,
+					}),
+
+				/**
+				 * List tokens for Connect servers.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-token-list}
+				 */
+				list: (
+					flags: CommandFlags<{
+						server: string;
+					}> = {},
+				) =>
+					this.command.execute<ConnectServerToken[]>(
+						["connect", "token", "list"],
+						{
+							flags,
+						},
+					),
+			},
+
+			vault: {
+				/**
+				 * Grant a Connect server access to a vault.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
+				 */
+				grant: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+					this.command.execute<void>(["connect", "vault", "grant"], {
+						flags: { server, vault, ...flags },
+						json: false,
+					}),
+
+				/**
+				 * Revoke a Connect server's access to a vault.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
+				 */
+				revoke: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+					this.command.execute<void>(["connect", "vault", "revoke"], {
+						flags: { server, vault, ...flags },
+						json: false,
+					}),
+			},
+		};
+	}
+
+	public get item() {
+		return {
+			/**
+			 * Create an item.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-create}
+			 */
+			create: (
+				assignments: FieldAssignment[],
+				flags: CommandFlags<{
+					category: InputCategory;
+					dryRun: boolean;
+					generatePassword: string | boolean;
+					tags: string[];
+					template: string;
+					title: string;
+					url: string;
+					vault: string;
+				}> = {},
+			) => {
+				const options: {
+					flags: Flags;
+					args?: string[];
+					stdin?: Record<string, any>;
+				} = {
+					flags,
+				};
+
+				const version = semverCoerce(this.version);
+
+				// Prior to 2.6.2 the CLI didn't handle field assignments correctly
+				// within scripts, so if we're below that version we need to pipe the
+				// fields in via stdin
+				if (semverSatisfies(version, ">=2.6.2")) {
+					options.args = assignments.map((a) => createFieldAssignment(a));
+				} else {
+					options.stdin = {
+						fields: assignments.map(([label, type, value, purpose]) => {
+							const data = {
+								label,
+								type,
+								value,
+							};
+
+							if (purpose) {
+								Object.assign(data, { purpose });
+							}
+
+							return data;
+						}),
+					};
+				}
+
+				return this.command.execute<Item>(["item", "create"], options);
+			},
+
+			/**
+			 * Permanently delete an item.
+			 *
+			 * Set `archive` to move it to the Archive instead.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-delete}
+			 */
+			delete: (
+				nameOrIdOrLink: string,
+				flags: CommandFlags<{
+					archive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<void>(["item", "delete"], {
+					args: [nameOrIdOrLink],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Edit an item's details.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-edit}
+			 */
+			edit: (
+				nameOrIdOrLink: string,
+				assignments: FieldAssignment[],
+				flags: CommandFlags<{
+					dryRun: boolean;
+					generatePassword: string | boolean;
+					tags: string[];
+					title: string;
+					url: string;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<Item>(["item", "edit"], {
+					args: [
+						nameOrIdOrLink,
+						...assignments.map((a) => createFieldAssignment(a)),
+					],
+					flags,
+				}),
+
+			/**
+			 * Return details about an item.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
+			 */
+			get: (
+				nameOrIdOrLink: string,
+				flags: CommandFlags<
+					{
+						includeArchive: boolean;
+						vault: string;
+					},
+					{
+						fields?: FieldLabelSelector | FieldTypeSelector;
+					}
+				> = {},
+			) => {
+				const { fields, ...f } = flags;
+				const newFlags: typeof f & {
+					fields?: string;
+				} = f;
+
+				if (fields) {
+					let fieldValue = "";
+
+					if ("label" in fields) {
+						fieldValue += (fields.label || [])
+							.map((label) => `label=${label}`)
+							.join(",");
+					} else if ("type" in fields) {
+						fieldValue += (fields.type || [])
+							.map((type) => `type=${type}`)
+							.join(",");
+					}
+
+					newFlags.fields = fieldValue;
+				}
+
+				return this.command.execute<Item>(["item", "get"], {
+					args: [nameOrIdOrLink],
+					flags: newFlags,
+				});
+			},
+
+			/**
+			 * Output the primary one-time password for this item.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
+			 */
+			otp: (
+				nameOrIdOrLink: string,
+				flags: CommandFlags<{
+					includeArchive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<string>(["item", "get"], {
+					args: [nameOrIdOrLink],
+					flags: { otp: true, ...flags },
+					json: false,
+				}),
+
+			/**
+			 * Get a shareable link for the item.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-get}
+			 */
+			shareLink: (
+				nameOrIdOrLink: string,
+				flags: CommandFlags<{
+					includeArchive: boolean;
+					vault: string;
+				}> = {},
+			) =>
+				this.command.execute<string>(["item", "get"], {
+					args: [nameOrIdOrLink],
+					flags: { shareLink: true, ...flags },
+					json: false,
+				}),
+
+			/**
+			 * List items.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-list}
+			 */
+			list: (
+				flags: CommandFlags<{
+					categories: InputCategory[];
+					includeArchive: boolean;
+					long: boolean;
+					tags: string[];
+					vault: string;
+				}> = {},
+			) => this.command.execute<Item[]>(["item", "list"], { flags }),
+
+			/**
+			 * Share an item.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-share}
+			 */
+			share: (
+				nameOrId: string,
+				flags: CommandFlags<{
+					emails: string[];
+					expiry: string;
+					vault: string;
+					viewOnce: boolean;
+				}> = {},
+			) =>
+				this.command.execute<string>(["item", "share"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			template: {
+				/**
+				 * Return a template for an item type.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-get}
+				 */
+				get: (category: InputCategory, flags: CommandFlags = {}) =>
+					this.command.execute<ItemTemplate[]>(["item", "template", "get"], {
+						args: [category],
+						flags,
+					}),
+
+				/**
+				 * Lists available item type templates.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item/#item-template-list}
+				 */
+				list: (flags: CommandFlags = {}) =>
+					this.command.execute<ListItemTemplate[]>(
+						["item", "template", "list"],
+						{
+							flags,
+						},
+					),
+			},
+		};
+	}
+
+	public get vault() {
+		return {
+			/**
+			 * Create a new vault
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-create}
+			 */
+			create: (
+				name: string,
+				flags: CommandFlags<{
+					allowAdminsToManage: "true" | "false";
+					description: string;
+					icon: VaultIcon;
+				}> = {},
+			) =>
+				this.command.execute<Vault>(["vault", "create"], {
+					args: [name],
+					flags,
+				}),
+
+			/**
+			 * Remove a vault.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-delete}
+			 */
+			delete: (nameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<void>(["vault", "delete"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Edit a vault's name, description, icon or Travel Mode status.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-edit}
+			 */
+			edit: (
+				nameOrId: string,
+				flags: CommandFlags<{
+					description: string;
+					icon: VaultIcon;
+					name: string;
+					travelMode: "on" | "off";
+				}> = {},
+			) =>
+				this.command.execute<void>(["vault", "edit"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Get details about a vault.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-get}
+			 */
+			get: (nameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<Vault>(["vault", "get"], {
+					args: [nameOrId],
+					flags,
+				}),
+
+			/**
+			 * List vaults.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-list}
+			 */
+			list: (
+				flags: CommandFlags<{
+					group: string;
+					user: string;
+				}> = {},
+			) =>
+				this.command.execute<AbbreviatedVault[]>(["vault", "list"], { flags }),
+
+			group: {
+				/**
+				 * Grant a group permissions in a vault.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-grant}
+				 */
+				grant: (
+					flags: CommandFlags<{
+						group: string;
+						permissions: VaultPermisson[];
+						vault: string;
+					}> = {},
+				) =>
+					this.command.execute<VaultGroupAccess>(["vault", "group", "grant"], {
+						flags: { noInput: true, ...flags },
+					}),
+
+				/**
+				 * Revoke a group's permissions in a vault, in part or in full
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-revoke}
+				 */
+				revoke: (
+					flags: CommandFlags<{
+						group: string;
+						permissions: VaultPermisson[];
+						vault: string;
+					}> = {},
+				) =>
+					this.command.execute<VaultGroupAccess>(["vault", "group", "revoke"], {
+						flags: { noInput: true, ...flags },
+					}),
+
+				/**
+				 * List all the groups that have access to the given vault
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-group-list}
+				 */
+				list: (vault: string, flags: CommandFlags = {}) =>
+					this.command.execute<VaultGroup[]>(["vault", "group", "list"], {
+						args: [vault],
+						flags,
+					}),
+			},
+
+			user: {
+				/**
+				 * Grant a user permissions in a vault
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-grant}
+				 */
+				grant: (
+					flags: CommandFlags<{
+						user: string;
+						permissions: VaultPermisson[];
+						vault: string;
+					}> = {},
+				) =>
+					this.command.execute<VaultUserAccess>(["vault", "user", "grant"], {
+						flags: { noInput: true, ...flags },
+					}),
+
+				/**
+				 * Revoke a user's permissions in a vault, in part or in full
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-revoke}
+				 */
+				revoke: (
+					flags: CommandFlags<{
+						user: string;
+						permissions: VaultPermisson[];
+						vault: string;
+					}> = {},
+				) =>
+					this.command.execute<VaultUserAccess>(["vault", "user", "revoke"], {
+						flags: { noInput: true, ...flags },
+					}),
+
+				/**
+				 * List all users with access to the vault and their permissions
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/vault#vault-user-list}
+				 */
+				list: (vault: string, flags: CommandFlags = {}) =>
+					this.command.execute<VaultUser[]>(["vault", "user", "list"], {
+						args: [vault],
+						flags,
+					}),
+			},
+		};
+	}
+
+	public get user() {
+		return {
+			/**
+			 * Confirm a user who has accepted their invitation to the 1Password account.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
+			 */
+			confirm: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+				this.command.execute<void>(["user", "confirm"], {
+					args: [emailOrNameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Confirm all users who have accepted their invitation to the 1Password account.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
+			 */
+			confirmAll: (flags: CommandFlags<{}> = {}) =>
+				this.command.execute<void>(["user", "confirm"], {
+					flags: { all: true, ...flags },
+					json: false,
+				}),
+
+			/**
+			 * Remove a user and all their data from the account.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-delete}
+			 */
+			delete: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<void>(["user", "delete"], {
+					args: [emailOrNameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Change a user's name or Travel Mode status
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-edit}
+			 */
+			edit: (
+				emailOrNameOrId: string,
+				flags: CommandFlags<{
+					name: string;
+					travelMode: "on" | "off";
+				}> = {},
+			) =>
+				this.command.execute<void>(["user", "edit"], {
+					args: [emailOrNameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Get details about a user.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+			 */
+			get: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+				this.command.execute<User>(["user", "get"], {
+					args: [emailOrNameOrId],
+					flags,
+				}),
+
+			/**
+			 * Get details about the current user.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+			 */
+			me: (flags: CommandFlags<{}> = {}) =>
+				this.command.execute<User>(["user", "get"], {
+					flags: { me: true, ...flags },
+				}),
+
+			/**
+			 * Get the user's public key fingerprint.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+			 */
+			fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+				this.command.execute<string>(["user", "get"], {
+					args: [emailOrNameOrId],
+					flags: { fingerprint: true, ...flags },
+					json: false,
+				}),
+
+			/**
+			 * Get the user's public key.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
+			 */
+			publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+				this.command.execute<string>(["user", "get"], {
+					args: [emailOrNameOrId],
+					flags: { publicKey: true, ...flags },
+					json: false,
+				}),
+
+			/**
+			 * List users.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-list}
+			 */
+			list: (
+				flags: CommandFlags<{
+					group: string;
+					vault: string;
+				}> = {},
+			) => this.command.execute<AbbreviatedUser[]>(["user", "list"], { flags }),
+
+			/**
+			 * Provision a user in the authenticated account.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
+			 */
+			provision: (
+				email: string,
+				name: string,
+				flags: CommandFlags<{
+					language: string;
+				}>,
+			) =>
+				this.command.execute<User>(["user", "provision"], {
+					flags: { email, name, ...flags },
+				}),
+
+			/**
+			 * Reactivate a suspended user.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-reactivate}
+			 */
+			reactivate: (emailOrNameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<void>(["user", "reactivate"], {
+					args: [emailOrNameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Suspend a user.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-suspend}
+			 */
+			suspend: (
+				emailOrNameOrId: string,
+				flags: CommandFlags<{ deauthorizeDevicesAfter: string }> = {},
+			) =>
+				this.command.execute<void>(["user", "suspend"], {
+					args: [emailOrNameOrId],
+					flags,
+					json: false,
+				}),
+		};
+	}
+
+	public get group() {
+		return {
+			/**
+			 * Create a group.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-create}
+			 */
+			create: (
+				name: string,
+				flags: CommandFlags<{ description: string }> = {},
+			) =>
+				this.command.execute<CreatedGroup>(["group", "create"], {
+					args: [name],
+					flags,
+				}),
+
+			/**
+			 * Remove a group.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-delete}
+			 */
+			delete: (nameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<void>(["group", "delete"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Change a group's name or description.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-edit}
+			 */
+			edit: (
+				nameOrId: string,
+				flags: CommandFlags<{
+					description: string;
+					name: string;
+				}> = {},
+			) =>
+				this.command.execute<void>(["group", "edit"], {
+					args: [nameOrId],
+					flags,
+					json: false,
+				}),
+
+			/**
+			 * Get details about a group.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-get}
+			 */
+			get: (nameOrId: string, flags: CommandFlags = {}) =>
+				this.command.execute<Group>(["group", "get"], {
+					args: [nameOrId],
+					flags,
+				}),
+
+			/**
+			 * List groups.
+			 *
+			 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-list}
+			 */
+			list: (
+				flags: CommandFlags<{
+					vault: string;
+					user: string;
+				}> = {},
+			) =>
+				this.command.execute<AppreviatedGroup[]>(["group", "list"], { flags }),
+
+			user: {
+				/**
+				 * Grant a user access to a group.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-grant}
+				 */
+				grant: (
+					flags: CommandFlags<{
+						group: string;
+						role: GroupRole;
+						user: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["group", "user", "grant"], {
+						flags,
+						json: false,
+					}),
+
+				/**
+				 * Retrieve users that belong to a group.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-list}
+				 */
+				list: (group: string, flags: CommandFlags = {}) =>
+					this.command.execute<GroupUser[]>(["group", "user", "list"], {
+						args: [group],
+						flags,
+					}),
+
+				/**
+				 * Revoke a user's access to a vault or group.
+				 *
+				 * {@link https://developer.1password.com/docs/cli/reference/management-commands/group#group-user-revoke}
+				 */
+				revoke: (
+					flags: CommandFlags<{
+						group: string;
+						user: string;
+					}> = {},
+				) =>
+					this.command.execute<void>(["group", "user", "grant"], {
+						flags,
+						json: false,
+					}),
+			},
+		};
+	}
+}
