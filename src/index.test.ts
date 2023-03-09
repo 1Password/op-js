@@ -1,7 +1,7 @@
 import child_process from "child_process";
 import * as lookpath from "lookpath";
 import OPJS, { createFieldAssignment } from ".";
-import { ValidationError } from "./errors";
+import { ExecutionError, ValidationError } from "./errors";
 
 jest.mock("lookpath");
 jest.mock("child_process");
@@ -50,6 +50,51 @@ describe("OPJS", () => {
 		);
 
 		spy.mockReset();
+	});
+
+	it("can set a service account token env var", () => {
+		const serviceAccountToken = "1kjhd9872hd981865s";
+
+		const cli = new OPJS({
+			serviceAccountToken,
+		});
+
+		const spy = child_process.spawnSync as jest.Mock;
+		jest.spyOn<any, any>(child_process, "spawnSync").mockReturnValue({
+			error: null,
+			stderr: "",
+			stdout: "{}",
+		});
+
+		// Any command will do
+		cli.whoami();
+
+		expect(
+			(spy.mock.calls[0] as [null, null, { env: NodeJS.ProcessEnv }])[2].env,
+		).toEqual(
+			expect.objectContaining({
+				OP_SERVICE_ACCOUNT_TOKEN: serviceAccountToken,
+			}),
+		);
+
+		spy.mockReset();
+	});
+
+	it("throws error when both connect and service account details are set", () => {
+		expect(() => {
+			new OPJS({
+				serviceAccountToken: "1kjhd9872hd981865s",
+				connectInfo: {
+					host: "https://connect.myserver.com",
+					token: "1kjhd9872hd981865s",
+				},
+			});
+		}).toThrow(
+			new ExecutionError(
+				"Cannot set both Connect info and Service Account token",
+				1,
+			),
+		);
 	});
 
 	it("can set the integration details as env vars", () => {

@@ -563,6 +563,7 @@ export interface Options {
 	globalFlags?: Partial<GlobalFlags>;
 	requiredVersion?: string;
 	connectInfo?: ConnectInfo;
+	serviceAccountToken?: string;
 	integration?: Integration;
 }
 
@@ -575,14 +576,25 @@ export default class OPJS {
 		globalFlags = {},
 		requiredVersion = OPJS.recommendedVersion,
 		integration = defaultIntegration,
+		serviceAccountToken,
 		connectInfo,
 	}: Options = {}) {
 		this.requiredVersion = requiredVersion;
+
+		if (connectInfo && serviceAccountToken) {
+			throw new ExecutionError(
+				"Cannot set both Connect info and Service Account token",
+				1,
+			);
+		}
 
 		this.command = new Command(globalFlags, {
 			OP_INTEGRATION_NAME: integration.name,
 			OP_INTEGRATION_ID: integration.id,
 			OP_INTEGRATION_BUILDNUMBER: integration.build,
+			...(serviceAccountToken && {
+				OP_SERVICE_ACCOUNT_TOKEN: serviceAccountToken,
+			}),
 			...(connectInfo && {
 				OP_CONNECT_HOST: connectInfo.host,
 				OP_CONNECT_TOKEN: connectInfo.token,
