@@ -145,6 +145,7 @@ export class CLI {
 	public static recommendedVersion = ">=2.4.0";
 	public clientInfo: ClientInfo = defaultClientInfo;
 	public globalFlags: Partial<GlobalFlags> = {};
+	public connect?: { host: string; token: string };
 
 	public setClientInfo(clientInfo: ClientInfo) {
 		this.clientInfo = clientInfo;
@@ -250,6 +251,10 @@ export class CLI {
 			input,
 			env: {
 				...process.env,
+				...(this.connect && {
+					OP_CONNECT_HOST: this.connect.host,
+					OP_CONNECT_TOKEN: this.connect.token,
+				}),
 				OP_INTEGRATION_NAME: this.clientInfo.name,
 				OP_INTEGRATION_ID: this.clientInfo.id,
 				OP_INTEGRATION_BUILDNUMBER: this.clientInfo.build,

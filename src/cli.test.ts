@@ -225,6 +225,36 @@ describe("cli", () => {
 		});
 	});
 
+	describe("connect", () => {
+		it("does not set connect env vars if not supplied", () => {
+			cli.connect = undefined;
+
+			const execute = executeSpy([["foo"]]);
+			const envVars = Object.keys(execute.call[2].env);
+
+			expect(envVars).not.toContain("OP_CONNECT_HOST");
+			expect(envVars).not.toContain("OP_CONNECT_TOKEN");
+		});
+
+		it("passes connect env vars if supplied", () => {
+			cli.connect = {
+				host: "https://connect.myserver.com",
+				token: "1kjhd9872hd981865s",
+			};
+
+			const execute = executeSpy([["foo"]]);
+			expect(execute.call[2].env).toEqual(
+				expect.objectContaining({
+					OP_CONNECT_HOST: cli.connect.host,
+					OP_CONNECT_TOKEN: cli.connect.token,
+				}),
+			);
+
+			// Reset connect info
+			cli.connect = undefined;
+		});
+	});
+
 	describe("validate", () => {
 		it("throws an error when the op cli is not found", async () => {
 			const lookpathSpy = jest

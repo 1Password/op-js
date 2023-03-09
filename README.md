@@ -69,6 +69,25 @@ validateCli(">=2.3.1").catch((error) => {
 });
 ```
 
+### Authentication
+
+By default `op-js` uses system authentication (e.g. biometrics), but it also supports automated authentication via [Connect Server](https://developer.1password.com/docs/connect).
+
+If you've got a Connect Server set up you can supply your host and token:
+
+```
+import { setConnect } from "@1password/op-js";
+
+setConnect("https://connect.myserver.com", "1kjhd9872hd981865s");
+```
+
+Alternatively you can use environment variables when executing the code that uses `op-js`:
+
+```
+OP_CONNECT_HOST=https://connect.myserver.com
+OP_CONNECT_TOKEN=1kjhd9872hd981865s
+```
+
 ### Available commands and functions
 
 There are roughly 70 commands available for use, so you're encouraged to check out the main [`index.ts`](./src/index.ts) file to get a better sense of what's available. Generally, though, here are the top-level commands/namespaces you can import:
