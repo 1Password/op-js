@@ -26,12 +26,11 @@ expect.extend({
 	},
 });
 
-if (process.env.npm_lifecycle_event === "test:integration") {
-	for (const envVar of ["ACCOUNT", "VAULT"]) {
-		if (!process.env[`OP_${envVar}`]) {
-			throw new Error(
-				`OP_${envVar} environment variable is required for integration tests.`,
-			);
-		}
-	}
+if (
+	process.env.npm_lifecycle_event === "test:integration" &&
+	!process.env.OP_SERVICE_ACCOUNT_TOKEN
+) {
+	throw new Error(
+		"OP_SERVICE_ACCOUNT_TOKEN environment variable is required for integration tests.",
+	);
 }

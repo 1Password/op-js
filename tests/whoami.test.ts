@@ -1,9 +1,9 @@
 import Joi from "joi";
-import { createOpjs } from "./test-utils";
+import OPJS from "../src";
 
 describe("whoami", () => {
 	it("returns the authenticated user", () => {
-		const cli = createOpjs();
+		const cli = new OPJS();
 
 		const result = cli.whoami();
 		expect(result).toMatchSchema(
@@ -16,6 +16,10 @@ describe("whoami", () => {
 					email: Joi.string().required(),
 					user_uuid: Joi.string().required(),
 					account_uuid: Joi.string().required(),
+				}),
+				Joi.object({
+					URL: Joi.string().required(),
+					ServiceAccountType: "SERVICE_ACCOUNT",
 				}),
 			),
 		);

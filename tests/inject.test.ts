@@ -1,15 +1,18 @@
 import Joi from "joi";
-import { createOpjs, MALICIOUS_STRING } from "./test-utils";
+import OPJS from "../src";
+import { DEFAULT_VAULT, MALICIOUS_STRING } from "./test-utils";
 
 describe("inject", () => {
 	describe("data", () => {
 		it("returns injected data", () => {
-			const cli = createOpjs();
+			const cli = new OPJS();
 
+			// eslint-disable-next-line no-restricted-syntax
+			const random = Math.random().toString();
 			const injectable = cli.item.create([["foo", "text", MALICIOUS_STRING]], {
-				vault: process.env.OP_VAULT,
+				vault: DEFAULT_VAULT,
 				category: "Login",
-				title: "Injectable",
+				title: `Injectable ${random}`,
 			});
 			const reference = injectable.fields.find(
 				(f) => f.label === "foo",

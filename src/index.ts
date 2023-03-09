@@ -68,6 +68,11 @@ export interface ListAccount {
 	shorthand?: string;
 }
 
+export interface ServiceAccount {
+	URL: string;
+	ServiceAccountType: "SERVICE_ACCOUNT";
+}
+
 export interface Document {
 	id: string;
 	title: string;
@@ -641,7 +646,12 @@ export default class OPJS {
 		//
 		// eslint-disable-next-line unicorn/consistent-function-scoping
 		const modifyFlags = (flags: Flags) => {
-			if (semverSatisfies(this.version, ">=2.6.2")) {
+			if (
+				semverSatisfies(this.version, ">=2.6.2", {
+					loose: true,
+					includePrerelease: true,
+				})
+			) {
 				if (process.platform === "win32") {
 					throw new ExecutionError(
 						"Inject is not supported on Windows for version >=2.6.2 of the CLI",
@@ -765,7 +775,7 @@ export default class OPJS {
 		};
 	}
 
-	public whoami(): ListAccount | null {
+	public whoami(): ListAccount | ServiceAccount | null {
 		try {
 			return this.command.execute<ListAccount>(["whoami"]);
 		} catch (error) {

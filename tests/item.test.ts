@@ -1,5 +1,6 @@
 import Joi from "joi";
-import { createOpjs, MALICIOUS_STRING } from "./test-utils";
+import OPJS from "../src";
+import { DEFAULT_VAULT, MALICIOUS_STRING } from "./test-utils";
 
 const itemSchema = Joi.object({
 	id: Joi.string().required(),
@@ -64,10 +65,10 @@ const itemSchema = Joi.object({
 
 describe("item", () => {
 	it("CRUDs items", () => {
-		const cli = createOpjs();
+		const cli = new OPJS();
 
 		const create = cli.item.create([["username", "text", "created"]], {
-			vault: process.env.OP_VAULT,
+			vault: DEFAULT_VAULT,
 			category: "Login",
 			title: "Created Login",
 			url: "https://example.com",
@@ -84,6 +85,7 @@ describe("item", () => {
 		expect(edit).toMatchSchema(itemSchema);
 
 		const get = cli.item.get(create.id, {
+			vault: DEFAULT_VAULT,
 			includeArchive: true,
 		});
 		expect(get).toMatchSchema(itemSchema);

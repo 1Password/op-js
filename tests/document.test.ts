@@ -1,16 +1,17 @@
 import { existsSync, readFileSync, rmSync } from "fs";
 import Joi from "joi";
-import { createOpjs, MALICIOUS_STRING } from "./test-utils";
+import OPJS from "../src";
+import { DEFAULT_VAULT, MALICIOUS_STRING } from "./test-utils";
 
 describe("document", () => {
 	it("CRUDs documents", () => {
-		const cli = createOpjs();
+		const cli = new OPJS();
 
 		const initialValue =
 			"1Password's proven dual-key encryption protects your logins, payment cards, and more.";
 
 		const create = cli.document.create(initialValue, {
-			vault: process.env.OP_VAULT,
+			vault: DEFAULT_VAULT,
 			title: "Created Document",
 			fileName: "created-doc.txt",
 		});
@@ -23,7 +24,9 @@ describe("document", () => {
 			}).required(),
 		);
 
-		const list = cli.document.list({ vault: process.env.OP_VAULT });
+		const list = cli.document.list({
+			vault: DEFAULT_VAULT,
+		});
 		expect(list).toMatchSchema(
 			Joi.array()
 				.items({
