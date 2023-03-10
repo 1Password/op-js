@@ -1,21 +1,74 @@
-name: Test
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
+name: Analyze and test
+
+# TODO: reset this
+on: push
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+#   push:
+#     branches:
+#       - main
+
+env:
+  OP_VERSION: 2.15.0-beta.03
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Check out repo
+        uses: actions/checkout@v3
+        
+      - name: Set up Node
+        uses: actions/setup-node@v3
         with:
-          node-version: 16
-      - run: yarn
-      - run: yarn typecheck
-      - run: yarn eslint
-      - run: yarn prettier
-      - run: yarn test:unit
+          node-version: 16.x
+
+      - name: Cache Yarn packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Static Analysis
+        run: |
+          yarn typecheck
+          yarn eslint
+          yarn prettier
+
+      - name: Unit Test
+        run: yarn test:unit
+
+      - name: Install op CLI
+        run: |
+          curl https://cache.agilebits.com/dist/1P/op2/pkg/v${{ env.OP_VERSION }}/op_linux_amd64_v${{ env.OP_VERSION }}.zip -o op.zip
+          unzip op.zip
+          chmod +x op
+          sudo mv op /usr/local/bin/
+
+      - name: Verify op installation
+        run: |
+          if ! [ -x "$(which op)" ]; then
+            echo "Error: op is not correctly installed" >&2
+            exit 1
+          fi
+
+          if [ "${{ env.OP_VERSION }}" != $(op --version) ]; then
+            echo "Error: expected op version ${{ env.OP_VERSION }}" >&2
+            exit 1
+          fi
+
+      - name: Configure 1Password Service Account
+        uses: 1password/load-secrets-action/configure@v1
+        with:
+          service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+      - name: Integration tests
+        run: yarn test:integration
