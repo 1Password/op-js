@@ -1,0 +1,24 @@
+name: Setup
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ${{ inputs.runs-on }}
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+        
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: yarn

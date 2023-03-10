@@ -1,0 +1,24 @@
+name: Static Analysis
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    uses: ./.github/workflows/setup.yml
+    with:
+      runs-on: ${{ inputs.runs-on }}
+
+  static-analysis:
+    runs-on: ${{ inputs.runs-on }}
+
+    steps:
+      - name: Analyze
+        run: |
+          yarn typecheck
+          yarn eslint
+          yarn prettier

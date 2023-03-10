@@ -1,0 +1,21 @@
+name: Unit Test
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    uses: ./.github/workflows/setup.yml
+    with:
+      runs-on: ${{ inputs.runs-on }}
+      
+  unit-test:
+    runs-on: ${{ inputs.runs-on }}
+
+    steps:
+      - name: Unit Test
+        run: yarn test:unit
