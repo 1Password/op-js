@@ -5,6 +5,7 @@ import { cli, ClientInfo, CLIError, Flags } from "./cli";
 export {
 	CLIError,
 	ExecutionError,
+	semverToInt,
 	ValidationError,
 	ValidationErrorType,
 } from "./cli";
