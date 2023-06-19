@@ -772,6 +772,7 @@ export interface FieldTypeSelector {
 	type?: QueryFieldType[];
 }
 
+// Added Label of string type in Section
 export interface Section {
 	id: string;
 }
