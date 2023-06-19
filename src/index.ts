@@ -775,6 +775,7 @@ export interface FieldTypeSelector {
 // Added Label of string type in Section
 export interface Section {
 	id: string;
+	label?: string;
 }
 
 interface BaseField {
