@@ -774,6 +774,7 @@ export interface FieldTypeSelector {
 
 export interface Section {
 	id: string;
+	label?: string;
 }
 
 interface BaseField {
