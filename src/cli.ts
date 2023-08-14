@@ -48,7 +48,10 @@ export class ValidationError extends Error {
 }
 
 export class ExecutionError extends Error {
-	public constructor(message: string, public status: number) {
+	public constructor(
+		message: string,
+		public status: number,
+	) {
 		super(message);
 		this.name = "ExecutionError";
 	}
@@ -58,7 +61,10 @@ export class CLIError extends ExecutionError {
 	static errorRegex = /\[ERROR] (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (.+)/;
 	public timestamp?: Date;
 
-	public constructor(public originalMessage: string, status: number) {
+	public constructor(
+		public originalMessage: string,
+		status: number,
+	) {
 		const errorMatch = originalMessage.match(CLIError.errorRegex);
 		let parsedMessage: string;
 		let parsedTimestamp: Date;
