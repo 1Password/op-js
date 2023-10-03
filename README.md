@@ -105,6 +105,14 @@ There are roughly 70 commands available for use, so you're encouraged to check o
 - `group` - Manage groups and their users
 - `whoami` - Get details about the authenticated account
 
+## Contributing and feedback
+
+🐛 If you find an issue you'd like to report, or otherwise have feedback, please [file a new Issue](https://github.com/1Password/op-js/issues/new).
+
+🧑‍💻 If you'd like to contribute to the project please start by filing or commenting on an [Issue](https://github.com/1Password/op-js/issues) so we can track the work. Refer to the [Contributing doc](https://github.com/1Password/op-js/blob/main/CONTRIBUTING.md) for development setup instructions.
+
+💬 Share your feedback and connect with the Developer Products team in the [1Password Developers Slack](https://developer.1password.com/joinslack) workspace.
+
 ## License
 
 MIT
