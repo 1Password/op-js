@@ -10,6 +10,7 @@ import {
 	defaultClientInfo,
 	ExecutionError,
 	parseFlagValue,
+	sanitizeInput,
 	semverToInt,
 	ValidationError,
 } from "./cli";
@@ -145,6 +146,30 @@ describe("camelToHyphen", () => {
 
 	it("correctly handles pascal case", () => {
 		expect(camelToHyphen("SomeFlag")).toEqual("some-flag");
+	});
+});
+
+describe("sanitizeInput", () => {
+	it("should handle special characters", () => {
+		expect(sanitizeInput('abc"test')).toEqual('abc\\"test');
+		expect(sanitizeInput('abc\\"test')).toEqual('abc\\"test');
+
+		expect(sanitizeInput("test.test")).toEqual("test.test");
+		expect(sanitizeInput("test\\.test")).toEqual("test\\.test");
+
+		expect(sanitizeInput("def$test")).toEqual("def\\$test");
+		expect(sanitizeInput("def\\$test")).toEqual("def\\$test");
+
+		expect(sanitizeInput("xyz'test")).toEqual("xyz\\'test");
+		expect(sanitizeInput("xyz\\'test")).toEqual("xyz\\'test");
+
+		expect(sanitizeInput("fds`test")).toEqual("fds\\`test");
+		expect(sanitizeInput("fds\\`test")).toEqual("fds\\`test");
+	});
+
+	it("should handle section delimiter", () => {
+		expect(sanitizeInput("test.test")).toEqual("test.test");
+		expect(sanitizeInput("test\\.test.test")).toEqual("test\\.test.test");
 	});
 });
 
