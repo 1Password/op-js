@@ -83,16 +83,18 @@ describe("item", () => {
 		const del = item.delete(create.id);
 		expect(del).toBeUndefined();
 	});
+
 	it("CRUDs items with sections", () => {
-		const create = item.create([["username", "text", "created"]], {
+		const create = item.create([["my\\.section.username", "text", "created"]], {
 			vault: process.env.OP_VAULT,
 			category: "Login",
 			title: "Created Login",
 			url: "https://example.com",
+			generatePassword: true
 		});
 		expect(create).toMatchSchema(itemSchema);
 
-		const edit = item.edit(create.id, [["username", "text", "updated"]], {
+		const edit = item.edit(create.id, [["my\\.section.username", "text", "updated"]], {
 			title: "Updated Login",
 		});
 		expect(edit).toMatchSchema(itemSchema);

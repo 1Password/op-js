@@ -96,14 +96,16 @@ const escapableCharacters = new Set([...specialCharacters, "."]);
 
 export const sanitizeInput = (str: string) => {
 	let newStr = "";
+	let isEscaped = false;
 	for (let i = 0; i < str.length; i++) {
 		if (str[i] === "\\") {
-			const isEscaped = escapableCharacters.has(str[i + 1]);
+			isEscaped = escapableCharacters.has(str[i + 1]);
 			if (!isEscaped) {
-				str += "\\";
+				newStr += "\\";
 			}
-		} else if (specialCharacters.includes(str[i])) {
-			str += "\\";
+		} else if (!isEscaped && specialCharacters.includes(str[i])) {
+			newStr += "\\";
+			isEscaped = false;
 		}
 		newStr += str[i];
 	}
