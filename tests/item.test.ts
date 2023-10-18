@@ -83,4 +83,24 @@ describe("item", () => {
 		const del = item.delete(create.id);
 		expect(del).toBeUndefined();
 	});
+	it("CRUDs items with sections", () => {
+		const create = item.create([["username", "text", "created"]], {
+			vault: process.env.OP_VAULT,
+			category: "Login",
+			title: "Created Login",
+			url: "https://example.com",
+		});
+		expect(create).toMatchSchema(itemSchema);
+
+		const edit = item.edit(create.id, [["username", "text", "updated"]], {
+			title: "Updated Login",
+		});
+		expect(edit).toMatchSchema(itemSchema);
+
+		const get = item.get(create.id);
+		expect(get).toMatchSchema(itemSchema);
+
+		const del = item.delete(create.id);
+		expect(del).toBeUndefined();
+	});
 });
