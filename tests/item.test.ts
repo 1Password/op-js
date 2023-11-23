@@ -1,6 +1,28 @@
 import Joi from "joi";
 import { item } from "../src";
 
+const valueFieldSchema = Joi.object({
+	id: Joi.string().required(),
+	type: Joi.string()
+		.valid(
+			"STRING",
+			"URL",
+			"ADDRESS",
+			"DATE",
+			"MONTH_YEAR",
+			"EMAIL",
+			"PHONE",
+			"REFERENCE",
+		)
+		.required(),
+	purpose: Joi.string().valid("USERNAME", "PASSWORD", "NOTES").required(),
+	label: Joi.string().required(),
+	value: Joi.string().optional(),
+	reference: Joi.string().required(),
+});
+
+const valueFieldsSchema = Joi.array().items(valueFieldSchema);
+
 const itemSchema = Joi.object({
 	id: Joi.string().required(),
 	title: Joi.string().required(),
@@ -77,8 +99,18 @@ describe("item", () => {
 		});
 		expect(edit).toMatchSchema(itemSchema);
 
-		const get = item.get(create.id);
-		expect(get).toMatchSchema(itemSchema);
+		const getItem = item.get(create.id);
+		expect(getItem).toMatchSchema(itemSchema);
+
+		const getFieldByLabel = item.get(create.id, {
+			fields: { label: ["username"] },
+		});
+		expect(getFieldByLabel).toMatchSchema(valueFieldSchema);
+
+		const getFieldByType = item.get(create.id, {
+			fields: { type: ["string"] },
+		});
+		expect(getFieldByType).toMatchSchema(valueFieldsSchema);
 
 		const del = item.delete(create.id);
 		expect(del).toBeUndefined();
