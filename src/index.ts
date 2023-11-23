@@ -20,8 +20,8 @@ export interface GlobalFlags {
 	account: string;
 	cache: boolean;
 	config: string;
-	encoding:
-		| "utf-8"
+	encoding: // eslint-disable-next-line unicorn/text-encoding-identifier-case
+	| "utf-8"
 		| "shift-jis"
 		| "shiftjis"
 		| "sjis"

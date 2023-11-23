@@ -8,7 +8,7 @@ import {
 	FieldLabelSelector,
 	FieldTypeSelector,
 	GlobalFlags,
-} from "./index";
+} from ".";
 
 export type FlagValue =
 	| string
@@ -34,12 +34,14 @@ export class ValidationError extends Error {
 	) {
 		let message: string;
 		switch (type) {
-			case "not-found":
+			case "not-found": {
 				message = "Could not find `op` executable";
 				break;
-			case "version":
+			}
+			case "version": {
 				message = `CLI version ${currentVersion} does not satisfy required version ${requiredVersion}`;
 				break;
+			}
 		}
 
 		super(message);
@@ -58,7 +60,8 @@ export class ExecutionError extends Error {
 }
 
 export class CLIError extends ExecutionError {
-	static errorRegex = /\[ERROR] (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (.+)/;
+	private static errorRegex =
+		/\[ERROR] (\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (.+)/;
 	public timestamp?: Date;
 
 	public constructor(
@@ -89,10 +92,10 @@ export const semverToInt = (input: string) =>
 		.join("");
 
 export const camelToHyphen = (str: string) =>
-	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
+	str.replaceAll(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
 export const sanitizeInput = (str: string) =>
-	str.replace(/(["$'\\`])/g, "\\$1");
+	str.replaceAll(/(["$'\\`])/g, "\\$1");
 
 const equalArray = (a: any[], b: any[]) =>
 	a.length === b.length && a.every((val, index) => val === b[index]);
