@@ -993,7 +993,11 @@ export const item = {
 			includeArchive: boolean;
 			vault: string;
 		}> = {},
-	) => cli.execute<Item | ValueField[]>(["item", "get"], { args: [nameOrIdOrLink], flags }),
+	) =>
+		cli.execute<Item | ValueField | ValueField[]>(["item", "get"], {
+			args: [nameOrIdOrLink],
+			flags,
+		}),
 
 	/**
 	 * Output the primary one-time password for this item.
