@@ -16,8 +16,6 @@
 				"no-shadow": "off",
 				"jsdoc/require-param": "off",
 				"jsdoc/require-returns": "off",
-				"unicorn/no-null": "off",
-				"unicorn/prefer-node-protocol": "off",
 				"@typescript-eslint/ban-types": "off",
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/naming-convention": "off"
