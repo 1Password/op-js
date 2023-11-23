@@ -256,7 +256,7 @@ export class CLI {
 		}
 
 		const { status, error, stdout, stderr } = spawnSync("op", parts, {
-			stdio: "pipe",
+			stdio: input ? "pipe" : ["ignore", "pipe", "pipe"],
 			input,
 			env: {
 				...process.env,
