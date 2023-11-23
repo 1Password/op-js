@@ -21,10 +21,10 @@
     eslint-plugin-sonarjs "^0.21.0"
     eslint-plugin-unicorn "^48.0.1"
 
-"@1password/prettier-config@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@1password/prettier-config/-/prettier-config-1.0.2.tgz#a73f652c8832b6dafed048d87e0dd05392e0ba79"
-  integrity sha512-xf0HVlXpEmMCM3zlRkCb/oZZNBA7Kde19TcVUmmw66bmNfqmd41KB7+lyljbNwqvODzVdiBABf4CKVe9mG41cA==
+"@1password/prettier-config@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@1password/prettier-config/-/prettier-config-1.1.3.tgz#5f958928d48b8ad4f57e175112c66c8f8e1808ba"
+  integrity sha512-yue6IdD/pPiv1CPKTvjK952+9fhR6er0zhcXhEFuvJqw4zqH9AxWSwIRd4obMV/XWX1ZR/qimHgQbzgq+Z8gJg==
 
 "@aashutoshrathi/word-wrap@^1.2.3":
   version "1.2.6"
