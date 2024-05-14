@@ -94,8 +94,26 @@ export const semverToInt = (input: string) =>
 export const camelToHyphen = (str: string) =>
 	str.replaceAll(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
-export const sanitizeInput = (str: string) =>
-	str.replaceAll(/(["$'\\`])/g, "\\$1");
+const specialCharacters = ['"', "$", "'", "\\", "`"];
+const escapableCharacters = new Set([...specialCharacters, "."]);
+
+export const sanitizeInput = (str: string) => {
+	let newStr = "";
+	let isEscaped = false;
+	for (let i = 0; i < str.length; i++) {
+		if (str[i] === "\\") {
+			isEscaped = escapableCharacters.has(str[i + 1]);
+			if (!isEscaped) {
+				newStr += "\\";
+			}
+		} else if (!isEscaped && specialCharacters.includes(str[i])) {
+			newStr += "\\";
+			isEscaped = false;
+		}
+		newStr += str[i];
+	}
+	return newStr;
+};
 
 const equalArray = (a: any[], b: any[]) =>
 	a.length === b.length && a.every((val, index) => val === b[index]);
