@@ -411,7 +411,7 @@ describe("cli", () => {
 						args: [null],
 					},
 				]),
-			).toThrowError(new TypeError("Invalid argument"));
+			).toThrow(new TypeError("Invalid argument"));
 		});
 
 		it("sanitizes input in commands, arguments, and flags", () => {
@@ -442,12 +442,12 @@ describe("cli", () => {
 			const message = "bar";
 			expect(() =>
 				executeSpy([["foo"]], { error: new Error(message) }),
-			).toThrowError(new ExecutionError(message, 0));
+			).toThrow(new ExecutionError(message, 0));
 		});
 
 		it("throws if there's a stderr", () => {
 			const stderr = "bar";
-			expect(() => executeSpy([["foo"]], { stderr })).toThrowError(
+			expect(() => executeSpy([["foo"]], { stderr })).toThrow(
 				new CLIError(stderr, 0),
 			);
 		});
