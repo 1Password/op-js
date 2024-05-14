@@ -280,6 +280,31 @@ describe("cli", () => {
 		});
 	});
 
+	describe("service account", () => {
+		it("does not set service account var if not supplied", () => {
+			cli.serviceAccountToken = undefined;
+
+			const execute = executeSpy([["foo"]]);
+			const envVars = Object.keys(execute.call[2].env);
+
+			expect(envVars).not.toContain("OP_SERVICE_ACCOUNT_TOKEN");
+		});
+
+		it("passes service account var if supplied", () => {
+			cli.serviceAccountToken = "1kjhd9872hd981865s";
+
+			const execute = executeSpy([["foo"]]);
+			expect(execute.call[2].env).toEqual(
+				expect.objectContaining({
+					OP_SERVICE_ACCOUNT_TOKEN: cli.serviceAccountToken,
+				}),
+			);
+
+			// Reset service account info
+			cli.serviceAccountToken = undefined;
+		});
+	});
+
 	describe("validate", () => {
 		it("throws an error when the op cli is not found", async () => {
 			const lookpathSpy = jest

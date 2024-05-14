@@ -59,6 +59,17 @@ export const setConnect = (host: string, token: string) => {
 	cli.connect = { host, token };
 };
 
+/**
+ * Set a Service Account token
+ *
+ * Alternative to running with `OP_SERVICE_ACCOUNT_TOKEN` set
+ *
+ * {@link https://developer.1password.com/docs/service-accounts/}
+ */
+export const setServiceAccount = (token: string) => {
+	cli.serviceAccountToken = token;
+};
+
 // Section: CLI setup
 
 /**

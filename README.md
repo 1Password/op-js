@@ -71,7 +71,9 @@ validateCli(">=2.3.1").catch((error) => {
 
 ### Authentication
 
-By default `op-js` uses system authentication (e.g. biometrics), but it also supports automated authentication via [Connect Server](https://developer.1password.com/docs/connect).
+By default `op-js` uses system authentication (e.g. biometrics), but it also supports automated authentication via [Connect Server](https://developer.1password.com/docs/connect) or [Service Account](https://developer.1password.com/docs/service-accounts).
+
+**Connect**
 
 If you've got a Connect Server set up you can supply your host and token:
 
@@ -86,6 +88,22 @@ Alternatively you can use environment variables when executing the code that use
 ```
 OP_CONNECT_HOST=https://connect.myserver.com
 OP_CONNECT_TOKEN=1kjhd9872hd981865s
+```
+
+**Service Account**
+
+If you're using service accounts you can supply your token:
+
+```
+import { setServiceAccount } from "@1password/op-js";
+
+setServiceAccount("1kjhd9872hd981865s");
+```
+
+Alternatively you can use environment variables when executing the code that uses `op-js`:
+
+```
+OP_SERVICE_ACCOUNT_TOKEN=1kjhd9872hd981865s
 ```
 
 ### Available commands and functions
