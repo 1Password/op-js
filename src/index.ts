@@ -1685,6 +1685,6 @@ export const group = {
 				group: string;
 				user: string;
 			}> = {},
-		) => cli.execute<void>(["group", "user", "grant"], { flags, json: false }),
+		) => cli.execute<void>(["group", "user", "revoke"], { flags, json: false }),
 	},
 };
