@@ -15,8 +15,7 @@
 	},
 	"include": [
 		"jest.setup.ts",
-		"src/*.ts",
-		"src/cli-installer/**/*",
+		"src/**/*.ts",
 		"tests/*.ts"
 	],
 }

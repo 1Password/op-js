@@ -4,9 +4,6 @@
 		"outDir": "./dist",
 		"declaration": true,
 	},
-	"include": [
-		"src/index.ts",
-		"src/cli.ts",
-		"src/cli-installer/**/*"
-	]
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.test.ts"]
 }
