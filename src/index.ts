@@ -10,6 +10,8 @@ export {
 	ValidationErrorType,
 } from "./cli";
 
+export { installCliOnGithubRunner } from "./cli-installer";
+
 type CommandFlags<TOptional extends Flags = {}> = Partial<
 	TOptional & GlobalFlags
 >;
