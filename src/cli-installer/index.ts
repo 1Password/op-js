@@ -4,7 +4,7 @@ import { newCliInstaller } from "./installer";
 import { VersionResolver } from "./version";
 
 // Installs 1Password CLI on GitHub runners
-export const installCliOnGithubRunner = async (version: string): Promise<void> => {
+export const installCliOnGithubRunner = async (version?: string): Promise<void> => {
 	try {
 		const versionResolver = new VersionResolver(version ?? core.getInput("version"));
 		await versionResolver.resolve();
