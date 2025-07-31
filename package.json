@@ -14,7 +14,7 @@
 	"license": "MIT",
 	"scripts": {
 		"build": "license-checker-rseidelsohn --direct --files licenses && yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
-		"compile": "esbuild src/index.ts src/cli.ts src/**/*.ts --platform=node --format=cjs --outdir=dist",
+		"compile": "esbuild src/index.ts src/cli.ts src/cli-installer/*.ts src/cli-installer/**/*.ts --platform=node --format=cjs --outdir=dist",
 		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
 		"prettier": "prettier --check 'src/*.ts'",
