@@ -371,8 +371,8 @@ describe("OpCli", () => {
 			const cli = new OpCli();
 			expect(cli.globalFlags).toBeUndefined();
 			expect(cli.authConfig).toBeUndefined();
-			expect(cli.clientInfo).toBeUndefined();
 			expect(cli.opPath).toBeUndefined();
+			expect(cli.clientInfo).toBeDefined();
 		});
 
 		it("initializes with provided configuration", () => {

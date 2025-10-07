@@ -19,7 +19,7 @@ const getEntryPoints = (dir) => {
       
       if (statSync(fullPath).isDirectory()) {
         scanDirectory(fullPath, relativeItemPath);
-      } else if (item.endsWith('.ts') && !item.endsWith('.test.ts')) {
+      } else if (item.endsWith('.ts') && !item.endsWith('.test.ts') && item !== "test-utils.ts") {
         entryPoints.push(join(dir, relativeItemPath));
       }
     }

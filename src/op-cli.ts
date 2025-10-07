@@ -103,9 +103,7 @@ export class OpCli {
 			this.opPath = config.opPath;
 		}
 
-		if (config.clientInfo) {
-			this.clientInfo = config.clientInfo ?? defaultClientInfo;
-		}
+		this.clientInfo = config.clientInfo ?? defaultClientInfo;
 
 		this.account = new AccountCommand(this);
 		this.document = new DocumentCommand(this);
