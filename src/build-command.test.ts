@@ -400,6 +400,16 @@ describe("buildCommand", () => {
 		expect(result.parts).toEqual(["foo"]);
 	});
 
+	it("builds a command with no subcommand (like op -v)", () => {
+		const result = buildCommand([], [], { v: true }, false, {});
+		expect(result.parts).toEqual(["--v"]);
+	});
+
+	it("builds a command with no subcommand and JSON format", () => {
+		const result = buildCommand([], [], {}, true, {});
+		expect(result.parts).toEqual(["--format=json"]);
+	});
+
 	it("merges global flags with command flags", () => {
 		const globalFlags = { globalFlag: "global" };
 		const commandFlags = { commandFlag: "command" };
@@ -471,9 +481,8 @@ describe("buildCommand", () => {
 		expect(() => buildCommand([], null, {}, true, {})).toThrow(
 			"args must be an array",
 		);
-		expect(() => buildCommand([], [], {}, true, {})).toThrow(
-			"subCommand cannot be empty",
-		);
+		const result = buildCommand([], [], {}, true, {});
+		expect(result.parts).toEqual(["--format=json"]);
 		expect(() => buildCommand([""], [], {}, true, {})).toThrow(
 			"Subcommand parts must be non-empty strings",
 		);

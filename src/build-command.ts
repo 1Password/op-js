@@ -238,10 +238,6 @@ export const buildCommand = (
 		throw new TypeError("args must be an array");
 	}
 
-	if (subCommand.length === 0) {
-		throw new Error("subCommand cannot be empty");
-	}
-
 	if (subCommand.length > MAX_SUBCOMMAND_PARTS) {
 		throw new Error(
 			`Too many subcommand parts: maximum ${MAX_SUBCOMMAND_PARTS} allowed`,
