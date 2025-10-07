@@ -154,7 +154,6 @@ export class OpCli {
 			args,
 			flags,
 			json,
-			this.version(),
 			this.globalFlags,
 			stdin,
 		);

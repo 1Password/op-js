@@ -1,6 +1,3 @@
-import semverCoerce from "semver/functions/coerce";
-import semverSatisfies from "semver/functions/satisfies";
-import { ExecutionError } from "./errors";
 import { validFieldPurposes } from "./commands/item";
 import { FieldAssignment, FieldLabelSelector, FieldTypeSelector } from ".";
 
@@ -15,9 +12,6 @@ export type Arg = string | FieldAssignment;
 
 export const camelToHyphen = (str: string) =>
 	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
-
-const equalArray = (a: any[], b: any[]) =>
-	a.length === b.length && a.every((val, index) => val === b[index]);
 
 // Maximums to prevent DoS attacks
 const MAX_INPUT_LENGTH = 10000;
@@ -232,7 +226,6 @@ export const buildCommand = (
 	args: Arg[],
 	flags: Flags,
 	json: boolean,
-	cliVersion: string,
 	globalFlags: Flags,
 	stdin?: string | Record<string, any>,
 ) => {
@@ -290,26 +283,6 @@ export const buildCommand = (
 
 	if (json) {
 		mergedFlags = { ...mergedFlags, format: "json" };
-	}
-
-	// Version >=2.6.2 of the CLI changed how it handled piped input
-	// in order to fix an issue with item creation, but in the process
-	// it broke piping for other commands. We have a macOS/Linux-only
-	// workaround, but not one for Windows, so for now we cannot support
-	// the inject command on Windows past this version until the CLI
-	// team fixes the issue.
-	if (equalArray(subCommand, ["inject"])) {
-		const version = semverCoerce(cliVersion);
-		if (semverSatisfies(version, ">=2.6.2")) {
-			if (process.platform === "win32") {
-				throw new ExecutionError(
-					"Inject is not supported on Windows for version >=2.6.2 of the CLI",
-					1,
-				);
-			} else {
-				mergedFlags = { ...mergedFlags, inFile: "/dev/stdin" };
-			}
-		}
 	}
 
 	parts.push(...createFlags(mergedFlags));

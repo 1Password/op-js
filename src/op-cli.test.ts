@@ -203,7 +203,7 @@ describe("OpCli", () => {
 				.spyOn(lookpath, "lookpath")
 				.mockResolvedValue(fakeOpPath);
 			// Mock version to avoid circular dependency
-			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
+			jest.spyOn(cli, "version").mockReturnValue("2.0.0");
 
 			await expect(cli.verify(">=2.0.0")).resolves.toBeUndefined();
 

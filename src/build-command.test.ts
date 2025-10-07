@@ -347,23 +347,14 @@ describe("createFieldAssignment", () => {
 });
 
 describe("buildCommand", () => {
-	const mockCliVersion = "2.1.0";
-
 	it("builds a basic command", () => {
-		const result = buildCommand(["foo"], [], {}, true, mockCliVersion, {});
+		const result = buildCommand(["foo"], [], {}, true, {});
 		expect(result.parts).toEqual(["foo", "--format=json"]);
 		expect(result.input).toBeUndefined();
 	});
 
 	it("builds a command with arguments", () => {
-		const result = buildCommand(
-			["foo", "bar"],
-			["arg1", "arg2"],
-			{},
-			true,
-			mockCliVersion,
-			{},
-		);
+		const result = buildCommand(["foo", "bar"], ["arg1", "arg2"], {}, true, {});
 		expect(result.parts).toEqual([
 			"foo",
 			"bar",
@@ -379,7 +370,6 @@ describe("buildCommand", () => {
 			[["username", "text", "value"]],
 			{},
 			true,
-			mockCliVersion,
 			{},
 		);
 		expect(result.parts).toEqual([
@@ -395,7 +385,6 @@ describe("buildCommand", () => {
 			[],
 			{ flag1: "value1", flag2: true },
 			true,
-			mockCliVersion,
 			{},
 		);
 		expect(result.parts).toEqual([
@@ -407,21 +396,14 @@ describe("buildCommand", () => {
 	});
 
 	it("builds a command without JSON format", () => {
-		const result = buildCommand(["foo"], [], {}, false, mockCliVersion, {});
+		const result = buildCommand(["foo"], [], {}, false, {});
 		expect(result.parts).toEqual(["foo"]);
 	});
 
 	it("merges global flags with command flags", () => {
 		const globalFlags = { globalFlag: "global" };
 		const commandFlags = { commandFlag: "command" };
-		const result = buildCommand(
-			["foo"],
-			[],
-			commandFlags,
-			true,
-			mockCliVersion,
-			globalFlags,
-		);
+		const result = buildCommand(["foo"], [], commandFlags, true, globalFlags);
 		expect(result.parts).toEqual([
 			"foo",
 			"--global-flag=global",
@@ -433,59 +415,29 @@ describe("buildCommand", () => {
 	it("command flags override global flags", () => {
 		const globalFlags = { flag: "global" };
 		const commandFlags = { flag: "command" };
-		const result = buildCommand(
-			["foo"],
-			[],
-			commandFlags,
-			true,
-			mockCliVersion,
-			globalFlags,
-		);
+		const result = buildCommand(["foo"], [], commandFlags, true, globalFlags);
 		expect(result.parts).toEqual(["foo", "--flag=command", "--format=json"]);
 	});
 
 	it("handles stdin input", () => {
 		const stdin = "test input";
-		const result = buildCommand(
-			["foo"],
-			[],
-			{},
-			true,
-			mockCliVersion,
-			{},
-			stdin,
-		);
+		const result = buildCommand(["foo"], [], {}, true, {}, stdin);
 		expect(result.input).toEqual(Buffer.from(stdin));
 	});
 
 	it("handles object stdin input", () => {
 		const stdin = { key: "value" };
-		const result = buildCommand(
-			["foo"],
-			[],
-			{},
-			true,
-			mockCliVersion,
-			{},
-			stdin,
-		);
+		const result = buildCommand(["foo"], [], {}, true, {}, stdin);
 		expect(result.input).toEqual(Buffer.from(JSON.stringify(stdin)));
 	});
 
 	it("sanitizes command parts", () => {
-		const result = buildCommand(['"foo'], [], {}, true, mockCliVersion, {});
+		const result = buildCommand(['"foo'], [], {}, true, {});
 		expect(result.parts).toEqual(['\\"foo', "--format=json"]);
 	});
 
 	it("sanitizes arguments", () => {
-		const result = buildCommand(
-			["foo"],
-			['"arg"'],
-			{},
-			true,
-			mockCliVersion,
-			{},
-		);
+		const result = buildCommand(["foo"], ['"arg"'], {}, true, {});
 		expect(result.parts).toEqual(["foo", '\\"arg\\"', "--format=json"]);
 	});
 
@@ -495,7 +447,6 @@ describe("buildCommand", () => {
 			[['"field"', "text", "value"]],
 			{},
 			true,
-			mockCliVersion,
 			{},
 		);
 		expect(result.parts).toEqual([
@@ -506,128 +457,58 @@ describe("buildCommand", () => {
 	});
 
 	it("throws error for invalid arguments", () => {
-		expect(() =>
-			buildCommand(["foo"], [null], {}, true, mockCliVersion, {}),
-		).toThrow(
+		expect(() => buildCommand(["foo"], [null], {}, true, {})).toThrow(
 			new TypeError(
 				"Invalid argument: must be string or field assignment array",
 			),
 		);
 	});
 
-	it("handles inject command with version >=2.6.2 on non-Windows", () => {
-		const originalPlatform = process.platform;
-		Object.defineProperty(process, "platform", { value: "darwin" });
-
-		const result = buildCommand(
-			["inject"],
-			[],
-			{},
-			true,
-			"2.6.2",
-			{},
-			"test input",
-		);
-		expect(result.parts).toEqual([
-			"inject",
-			"--format=json",
-			"--in-file=/dev/stdin",
-		]);
-		expect(result.input).toEqual(Buffer.from("test input"));
-
-		Object.defineProperty(process, "platform", { value: originalPlatform });
-	});
-
-	it("throws error for inject command with version >=2.6.2 on Windows", () => {
-		const originalPlatform = process.platform;
-		Object.defineProperty(process, "platform", { value: "win32" });
-
-		expect(() =>
-			buildCommand(["inject"], [], {}, true, "2.6.2", {}, "test input"),
-		).toThrow(
-			new ExecutionError(
-				"Inject is not supported on Windows for version >=2.6.2 of the CLI",
-				1,
-			),
-		);
-
-		Object.defineProperty(process, "platform", { value: originalPlatform });
-	});
-
-	it("does not modify inject command for version <2.6.2", () => {
-		const result = buildCommand(
-			["inject"],
-			[],
-			{},
-			true,
-			"2.6.1",
-			{},
-			"test input",
-		);
-		expect(result.parts).toEqual(["inject", "--format=json"]);
-		expect(result.input).toEqual(Buffer.from("test input"));
-	});
-
-	it("handles inject command without stdin on version >=2.6.2", () => {
-		const originalPlatform = process.platform;
-		Object.defineProperty(process, "platform", { value: "darwin" });
-
-		const result = buildCommand(["inject"], [], {}, true, "2.6.2", {});
-		expect(result.parts).toEqual([
-			"inject",
-			"--format=json",
-			"--in-file=/dev/stdin",
-		]);
-		expect(result.input).toBeUndefined();
-
-		Object.defineProperty(process, "platform", { value: originalPlatform });
-	});
-
 	it("validates buildCommand inputs", () => {
-		expect(() => buildCommand(null, [], {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand(null, [], {}, true, {})).toThrow(
 			"subCommand must be an array",
 		);
-		expect(() => buildCommand([], null, {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand([], null, {}, true, {})).toThrow(
 			"args must be an array",
 		);
-		expect(() => buildCommand([], [], {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand([], [], {}, true, {})).toThrow(
 			"subCommand cannot be empty",
 		);
-		expect(() => buildCommand([""], [], {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand([""], [], {}, true, {})).toThrow(
 			"Subcommand parts must be non-empty strings",
 		);
-		expect(() => buildCommand([123] as any, [], {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand([123] as any, [], {}, true, {})).toThrow(
 			"Subcommand parts must be non-empty strings",
 		);
 	});
 
 	it("enforces argument limits", () => {
 		const manyArgs = Array(51).fill("arg");
-		expect(() =>
-			buildCommand(["cmd"], manyArgs, {}, true, "2.1.0", {}),
-		).toThrow("Too many arguments: maximum 50 allowed");
+		expect(() => buildCommand(["cmd"], manyArgs, {}, true, {})).toThrow(
+			"Too many arguments: maximum 50 allowed",
+		);
 
 		const manySubParts = Array(11).fill("part");
-		expect(() => buildCommand(manySubParts, [], {}, true, "2.1.0", {})).toThrow(
+		expect(() => buildCommand(manySubParts, [], {}, true, {})).toThrow(
 			"Too many subcommand parts: maximum 10 allowed",
 		);
 	});
 
 	it("validates stdin input", () => {
 		const longString = "a".repeat(10001);
-		expect(() =>
-			buildCommand(["cmd"], [], {}, true, "2.1.0", {}, longString),
-		).toThrow("Stdin input too long: maximum 10000 characters allowed");
+		expect(() => buildCommand(["cmd"], [], {}, true, {}, longString)).toThrow(
+			"Stdin input too long: maximum 10000 characters allowed",
+		);
 
 		const circularObj: any = {};
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 		circularObj.self = circularObj;
-		expect(() =>
-			buildCommand(["cmd"], [], {}, true, "2.1.0", {}, circularObj),
-		).toThrow("Invalid stdin object: must be JSON serializable");
+		expect(() => buildCommand(["cmd"], [], {}, true, {}, circularObj)).toThrow(
+			"Invalid stdin object: must be JSON serializable",
+		);
 
-		expect(() =>
-			buildCommand(["cmd"], [], {}, true, "2.1.0", {}, 123 as any),
-		).toThrow("Stdin must be a string or object");
+		expect(() => buildCommand(["cmd"], [], {}, true, {}, 123 as any)).toThrow(
+			"Stdin must be a string or object",
+		);
 	});
 });
