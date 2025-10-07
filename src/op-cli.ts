@@ -58,6 +58,7 @@ interface OpCliConfig {
 	globalFlags?: Partial<GlobalFlags>;
 	authConfig?: AuthConfig;
 	clientInfo?: ClientInfo;
+	opPath?: string;
 }
 
 export const semverToInt = (input: string) =>
@@ -75,6 +76,7 @@ export const defaultClientInfo: ClientInfo = {
 export class OpCli {
 	public globalFlags?: Partial<GlobalFlags>;
 	public authConfig?: AuthConfig;
+	public opPath?: string;
 	public clientInfo?: ClientInfo;
 
 	public readonly account: AccountCommand;
@@ -95,6 +97,10 @@ export class OpCli {
 
 		if (config.authConfig) {
 			this.authConfig = config.authConfig;
+		}
+
+		if (config.opPath) {
+			this.opPath = config.opPath;
 		}
 
 		if (config.clientInfo) {
@@ -118,7 +124,8 @@ export class OpCli {
 	}
 
 	public async verify(requiredVersion?: string) {
-		const cliExists = !!(await lookpath("op"));
+		const opExecutable = this.opPath || "op";
+		const cliExists = !!(await lookpath(opExecutable));
 
 		if (!cliExists) {
 			throw new VerificationError("not-found");
@@ -189,7 +196,8 @@ export class OpCli {
 			}
 		}
 
-		const { status, error, stdout, stderr } = spawnSync("op", parts, {
+		const opExecutable = this.opPath || "op";
+		const { status, error, stdout, stderr } = spawnSync(opExecutable, parts, {
 			stdio: input ? "pipe" : ["ignore", "pipe", "pipe"],
 			input: input as NodeJS.ArrayBufferView,
 			env,

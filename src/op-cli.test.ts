@@ -23,9 +23,10 @@ const expectOpCommand = (
 		call: cliCallArgs;
 	},
 	expected: string,
+	opPath: string = "op",
 ): void => {
 	const actual = `${received.call[0]} ${received.call[1].join(" ")}`;
-	expected = `op ${expected} --format=json`;
+	expected = `${opPath} ${expected} --format=json`;
 
 	expect(actual).toBe(expected);
 };
@@ -209,6 +210,39 @@ describe("OpCli", () => {
 			lookpathSpy.mockRestore();
 			jest.restoreAllMocks();
 		});
+
+		it("uses custom opPath when provided", async () => {
+			const customOpPath = "/custom/path/to/op";
+			cli.opPath = customOpPath;
+
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(customOpPath);
+			// Mock getVersion to avoid circular dependency
+			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+
+			await expect(cli.verify()).resolves.toBeUndefined();
+
+			expect(lookpathSpy).toHaveBeenCalledWith(customOpPath);
+			lookpathSpy.mockRestore();
+			jest.restoreAllMocks();
+		});
+
+		it("falls back to default 'op' when opPath is not set", async () => {
+			cli.opPath = undefined;
+
+			const lookpathSpy = jest
+				.spyOn(lookpath, "lookpath")
+				.mockResolvedValue(fakeOpPath);
+			// Mock getVersion to avoid circular dependency
+			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+
+			await expect(cli.verify()).resolves.toBeUndefined();
+
+			expect(lookpathSpy).toHaveBeenCalledWith("op");
+			lookpathSpy.mockRestore();
+			jest.restoreAllMocks();
+		});
 	});
 
 	describe("execute", () => {
@@ -338,6 +372,7 @@ describe("OpCli", () => {
 			expect(cli.globalFlags).toBeUndefined();
 			expect(cli.authConfig).toBeUndefined();
 			expect(cli.clientInfo).toBeUndefined();
+			expect(cli.opPath).toBeUndefined();
 		});
 
 		it("initializes with provided configuration", () => {
@@ -345,11 +380,13 @@ describe("OpCli", () => {
 				globalFlags: { account: "test.com" },
 				authConfig: { host: "https://connect.test.com", token: "token123" },
 				clientInfo: { name: "test", id: "TEST", build: "123" },
+				opPath: "/custom/path/to/op",
 			};
 			const cli = new OpCli(config);
 			expect(cli.globalFlags).toEqual(config.globalFlags);
 			expect(cli.authConfig).toEqual(config.authConfig);
 			expect(cli.clientInfo).toEqual(config.clientInfo);
+			expect(cli.opPath).toEqual(config.opPath);
 		});
 
 		it("initializes command instances", () => {
@@ -488,6 +525,23 @@ describe("OpCli", () => {
 		it("uses array stdio when no input is provided", () => {
 			const execute = executeSpy(cli, [["foo"]]);
 			expect(execute.call[2].stdio).toEqual(["ignore", "pipe", "pipe"]);
+		});
+	});
+
+	describe("execute with custom opPath", () => {
+		it("uses custom opPath when provided", () => {
+			const customOpPath = "/custom/path/to/op";
+			cli.opPath = customOpPath;
+
+			const execute = executeSpy(cli, [["example", "command"]]);
+			expectOpCommand(execute, "example command", customOpPath);
+		});
+
+		it("falls back to default 'op' when opPath is not set", () => {
+			cli.opPath = undefined;
+
+			const execute = executeSpy(cli, [["example", "command"]]);
+			expectOpCommand(execute, "example command", "op");
 		});
 	});
 });
