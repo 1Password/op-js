@@ -14,8 +14,6 @@
 		],
 	},
 	"include": [
-		"jest.setup.ts",
-		"src/*.ts",
-		"tests/*.ts"
+		"src/*.ts"
 	],
 }
