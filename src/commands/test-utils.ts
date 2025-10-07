@@ -6,7 +6,7 @@ jest.mock("child_process");
 export const setupMockCli = (): OpCli => {
 	const cli = new OpCli();
 
-	jest.spyOn(cli, "getVersion").mockReturnValue("0.0.0");
+	jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 	jest.spyOn<any, any>(child_process, "spawnSync").mockReturnValue({
 		error: null,
 		stderr: "",

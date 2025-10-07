@@ -35,13 +35,13 @@ export type GroupUser = AbbreviatedUser & {
 };
 
 // Import from user command
-type AbbreviatedUser = {
+interface AbbreviatedUser {
 	id: string;
 	name: string;
 	email: string;
 	type: string;
 	state: string;
-};
+}
 
 export class GroupCommand extends BaseCommand {
 	/**

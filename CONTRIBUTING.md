@@ -53,30 +53,29 @@ There may come a time when you need to skip these checks; to prevent the pre-com
 
 Code should be reasonably tested. We do not currently have any required coverage threshold, but if you are adding new or changing existing functionality you should consider writing/updating tests.
 
-This project uses [Jest](https://jestjs.io/). We have two types of tests at the moment.
+This project uses [Jest](https://jestjs.io/) for testing. All tests are unit tests that mock the CLI execution to verify that the correct commands are being constructed and executed.
 
-- **Unit tests** are for anything broadly applicable to the whole wrapper library that can be broken into units of code, such as command execution, helpers, error handling, etc.
-- **Integration tests** are intended to test out the individual command implementations, to assert their expected functionality and schemas. Currently this requires you to use biometrics with a real 1Password account by setting up the following `.env` file:
+**Test Structure**
 
-  ```
-  OP_ACCOUNT=[account URL]
-  OP_VAULT=[vault name]
-  ```
+- Tests are located alongside the source files with a `.test.ts` extension
+- Each command class has its own test file (e.g., `item.test.ts`, `user.test.ts`)
+- Tests use a mock CLI setup that verifies command construction without actually executing the 1Password CLI
+- The `test-utils.ts` file provides helper functions for setting up mocks and asserting command execution
 
-Commands are pretty straightforward:
+**Running Tests**
 
 ```shell
-# Run the entire unit test suite
-pnpm test:unit
+# Run all tests
+pnpm test
 
-# Run the entire integration test suite
-pnpm test:integration
+# Run tests in watch mode (re-runs on changes)
+pnpm test --watch
 
-# Run the unit test suite, re-running on changes
-pnpm test:unit --watch
+# Run tests for a specific file
+pnpm test item.test.ts
 
-# Run only integration tests that have a specific description
-pnpm test:integration -t="returns injected data"
+# Run tests matching a specific pattern
+pnpm test -t="create"
 ```
 
 ## Distribution

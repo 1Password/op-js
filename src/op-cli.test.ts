@@ -44,8 +44,8 @@ export const executeSpy = (
 		stdout?: string;
 	} = {},
 ) => {
-	// Mock getVersion to return a fixed version to avoid circular dependency
-	jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+	// Mock version to return a fixed version to avoid circular dependency
+	jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 
 	jest.spyOn<any, any>(child_process, "spawnSync").mockReturnValue({
 		error,
@@ -122,13 +122,13 @@ describe("OpCli", () => {
 
 		it("passes service account var if supplied", () => {
 			cli.authConfig = {
-				token: "1kjhd9872hd981865s",
+				saToken: "1kjhd9872hd981865s",
 			};
 
 			const execute = executeSpy(cli, [["foo"]]);
 			expect(execute.call[2].env).toEqual(
 				expect.objectContaining({
-					OP_SERVICE_ACCOUNT_TOKEN: cli.authConfig.token,
+					OP_SERVICE_ACCOUNT_TOKEN: cli.authConfig.saToken,
 				}),
 			);
 		});
@@ -151,8 +151,8 @@ describe("OpCli", () => {
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
 				.mockResolvedValue(fakeOpPath);
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("1.0.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("1.0.0");
 
 			await expect(cli.verify(">=2.0.0")).rejects.toEqual(
 				new VerificationError("version", ">=2.0.0", "1.0.0"),
@@ -202,8 +202,8 @@ describe("OpCli", () => {
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
 				.mockResolvedValue(fakeOpPath);
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 
 			await expect(cli.verify(">=2.0.0")).resolves.toBeUndefined();
 
@@ -218,8 +218,8 @@ describe("OpCli", () => {
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
 				.mockResolvedValue(customOpPath);
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 
 			await expect(cli.verify()).resolves.toBeUndefined();
 
@@ -234,8 +234,8 @@ describe("OpCli", () => {
 			const lookpathSpy = jest
 				.spyOn(lookpath, "lookpath")
 				.mockResolvedValue(fakeOpPath);
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 
 			await expect(cli.verify()).resolves.toBeUndefined();
 
@@ -404,11 +404,11 @@ describe("OpCli", () => {
 		});
 	});
 
-	describe("getVersion", () => {
+	describe("version", () => {
 		it("returns the CLI version", () => {
-			// Note: This test is skipped because getVersion() calls execute() which calls getVersion()
+			// Note: This test is skipped because version() calls execute() which calls version()
 			// creating a circular dependency that's difficult to test in isolation.
-			// The functionality is tested indirectly through other tests that mock getVersion().
+			// The functionality is tested indirectly through other tests that mock version().
 			expect(true).toBe(true);
 		});
 	});
@@ -416,8 +416,8 @@ describe("OpCli", () => {
 	describe("whoami", () => {
 		it("returns user information when signed in", () => {
 			const userInfo = { user: "test@example.com" };
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 			jest.spyOn(child_process, "spawnSync").mockReturnValue({
 				error: null,
 				stderr: "",
@@ -435,8 +435,8 @@ describe("OpCli", () => {
 		});
 
 		it("returns null when not signed in", () => {
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 			jest.spyOn(child_process, "spawnSync").mockReturnValue({
 				error: null,
 				stderr: "[ERROR] 2022/06/04 17:59:15 You are not currently signed in",
@@ -458,8 +458,8 @@ describe("OpCli", () => {
 		});
 
 		it("throws other errors", () => {
-			// Mock getVersion to avoid circular dependency
-			jest.spyOn(cli, "getVersion").mockReturnValue("2.1.0");
+			// Mock version to avoid circular dependency
+			jest.spyOn(cli, "version").mockReturnValue("0.0.0");
 			jest.spyOn(child_process, "spawnSync").mockReturnValue({
 				error: null,
 				stderr: "Some other error",

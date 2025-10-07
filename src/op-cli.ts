@@ -26,7 +26,7 @@ export interface ConnectConfig {
 }
 
 export interface ServiceAccountConfig {
-	token: string;
+	saToken: string;
 }
 
 type AuthConfig = ConnectConfig | ServiceAccountConfig;
@@ -117,10 +117,6 @@ export class OpCli {
 		this.read = new ReadCommand(this);
 	}
 
-	public getVersion(): string {
-		return this.execute<string>([], { flags: { version: true }, json: false });
-	}
-
 	public async verify(requiredVersion?: string) {
 		const opExecutable = this.opPath || "op";
 		const cliExists = !!(await lookpath(opExecutable));
@@ -130,26 +126,11 @@ export class OpCli {
 		}
 
 		if (requiredVersion) {
-			const version = this.getVersion();
+			const version = this.version();
 			const semVersion = semverCoerce(version);
 
 			if (!semverSatisfies(semVersion, requiredVersion)) {
 				throw new VerificationError("version", requiredVersion, version);
-			}
-		}
-	}
-
-	/**
-	 * Get details about the current user.
-	 */
-	public whoami(): ListAccount {
-		try {
-			return this.execute(["whoami"]);
-		} catch (error) {
-			if (error instanceof Error && error.message.includes("signed in")) {
-				return null;
-			} else {
-				throw error;
 			}
 		}
 	}
@@ -173,7 +154,7 @@ export class OpCli {
 			args,
 			flags,
 			json,
-			this.getVersion(),
+			this.version(),
 			this.globalFlags,
 			stdin,
 		);
@@ -186,11 +167,11 @@ export class OpCli {
 		};
 
 		if (this.authConfig) {
-			if ("host" in this.authConfig) {
+			if ("saToken" in this.authConfig) {
+				env.OP_SERVICE_ACCOUNT_TOKEN = this.authConfig.saToken;
+			} else {
 				env.OP_CONNECT_HOST = this.authConfig.host;
 				env.OP_CONNECT_TOKEN = this.authConfig.token;
-			} else {
-				env.OP_SERVICE_ACCOUNT_TOKEN = this.authConfig.token;
 			}
 		}
 
@@ -225,6 +206,28 @@ export class OpCli {
 		} catch (error) {
 			console.log(output);
 			throw error;
+		}
+	}
+
+	/**
+	 * Get the version of the CLI.
+	 */
+	public version(): string {
+		return this.execute<string>([], { flags: { version: true }, json: false });
+	}
+
+	/**
+	 * Get details about the current user.
+	 */
+	public whoami(): ListAccount {
+		try {
+			return this.execute(["whoami"]);
+		} catch (error) {
+			if (error instanceof Error && error.message.includes("signed in")) {
+				return null;
+			} else {
+				throw error;
+			}
 		}
 	}
 }

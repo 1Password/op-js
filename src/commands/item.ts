@@ -272,7 +272,7 @@ export class ItemCommand extends BaseCommand {
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-		const version = semverCoerce(this.cli.getVersion());
+		const version = semverCoerce(this.cli.version());
 
 		// Prior to 2.6.2 the CLI didn't handle field assignments correctly
 		// within scripts, so if we're below that version we need to pipe the

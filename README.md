@@ -18,92 +18,41 @@ npm install @1password/op-js
 
 ## Usage
 
-After installation you can start using command methods:
+After installation you'll use the `OpCli` class to interact with the 1Password CLI:
 
 ```js
-import { version, item, connect } from "@1password/op-js";
+import { OpCli } from "@1password/op-js";
 
-// Some command functions may be directly imported
-version();
+const op = new OpCli();
 
-// But most exist on their parent command's object
-item.get("x1oszeq62e2ys32v9a3l2sgcwly");
+// Get the version of the CLI
+op.version();
 
-// And sub-commands are nested even further
-connect.group.revoke({ group: "MyGroup", allServers: true });
+// Get an item's detail
+await op.item.get("x1oszeq62e2ys32v9a3l2sgcwly");
 ```
 
 The CLI takes flags as `kebab-case`, however to align better with JS object convention all flags should be provided as `camelCase`.
 
-### Flags
+### Verifying the CLI
 
-All command methods support support [global command flags](https://developer.1password.com/docs/cli/reference#global-flags), as well as their own flags, but this package also provides a helper to set global command flags do you don't need to each time. For example:
-
-```js
-import { setGlobalFlags } from "@1password/op-js";
-
-setGlobalFlags({ account: "example.1password.com" });
-```
-
-Note that you should not try to set the `--format` flag as this is set under the hood to `json` for all commands that can return JSON format; it is otherwise a string response.
-
-### Validating the CLI
-
-Since this package depends on the 1Password CLI it's up to the user to install it, and the types may depend on a specific version. There is a function that your application can call to validate that the user has the CLI installed at a specific version:
+Since this package depends on the 1Password CLI it's up to the user to install it, and the types may depend on a specific version. You can validate that the user has the CLI installed at a specific version:
 
 ```js
-import { validateCli } from "@1password/op-js";
-
-validateCli().catch((error) => {
-	console.log("CLI is not valid:", error.message);
+// Verify that the executable is available
+op.verify().catch((error) => {
+	console.log("CLI is not available:", error.message);
 });
 
-// defaults to the recommended version, but you can supply a semver:
-validateCli(">=2.3.1").catch((error) => {
+// Verify the CLI version using a semver version
+op.verify(">=2.3.1").catch((error) => {
 	console.log("CLI is not valid:", error.message);
 });
 ```
 
-### Authentication
+### Available Commands
 
-By default `op-js` uses system authentication (e.g. biometrics), but it also supports automated authentication via [Connect Server](https://developer.1password.com/docs/connect) or [Service Account](https://developer.1password.com/docs/service-accounts).
-
-**Connect**
-
-If you've got a Connect Server set up you can supply your host and token:
-
-```
-import { setConnect } from "@1password/op-js";
-
-setConnect("https://connect.myserver.com", "1kjhd9872hd981865s");
-```
-
-Alternatively you can use environment variables when executing the code that uses `op-js`:
-
-```
-OP_CONNECT_HOST=https://connect.myserver.com
-OP_CONNECT_TOKEN=1kjhd9872hd981865s
-```
-
-**Service Account**
-
-If you're using service accounts you can supply your token:
-
-```
-import { setServiceAccount } from "@1password/op-js";
-
-setServiceAccount("1kjhd9872hd981865s");
-```
-
-Alternatively you can use environment variables when executing the code that uses `op-js`:
-
-```
-OP_SERVICE_ACCOUNT_TOKEN=1kjhd9872hd981865s
-```
-
-### Available commands and functions
-
-There are roughly 70 commands available for use, so you're encouraged to check out the main [`index.ts`](./src/index.ts) file to get a better sense of what's available. Generally, though, here are the top-level commands/namespaces you can import:
+There are roughly 70 commands available for use, so you're encouraged to check out the main [`index.ts`](./src/index.ts) file to get a better sense of what's available. Generally, though, here are the top-level command namespaces available on the `OpCli` instance:
 
 - `version` - Retrieve the current version of the CLI
 - `inject` - Inject secrets into a config file
@@ -116,7 +65,61 @@ There are roughly 70 commands available for use, so you're encouraged to check o
 - `vault` - Manage account vaults
 - `user` - Manage account users
 - `group` - Manage groups and their users
-- `whoami` - Get details about the authenticated account
+
+## Configuration
+
+You can configure the `OpCli` instance with global flags, authentication, and other settings.
+
+### Global Flags
+
+All command methods support [global command flags](https://developer.1password.com/docs/cli/reference#global-flags), as well as their own flags. You can set global flags when creating the OpCli instance:
+
+```js
+const op = new OpCli({
+	globalFlags: { account: "example.1password.com" },
+});
+```
+
+Note that you should not try to set the `--format` flag as this is set under the hood to `json` for all commands that can return JSON format; it is otherwise a string or null response.
+
+### Authentication
+
+By default `op-js` uses system authentication (e.g. biometrics), but it also supports automated authentication via [Connect Server](https://developer.1password.com/docs/connect) or [Service Account](https://developer.1password.com/docs/service-accounts).
+
+**Connect**
+
+If you've got a Connect Server set up you can configure it when creating the OpCli instance:
+
+```js
+const op = new OpCli({
+	authConfig: {
+		host: "https://connect.myserver.com",
+		token: "1kjhd9872hd981865s",
+	},
+});
+```
+
+**Service Account**
+
+If you're using service accounts you can configure it when creating the OpCli instance:
+
+```js
+const op = new OpCli({
+	authConfig: {
+		saToken: "1kjhd9872hd981865s",
+	},
+});
+```
+
+### Custom CLI Path
+
+If you need to use a custom path to the 1Password CLI executable, you can specify it when creating the `OpCli` instance:
+
+```js
+const op = new OpCli({
+	opPath: "/custom/path/to/op",
+});
+```
 
 ## Contributing and feedback
 
