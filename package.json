@@ -10,7 +10,7 @@
 	"repository": "github:1Password/op-js",
 	"license": "MIT",
 	"scripts": {
-		"build": "license-checker-rseidelsohn --direct --files licenses && pnpm compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
+		"build": "pnpm compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
 		"compile": "esbuild src/index.ts src/cli.ts --platform=node --format=cjs --outdir=dist",
 		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
