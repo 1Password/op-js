@@ -10,7 +10,7 @@ export {
 	ValidationErrorType,
 } from "./cli";
 
-type CommandFlags<TOptional extends Flags = {}> = Partial<
+type CommandFlags<TOptional extends Flags = Record<string, never>> = Partial<
 	TOptional & GlobalFlags
 >;
 
@@ -91,7 +91,7 @@ export const inject = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
 	 */
-	data: (input: string, flags: CommandFlags<{}> = {}) =>
+	data: (input: string, flags: CommandFlags<Record<string, never>> = {}) =>
 		cli.execute<string>(["inject"], {
 			flags,
 			json: false,
@@ -528,7 +528,11 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
 		 */
-		edit: (nameOrId: string, newName: string, flags: CommandFlags<{}> = {}) =>
+		edit: (
+			nameOrId: string,
+			newName: string,
+			flags: CommandFlags<Record<string, never>> = {},
+		) =>
 			cli.execute<string>(["connect", "server", "edit"], {
 				args: [nameOrId],
 				flags: { name: newName, ...flags },
@@ -633,7 +637,11 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
 		 */
-		grant: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+		grant: (
+			server: string,
+			vault: string,
+			flags: CommandFlags<Record<string, never>> = {},
+		) =>
 			cli.execute<void>(["connect", "vault", "grant"], {
 				flags: { server, vault, ...flags },
 				json: false,
@@ -644,7 +652,11 @@ export const connect = {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
 		 */
-		revoke: (server: string, vault: string, flags: CommandFlags<{}> = {}) =>
+		revoke: (
+			server: string,
+			vault: string,
+			flags: CommandFlags<Record<string, never>> = {},
+		) =>
 			cli.execute<void>(["connect", "vault", "revoke"], {
 				flags: { server, vault, ...flags },
 				json: false,
@@ -1422,7 +1434,10 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirm: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+	confirm: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<Record<string, never>> = {},
+	) =>
 		cli.execute<void>(["user", "confirm"], {
 			args: [emailOrNameOrId],
 			flags,
@@ -1434,7 +1449,7 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirmAll: (flags: CommandFlags<{}> = {}) =>
+	confirmAll: (flags: CommandFlags<Record<string, never>> = {}) =>
 		cli.execute<void>(["user", "confirm"], {
 			flags: { all: true, ...flags },
 			json: false,
@@ -1475,15 +1490,17 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	get: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
-		cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
+	get: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<Record<string, never>> = {},
+	) => cli.execute<User>(["user", "get"], { args: [emailOrNameOrId], flags }),
 
 	/**
 	 * Get details about the current user.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	me: (flags: CommandFlags<{}> = {}) =>
+	me: (flags: CommandFlags<Record<string, never>> = {}) =>
 		cli.execute<User>(["user", "get"], { flags: { me: true, ...flags } }),
 
 	/**
@@ -1491,7 +1508,10 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	fingerprint: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+	fingerprint: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<Record<string, never>> = {},
+	) =>
 		cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
 			flags: { fingerprint: true, ...flags },
@@ -1503,7 +1523,10 @@ export const user = {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	publicKey: (emailOrNameOrId: string, flags: CommandFlags<{}> = {}) =>
+	publicKey: (
+		emailOrNameOrId: string,
+		flags: CommandFlags<Record<string, never>> = {},
+	) =>
 		cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
 			flags: { publicKey: true, ...flags },
