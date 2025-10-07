@@ -92,7 +92,7 @@ export const semverToInt = (input: string) =>
 		.join("");
 
 export const camelToHyphen = (str: string) =>
-	str.replaceAll(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
+	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 
 const specialCharacters = ['"', "$", "'", "\\", "`"];
 const escapableCharacters = new Set([...specialCharacters, "."]);
@@ -242,13 +242,7 @@ export class CLI {
 			}
 		}
 
-		return [
-			...parts,
-			...createFlags({
-				...this.globalFlags,
-				...flags,
-			}),
-		];
+		return [...parts, ...createFlags({ ...this.globalFlags, ...flags })];
 	}
 
 	public execute<TData extends string | Record<string, any> | void>(
@@ -265,7 +259,7 @@ export class CLI {
 			json?: boolean;
 		} = {},
 	): TData {
-		let input: NodeJS.ArrayBufferView;
+		let input: Buffer | undefined;
 		const parts = this.createParts(subCommand, args, flags, json);
 
 		if (stdin) {
@@ -276,7 +270,7 @@ export class CLI {
 
 		const { status, error, stdout, stderr } = spawnSync("op", parts, {
 			stdio: input ? "pipe" : ["ignore", "pipe", "pipe"],
-			input,
+			input: input as NodeJS.ArrayBufferView,
 			env: {
 				...process.env,
 				...(this.connect && {

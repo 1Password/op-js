@@ -11,7 +11,7 @@ Requires [Node](https://nodejs.org/en/) and [1Password CLI](https://developer.1p
 To install dependencies:
 
 ```shell
-yarn # or yarn install
+pnpm install
 ```
 
 ### Running locally
@@ -19,7 +19,7 @@ yarn # or yarn install
 While you're working on this project you should watch for changes:
 
 ```shell
-yarn watch
+pnpm watch
 ```
 
 This will recompile the project into the `/dist` folder whenever a file changes. You can then import the package into a local project for testing purposes.
@@ -30,13 +30,13 @@ Code should be linted and formatted where appropriate. We have commands for all 
 
 ```shell
 # Run Prettier on all TS files
-yarn prettier
+pnpm prettier
 
 # Run ESLint on all TS files
-yarn eslint
+pnpm eslint
 
 # Typecheck all TS files
-yarn typecheck
+pnpm typecheck
 ```
 
 The above commands will only return linting reports. You can optionally attach the appropriate `--fix` / `--write` flag when running the commands, which will modify the files to fix issues that can be done so automatically. Some issues will need to be manually addressed.
@@ -67,16 +67,16 @@ Commands are pretty straightforward:
 
 ```shell
 # Run the entire unit test suite
-yarn test:unit
+pnpm test:unit
 
 # Run the entire integration test suite
-yarn test:integration
+pnpm test:integration
 
 # Run the unit test suite, re-running on changes
-yarn test:unit --watch
+pnpm test:unit --watch
 
 # Run only integration tests that have a specific description
-yarn test:integration -t="returns injected data"
+pnpm test:integration -t="returns injected data"
 ```
 
 ## Distribution
@@ -89,7 +89,7 @@ You should only need to do the following on the `main` branch:
 
 ```shell
 # Replace VERSION with the version you are bumping to
-yarn version --new-version VERSION && git push
+pnpm version VERSION && git push
 ```
 
 This will:

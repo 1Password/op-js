@@ -13,7 +13,7 @@
 	},
 	"license": "MIT",
 	"scripts": {
-		"build": "license-checker-rseidelsohn --direct --files licenses && yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
+		"build": "license-checker-rseidelsohn --direct --files licenses && pnpm compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
 		"compile": "esbuild src/index.ts src/cli.ts --platform=node --format=cjs --outdir=dist",
 		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
@@ -21,7 +21,7 @@
 		"test:unit": "jest --testMatch '<rootDir>/src/*.test.ts'",
 		"test:integration": "jest --testMatch '<rootDir>/tests/*.test.ts' --setupFilesAfterEnv '<rootDir>/jest.setup.ts' --runInBand",
 		"typecheck": "tsc -p tsconfig.release.json --noEmit",
-		"watch": "yarn compile --watch"
+		"watch": "pnpm compile --watch"
 	},
 	"prettier": "@1password/prettier-config",
 	"lint-staged": {
@@ -34,9 +34,10 @@
 		"@1password/eslint-config": "^4.3.0",
 		"@1password/prettier-config": "^1.1.3",
 		"@types/jest": "^29.5.12",
-		"@types/node": "^20.12.12",
+		"@types/node": "^22.18.0",
 		"@types/semver": "^7.5.8",
 		"@typescript-eslint/eslint-plugin": "^7.9.0",
+		"@typescript-eslint/parser": "^7.0.0",
 		"esbuild": "^0.21.2",
 		"eslint": "^8.57.0",
 		"husky": "^9.0.11",
@@ -48,10 +49,14 @@
 		"prettier": "^3.2.5",
 		"prettier-plugin-organize-imports": "^3.2.4",
 		"ts-jest": "^29.1.2",
-		"typescript": "5.4.5"
+		"typescript": "5.9.2"
 	},
 	"dependencies": {
 		"lookpath": "^1.2.2",
 		"semver": "^7.6.2"
-	}
+	},
+	"engines": {
+		"node": "^22.18.0"
+	},
+	"packageManager": "pnpm@10.2.0"
 }

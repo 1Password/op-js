@@ -4,10 +4,10 @@ This package is a simple JavaScript wrapper for the [1Password CLI](https://deve
 
 ## Installation
 
-Install using Yarn:
+Install using pnpm:
 
 ```shell
-yarn add @1password/op-js
+pnpm add @1password/op-js
 ```
 
 Or using NPM:
@@ -30,10 +30,7 @@ version();
 item.get("x1oszeq62e2ys32v9a3l2sgcwly");
 
 // And sub-commands are nested even further
-connect.group.revoke({
-	group: "MyGroup",
-	allServers: true,
-});
+connect.group.revoke({ group: "MyGroup", allServers: true });
 ```
 
 The CLI takes flags as `kebab-case`, however to align better with JS object convention all flags should be provided as `camelCase`.
@@ -45,9 +42,7 @@ All command methods support support [global command flags](https://developer.1pa
 ```js
 import { setGlobalFlags } from "@1password/op-js";
 
-setGlobalFlags({
-	account: "example.1password.com",
-});
+setGlobalFlags({ account: "example.1password.com" });
 ```
 
 Note that you should not try to set the `--format` flag as this is set under the hood to `json` for all commands that can return JSON format; it is otherwise a string response.
