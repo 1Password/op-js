@@ -1,14 +1,36 @@
 import { context } from 'esbuild';
 import { execSync } from 'child_process';
+import { readdirSync, statSync } from 'fs';
+import { join } from 'path';
 
 const isWatch = process.argv.includes('--watch');
 const isProd = process.env.NODE_ENV === 'production';
 
+// Build everything except test files
+const getEntryPoints = (dir) => {
+  const entryPoints = [];
+  
+  const scanDirectory = (currentDir, relativePath = '') => {
+    const items = readdirSync(currentDir);
+    
+    for (const item of items) {
+      const fullPath = join(currentDir, item);
+      const relativeItemPath = relativePath ? join(relativePath, item) : item;
+      
+      if (statSync(fullPath).isDirectory()) {
+        scanDirectory(fullPath, relativeItemPath);
+      } else if (item.endsWith('.ts') && !item.endsWith('.test.ts')) {
+        entryPoints.push(join(dir, relativeItemPath));
+      }
+    }
+  };
+  
+  scanDirectory(dir);
+  return entryPoints;
+};
+
 const config = {
-  entryPoints: [
-    'src/index.ts',
-    'src/cli.ts'
-  ],
+  entryPoints: getEntryPoints('src'),
   bundle: false,
   platform: 'node',
   format: 'cjs',

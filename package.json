@@ -10,7 +10,9 @@
 	"repository": "github:1Password/op-js",
 	"license": "MIT",
 	"scripts": {
-		"build": "node esbuild.mjs",
+		"build": "pnpm run clean && node esbuild.mjs",
+		"build:prod": "pnpm run clean && NODE_ENV=production node esbuild.mjs",
+		"clean": "rm -rf dist",
 		"eslint": "eslint -c .eslintrc.json 'src/*.ts'",
 		"prepare": "husky install",
 		"prettier": "prettier --check 'src/*.ts'",
