@@ -18,7 +18,10 @@
 		"prettier": "prettier --check 'src/*.ts'",
 		"test": "jest",
 		"typecheck": "tsc -p tsconfig.release.json --noEmit",
-		"watch": "pnpm run build --watch"
+		"watch": "pnpm run build --watch",
+		"examples": "tsx examples/run-example.ts",
+		"examples:all": "tsx examples/run-example.ts --scenario all",
+		"examples:help": "tsx examples/run-example.ts --help"
 	},
 	"prettier": "@1password/prettier-config",
 	"lint-staged": {
@@ -30,20 +33,28 @@
 	"devDependencies": {
 		"@1password/eslint-config": "^5.0.0",
 		"@1password/prettier-config": "^1.1.3",
+		"@types/inquirer": "^9.0.9",
 		"@types/jest": "^30.0.0",
+		"@types/minimist": "^1.2.5",
 		"@types/node": "^22.18.0",
 		"@types/semver": "^7.5.8",
+		"@types/yauzl": "^2.10.3",
 		"@typescript-eslint/eslint-plugin": "^8.46.0",
 		"@typescript-eslint/parser": "^8.46.0",
+		"chalk": "^5.6.2",
 		"esbuild": "^0.25.10",
 		"eslint": "^8.57.0",
 		"husky": "^9.1.7",
+		"inquirer": "^12.9.6",
 		"jest": "^30.2.0",
 		"lint-staged": "^15.2.2",
+		"minimist": "^1.2.8",
 		"prettier": "^3.6.2",
 		"prettier-plugin-organize-imports": "^4.3.0",
 		"ts-jest": "^29.4.4",
-		"typescript": "5.9.2"
+		"tsx": "^4.20.5",
+		"typescript": "5.9.2",
+		"yauzl": "^3.2.0"
 	},
 	"dependencies": {
 		"lookpath": "^1.2.3",

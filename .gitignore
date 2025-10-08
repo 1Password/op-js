@@ -5,3 +5,4 @@ coverage/
 .env
 dist/
 licenses/
+examples/cli/
