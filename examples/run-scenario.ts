@@ -34,7 +34,6 @@ export class ExampleRunner {
 
 		const choices = [
 			...scenarios.map((scenario) => ({ name: scenario, value: scenario })),
-			{ name: "🔄 Run all scenarios", value: "all" },
 			{ name: "👋 Exit program", value: "exit" },
 		];
 
@@ -83,57 +82,14 @@ export class ExampleRunner {
 
 			console.log(`\n✅ Completed scenario: ${scenarioName}`);
 		} catch (error) {
-			console.error(`❌ Error running scenario ${scenarioName}:`, error);
-			throw error;
-		}
-	}
-
-	async runAllScenarios(): Promise<void> {
-		const scenarios = this.availableScenarios;
-
-		if (scenarios.length === 0) {
-			console.log("❌ No scenarios found to run.");
-			return;
-		}
-
-		console.log(
-			`\n🏁 Running all ${scenarios.length} scenarios sequentially...`,
-		);
-
-		let successCount = 0;
-		let failureCount = 0;
-
-		for (const scenario of scenarios) {
-			try {
-				await this.runScenario(scenario);
-				successCount++;
-			} catch (error) {
-				console.error(`Failed to run scenario: ${scenario}`, error);
-				failureCount++;
-
-				// Ask if user wants to continue after a failure
-				const { continueRunning } = await inquirer.prompt<{
-					continueRunning: boolean;
-				}>([
-					{
-						type: "confirm",
-						name: "continueRunning",
-						message: "Continue running remaining scenarios?",
-						default: true,
-					},
-				]);
-
-				if (!continueRunning) {
-					console.log("❌ Stopping execution of remaining scenarios.");
-					break;
-				}
+			if (error instanceof Error && error.message.includes("SIGINT")) {
+				console.log("❌ Scenario interrupted by user.");
+				process.exit(0);
+			} else {
+				console.error(`❌ Error running scenario ${scenarioName}:`, error);
+				throw error;
 			}
 		}
-
-		console.log("\n" + "=".repeat(60));
-		console.log(
-			`📊 Scenarios summary: ${successCount} succeeded, ${failureCount} failed`,
-		);
 	}
 
 	async run(): Promise<void> {
@@ -142,19 +98,15 @@ export class ExampleRunner {
 
 		const scenarioArg = this.args.scenario as string | undefined;
 
-		// Run one or all scenarios immediately if flag is provided
+		// Run a scenarios immediately if flag is provided
 		if (scenarioArg) {
-			if (scenarioArg === "all") {
-				await this.runAllScenarios();
+			const scenarios = this.availableScenarios;
+			if (scenarios.includes(scenarioArg)) {
+				await this.runScenario(scenarioArg);
 			} else {
-				const scenarios = this.availableScenarios;
-				if (scenarios.includes(scenarioArg)) {
-					await this.runScenario(scenarioArg);
-				} else {
-					console.error(`❌ Scenario '${scenarioArg}' not found.`);
-					console.log("Available scenarios:", scenarios.join(", "));
-					process.exit(1);
-				}
+				console.error(`❌ Scenario '${scenarioArg}' not found.`);
+				console.log("Available scenarios:", scenarios.join(", "));
+				process.exit(1);
 			}
 			return;
 		}
@@ -163,15 +115,11 @@ export class ExampleRunner {
 		const selectedScenario = await this.selectScenario();
 
 		if (selectedScenario) {
-			if (selectedScenario === "all") {
-				await this.runAllScenarios();
-			} else {
-				try {
-					await this.runScenario(selectedScenario);
-				} catch (error) {
-					console.error("Failed to run scenario:", error);
-					process.exit(1);
-				}
+			try {
+				await this.runScenario(selectedScenario);
+			} catch (error) {
+				console.error("Failed to run scenario:", error);
+				process.exit(1);
 			}
 		}
 	}
@@ -180,7 +128,12 @@ export class ExampleRunner {
 if (require.main === module) {
 	const runner = new ExampleRunner();
 	runner.run().catch((error) => {
-		console.error("Example runner failed:", error);
-		process.exit(1);
+		if (error instanceof Error && error.message.includes("SIGINT")) {
+			console.log("❌ Scenario interrupted by user.");
+			process.exit(0);
+		} else {
+			console.error("Example runner failed:", error);
+			process.exit(1);
+		}
 	});
 }

@@ -19,9 +19,7 @@
 		"test": "jest",
 		"typecheck": "tsc -p tsconfig.release.json --noEmit",
 		"watch": "pnpm run build --watch",
-		"examples": "tsx examples/run-example.ts",
-		"examples:all": "tsx examples/run-example.ts --scenario all",
-		"examples:help": "tsx examples/run-example.ts --help"
+		"examples": "tsx examples/run-scenario.ts"
 	},
 	"prettier": "@1password/prettier-config",
 	"lint-staged": {

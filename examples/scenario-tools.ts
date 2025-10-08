@@ -9,6 +9,7 @@ import {
 import { join, basename, resolve } from "path";
 import { open, Entry, ZipFile } from "yauzl";
 import chalk from "chalk";
+import inquirer from "inquirer";
 import { OpCli } from "../src/index";
 
 type Platform = "darwin" | "freebsd" | "openbsd" | "linux" | "windows";
@@ -26,8 +27,76 @@ interface CLIVersionResponse {
 	};
 }
 
-const info = (message: string) => {
+export const system = (message: string) => {
 	console.log(chalk.gray(message));
+};
+
+export const info = (message: string) => {
+	console.log(chalk.blue(message));
+};
+
+export const warn = (message: string) => {
+	console.log(chalk.yellow(message));
+};
+
+export const error = (message: string) => {
+	console.log(chalk.red(message));
+};
+
+export const success = (message: string) => {
+	console.log(chalk.green(message));
+};
+
+interface Choice<T = string> {
+	label: string;
+	value: T;
+}
+
+export const getChoice = async <T = string>(
+	title: string,
+	choices: Choice<T>[],
+): Promise<T> => {
+	const result = await inquirer.prompt<{ selectedValue: T }>([
+		{
+			type: "list",
+			name: "selectedValue",
+			message: title,
+			choices: choices.map((choice) => ({
+				name: choice.label,
+				value: choice.value,
+			})),
+		},
+	]);
+
+	return result.selectedValue;
+};
+
+export const getInput = async (
+	title: string,
+	defaultValue?: string,
+): Promise<string> => {
+	const result = await inquirer.prompt<{ inputValue: string }>([
+		{
+			type: "input",
+			name: "inputValue",
+			message: title,
+			default: defaultValue,
+		},
+	]);
+
+	return result.inputValue;
+};
+
+export const getConfirmation = async (title: string): Promise<boolean> => {
+	const result = await inquirer.prompt<{ confirmation: boolean }>([
+		{
+			type: "confirm",
+			name: "confirmation",
+			message: title,
+		},
+	]);
+
+	return result.confirmation;
 };
 
 export class CLIManager {
@@ -99,9 +168,9 @@ export class CLIManager {
 			opPath: this.cliPath,
 		});
 
-		info("Verifying CLI...");
+		system("Verifying CLI...");
 		if (!(await this.check(cli, true))) {
-			info("CLI not found, downloading...");
+			system("CLI not found, downloading...");
 			await this.download(cli);
 		}
 
@@ -115,7 +184,7 @@ export class CLIManager {
 
 			try {
 				await cli.verify(latestVersion);
-				info(`1Password CLI v${latestVersion} is active and up to date\n`);
+				system(`1Password CLI v${latestVersion} is active and up to date\n`);
 				return true;
 			} catch (error) {
 				if (!failAllowed) {
@@ -164,14 +233,14 @@ export class CLIManager {
 		version: string,
 		url: string,
 	): Promise<void> {
-		info(`Downloading v${version} from: ${url}`);
+		system(`Downloading v${version} from: ${url}`);
 
 		const response = await fetch(url);
 		if (!response.ok) {
 			throw new Error(`Failed to download CLI: ${response.statusText}`);
 		}
 
-		info("Saving and extracting...");
+		system("Saving and extracting...");
 
 		const arrayBuffer = await response.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);

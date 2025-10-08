@@ -52,3 +52,8 @@ lint: ## Run ESLint
 format: ## Check code formatting with Prettier
 	@fnm use
 	pnpm run prettier
+
+.PHONY: examples
+examples: ## Run examples
+	@fnm use
+	pnpm run examples
