@@ -79,3 +79,12 @@ export type {
 	ConnectServer,
 	ConnectServerToken,
 } from "./commands/connect";
+
+export type { RunOptions } from "./commands/run";
+
+export type {
+	ServiceAccount,
+	ServiceAccountRateLimit,
+} from "./commands/service-account";
+
+export type { WhoamiCommand } from "./commands/whoami";

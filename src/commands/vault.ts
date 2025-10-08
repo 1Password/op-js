@@ -148,6 +148,7 @@ export class VaultCommand extends BaseCommand {
 			allowAdminsToManage: "true" | "false";
 			description: string;
 			icon: VaultIcon;
+			noTravelMode: boolean;
 		}> = {},
 	) {
 		return this.cli.execute<Vault>(["vault", "create"], {
@@ -211,6 +212,7 @@ export class VaultCommand extends BaseCommand {
 		flags: CommandFlags<{
 			group: string;
 			user: string;
+			includeArchive: boolean;
 		}> = {},
 	) {
 		return this.cli.execute<AbbreviatedVault[]>(["vault", "list"], { flags });

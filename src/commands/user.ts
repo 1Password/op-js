@@ -168,7 +168,7 @@ export class UserCommand extends BaseCommand {
 	/**
 	 * Provision a user in the authenticated account.
 	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-invite}
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user/#user-provision}
 	 */
 	provision(
 		email: string,
@@ -210,4 +210,18 @@ export class UserCommand extends BaseCommand {
 			json: false,
 		});
 	}
+
+	recovery = {
+		/**
+		 * Begin recovery for users in your 1Password account.
+		 *
+		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-recovery-begin}
+		 */
+		begin: (users: string[], flags: CommandFlags<Record<string, never>> = {}) =>
+			this.cli.execute<void>(["user", "recovery", "begin"], {
+				args: users,
+				flags,
+				json: false,
+			}),
+	};
 }

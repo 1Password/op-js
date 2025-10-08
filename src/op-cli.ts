@@ -17,6 +17,9 @@ import { ConnectCommand } from "./commands/connect";
 import { EventsApiCommand } from "./commands/events-api";
 import { InjectCommand } from "./commands/inject";
 import { ReadCommand } from "./commands/read";
+import { RunCommand } from "./commands/run";
+import { ServiceAccountCommand } from "./commands/service-account";
+import { WhoamiCommand } from "./commands/whoami";
 
 export { type Flags } from "./build-command";
 
@@ -89,6 +92,9 @@ export class OpCli {
 	public readonly eventsApi: EventsApiCommand;
 	public readonly inject: InjectCommand;
 	public readonly read: ReadCommand;
+	public readonly run: RunCommand;
+	public readonly serviceAccount: ServiceAccountCommand;
+	public readonly whoami: WhoamiCommand;
 
 	constructor(config: OpCliConfig = {}) {
 		if (config.globalFlags) {
@@ -115,6 +121,9 @@ export class OpCli {
 		this.eventsApi = new EventsApiCommand(this);
 		this.inject = new InjectCommand(this);
 		this.read = new ReadCommand(this);
+		this.run = new RunCommand(this);
+		this.serviceAccount = new ServiceAccountCommand(this);
+		this.whoami = new WhoamiCommand(this);
 	}
 
 	public async verify(requiredVersion?: string) {
@@ -213,20 +222,5 @@ export class OpCli {
 	 */
 	public version(): string {
 		return this.execute<string>([], { flags: { version: true }, json: false });
-	}
-
-	/**
-	 * Get details about the current user.
-	 */
-	public whoami(): ListAccount {
-		try {
-			return this.execute(["whoami"]);
-		} catch (error) {
-			if (error instanceof Error && error.message.includes("signed in")) {
-				return null;
-			} else {
-				throw error;
-			}
-		}
 	}
 }

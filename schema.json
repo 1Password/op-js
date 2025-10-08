@@ -1,0 +1,1621 @@
+[
+	{
+		"name": "inject",
+		"description": "Inject secrets into a file templated with secret references.:contentReference[oaicite:0]{index=0}",
+		"callable": true,
+		"arguments": [
+			{
+				"name": "template",
+				"type": "string",
+				"required": false,
+				"description": "Path to the template file to inject (use '-' to read from stdin)."
+			}
+		],
+		"flags": [
+			{
+				"name": "--in-file",
+				"alias": "-i",
+				"type": "string",
+				"required": false,
+				"description": "The filename of a template file to inject. If not provided, reads from stdin."
+			},
+			{
+				"name": "--out-file",
+				"alias": "-o",
+				"type": "string",
+				"required": false,
+				"description": "Write the injected template to a file instead of stdout."
+			}
+		],
+		"subcommands": []
+	},
+	{
+		"name": "read",
+		"description": "Read a secret using the secrets reference syntax.:contentReference[oaicite:1]{index=1}:contentReference[oaicite:2]{index=2}",
+		"callable": true,
+		"arguments": [
+			{
+				"name": "secret-reference",
+				"type": "string",
+				"required": true,
+				"description": "The secret reference (e.g., op://VAULT/ITEM/FIELD) to read."
+			}
+		],
+		"flags": [
+			{
+				"name": "--out-file",
+				"alias": "-o",
+				"type": "string",
+				"required": false,
+				"description": "Write the secret value to a file instead of stdout."
+			},
+			{
+				"name": "--file-mode",
+				"type": "string",
+				"required": false,
+				"description": "File mode (permissions) to set on the output file if it is created (default 0600). Ignored if --out-file is not used.:contentReference[oaicite:3]{index=3}"
+			},
+			{
+				"name": "--force",
+				"alias": "-f",
+				"type": "boolean",
+				"required": false,
+				"description": "Overwrite the output file without prompting for confirmation (if --out-file is used).:contentReference[oaicite:4]{index=4}"
+			},
+			{
+				"name": "--no-newline",
+				"alias": "-n",
+				"type": "boolean",
+				"required": false,
+				"description": "Do not print a newline after the secret (when printing to stdout).:contentReference[oaicite:5]{index=5}"
+			}
+		],
+		"subcommands": []
+	},
+	{
+		"name": "run",
+		"description": "Pass secrets as environment variables to a process.:contentReference[oaicite:6]{index=6}",
+		"callable": true,
+		"arguments": [
+			{
+				"name": "command",
+				"type": "string",
+				"required": true,
+				"description": "The command (and arguments) to execute with secrets injected (everything after '--')."
+			}
+		],
+		"flags": [
+			{
+				"name": "--env-file",
+				"type": "array<string>",
+				"required": false,
+				"description": "Specify one or more dotenv (.env) files to load and parse for secret references.:contentReference[oaicite:7]{index=7}"
+			},
+			{
+				"name": "--no-masking",
+				"type": "boolean",
+				"required": false,
+				"description": "Disable masking of secret values in the subprocess output (stdout/stderr).:contentReference[oaicite:8]{index=8}"
+			}
+		],
+		"subcommands": []
+	},
+	{
+		"name": "whoami",
+		"description": "Get information about a signed-in account.:contentReference[oaicite:9]{index=9}",
+		"callable": true,
+		"arguments": [],
+		"flags": [],
+		"subcommands": []
+	},
+	{
+		"name": "account",
+		"description": "Manage your locally configured 1Password accounts.:contentReference[oaicite:10]{index=10}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "add",
+				"description": "Add an account to sign in to for the first time:contentReference[oaicite:11]{index=11}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--address",
+						"type": "string",
+						"required": true,
+						"description": "The sign-in address (domain) for your 1Password account.:contentReference[oaicite:12]{index=12}"
+					},
+					{
+						"name": "--email",
+						"type": "string",
+						"required": true,
+						"description": "The email address associated with your 1Password account.:contentReference[oaicite:13]{index=13}"
+					},
+					{
+						"name": "--secret-key",
+						"type": "string",
+						"required": true,
+						"description": "The Secret Key for your account."
+					},
+					{
+						"name": "--shorthand",
+						"type": "string",
+						"required": false,
+						"description": "Set a custom shorthand name for the account.:contentReference[oaicite:14]{index=14}"
+					},
+					{
+						"name": "--signin",
+						"type": "boolean",
+						"required": false,
+						"description": "Sign in to the account immediately after adding it."
+					},
+					{
+						"name": "--raw",
+						"type": "boolean",
+						"required": false,
+						"description": "Output only the session token on successful sign-in.:contentReference[oaicite:15]{index=15}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "forget",
+				"description": "Remove a 1Password account from this device.:contentReference[oaicite:16]{index=16}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "account",
+						"type": "string",
+						"required": false,
+						"description": "The account shorthand, sign-in address, or account ID to forget (if not provided, defaults to current or prompts selection)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Get details about your account.:contentReference[oaicite:17]{index=17}",
+				"callable": true,
+				"arguments": [],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List users and accounts set up on this device.:contentReference[oaicite:18]{index=18}",
+				"callable": true,
+				"arguments": [],
+				"flags": [],
+				"subcommands": []
+			}
+		]
+	},
+	{
+		"name": "connect",
+		"description": "Manage Connect server instances and tokens in your 1Password account.:contentReference[oaicite:19]{index=19}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "group",
+				"description": "Manage group access to Secrets Automation (Connect).:contentReference[oaicite:20]{index=20}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "grant",
+						"description": "Grant a group access to manage Secrets Automation (Connect).:contentReference[oaicite:21]{index=21}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID to grant access."
+							}
+						],
+						"flags": [
+							{
+								"name": "--server",
+								"type": "string",
+								"required": false,
+								"description": "Grant access only to a specific Connect server (name or ID). If omitted, grants access globally (all servers).:contentReference[oaicite:22]{index=22}"
+							},
+							{
+								"name": "--all-servers",
+								"type": "boolean",
+								"required": false,
+								"description": "Grant access to all current and future Connect servers in the account.:contentReference[oaicite:23]{index=23}"
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "revoke",
+						"description": "Revoke a group's access to manage Secrets Automation (Connect).:contentReference[oaicite:24]{index=24}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID to revoke access."
+							}
+						],
+						"flags": [
+							{
+								"name": "--server",
+								"type": "string",
+								"required": false,
+								"description": "Revoke access only for a specific Connect server. If omitted, revokes the group's Secrets Automation manager role entirely."
+							},
+							{
+								"name": "--all-servers",
+								"type": "boolean",
+								"required": false,
+								"description": "Revoke access for all Connect servers (remove group from Secrets Automation managers)."
+							}
+						],
+						"subcommands": []
+					}
+				]
+			},
+			{
+				"name": "server",
+				"description": "Manage Connect servers.:contentReference[oaicite:25]{index=25}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "create",
+						"description": "Set up a Connect server and generate its credentials file.:contentReference[oaicite:26]{index=26}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "name",
+								"type": "string",
+								"required": true,
+								"description": "A name for the new Connect server."
+							}
+						],
+						"flags": [
+							{
+								"name": "--vaults",
+								"type": "array<string>",
+								"required": false,
+								"description": "Vaults to grant the new Connect server access to (with full permissions). Specify vaults by name or ID, comma-separated or via multiple uses of this flag.:contentReference[oaicite:27]{index=27}"
+							},
+							{
+								"name": "--force",
+								"alias": "-f",
+								"type": "boolean",
+								"required": false,
+								"description": "Overwrite any existing `1password-credentials.json` in the current directory without prompting."
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "delete",
+						"description": "Remove a Connect server (by name or ID).:contentReference[oaicite:28]{index=28}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID to delete."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "edit",
+						"description": "Rename a Connect server. Specify the server by name or ID.:contentReference[oaicite:29]{index=29}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID to rename."
+							}
+						],
+						"flags": [
+							{
+								"name": "--name",
+								"type": "string",
+								"required": true,
+								"description": "The new name for the Connect server."
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "get",
+						"description": "Get details about a Connect server. Specify the server by name or ID.:contentReference[oaicite:30]{index=30}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID to retrieve."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "List Connect servers in the account.:contentReference[oaicite:31]{index=31}",
+						"callable": true,
+						"arguments": [],
+						"flags": [],
+						"subcommands": []
+					}
+				]
+			},
+			{
+				"name": "token",
+				"description": "Manage Connect server tokens.:contentReference[oaicite:32]{index=32}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "create",
+						"description": "Issue a token for a 1Password Connect server.:contentReference[oaicite:33]{index=33}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "token-name",
+								"type": "string",
+								"required": false,
+								"description": "A label for the new token (optional)."
+							}
+						],
+						"flags": [
+							{
+								"name": "--server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID for which to create the token."
+							},
+							{
+								"name": "--vaults",
+								"type": "array<string>",
+								"required": false,
+								"description": "Limit the token's vault access. Specify vaults (name or ID) with optional read/write restriction (e.g., VaultName,r for read-only). Defaults to all vaults the server has, with same permissions.:contentReference[oaicite:34]{index=34}:contentReference[oaicite:35]{index=35}"
+							},
+							{
+								"name": "--expires-in",
+								"type": "string",
+								"required": false,
+								"description": "Set an expiry duration for the token (e.g., 1h, 7d, 30d). If omitted, the token does not expire.:contentReference[oaicite:36]{index=36}"
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "delete",
+						"description": "Revoke a token for a Connect server.:contentReference[oaicite:37]{index=37}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "token-id",
+								"type": "string",
+								"required": true,
+								"description": "The token ID to revoke."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "edit",
+						"description": "Rename a Connect server token.:contentReference[oaicite:38]{index=38}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "token-id",
+								"type": "string",
+								"required": true,
+								"description": "The token ID to rename."
+							}
+						],
+						"flags": [
+							{
+								"name": "--name",
+								"type": "string",
+								"required": true,
+								"description": "The new label for the token."
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "Get a list of tokens for Connect servers.:contentReference[oaicite:39]{index=39}:contentReference[oaicite:40]{index=40}",
+						"callable": true,
+						"arguments": [],
+						"flags": [],
+						"subcommands": []
+					}
+				]
+			},
+			{
+				"name": "vault",
+				"description": "Manage Connect server vault access.:contentReference[oaicite:41]{index=41}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "grant",
+						"description": "Grant a Connect server access to a vault.:contentReference[oaicite:42]{index=42}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID to grant access."
+							},
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to grant access to."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "revoke",
+						"description": "Revoke a Connect server's access to a vault.:contentReference[oaicite:43]{index=43}:contentReference[oaicite:44]{index=44}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "server",
+								"type": "string",
+								"required": true,
+								"description": "The Connect server name or ID whose access to revoke."
+							},
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to revoke access from."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "document",
+		"description": "Perform CRUD operations on Document items in your vaults.:contentReference[oaicite:45]{index=45}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Create a document item and upload a file.:contentReference[oaicite:46]{index=46}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "file",
+						"type": "string",
+						"required": true,
+						"description": "Path to the file to upload as a document (use '-' to read file content from stdin)."
+					}
+				],
+				"flags": [
+					{
+						"name": "--vault",
+						"type": "string",
+						"required": false,
+						"description": "The vault name or ID to save the document in (defaults to a built-in Personal/Private vault).:contentReference[oaicite:47]{index=47}"
+					},
+					{
+						"name": "--file-name",
+						"type": "string",
+						"required": false,
+						"description": "Override the file name for the document item (especially useful when reading from stdin).:contentReference[oaicite:48]{index=48}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "delete",
+				"description": "Permanently delete a document (or move it to Archive with a flag).:contentReference[oaicite:49]{index=49}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "document",
+						"type": "string",
+						"required": true,
+						"description": "The document name or ID to delete."
+					}
+				],
+				"flags": [
+					{
+						"name": "--archive",
+						"type": "boolean",
+						"required": false,
+						"description": "Archive the document instead of deleting it."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "edit",
+				"description": "Replace a document item's file with a new file or data from stdin.:contentReference[oaicite:50]{index=50}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "document",
+						"type": "string",
+						"required": true,
+						"description": "The document name or ID to edit."
+					},
+					{
+						"name": "file",
+						"type": "string",
+						"required": true,
+						"description": "Path to the new file content (use '-' for stdin)."
+					}
+				],
+				"flags": [
+					{
+						"name": "--file-name",
+						"type": "string",
+						"required": false,
+						"description": "Change the file name of the document (especially useful if providing content via stdin).:contentReference[oaicite:51]{index=51}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Download a document and print its contents to stdout.:contentReference[oaicite:52]{index=52}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "document",
+						"type": "string",
+						"required": true,
+						"description": "The document name or ID to download."
+					}
+				],
+				"flags": [
+					{
+						"name": "--out-file",
+						"type": "string",
+						"required": false,
+						"description": "Save the document contents to a file instead of printing to stdout.:contentReference[oaicite:53]{index=53}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List documents the account has access to.:contentReference[oaicite:54]{index=54}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--include-archive",
+						"type": "boolean",
+						"required": false,
+						"description": "Include documents that are in the Archive in the listing.:contentReference[oaicite:55]{index=55}"
+					}
+				],
+				"subcommands": []
+			}
+		]
+	},
+	{
+		"name": "events-api",
+		"description": "Manage Events API integrations in your 1Password account. Requires a business account.:contentReference[oaicite:56]{index=56}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Set up an integration with the Events API (generate an integration token).:contentReference[oaicite:57]{index=57}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "integration-name",
+						"type": "string",
+						"required": false,
+						"description": "A name for the Events API integration (for identification)."
+					}
+				],
+				"flags": [
+					{
+						"name": "--features",
+						"type": "string",
+						"required": false,
+						"description": "Limit which events are reported by this integration. For example, 'signinattempts' to only report sign-in attempt events. If omitted, all supported events are reported.:contentReference[oaicite:58]{index=58}"
+					},
+					{
+						"name": "--expires-in",
+						"type": "string",
+						"required": false,
+						"description": "Expire the integration token after the specified duration (e.g., 1h for one hour). If omitted, the token does not expire.:contentReference[oaicite:59]{index=59}"
+					}
+				],
+				"subcommands": []
+			}
+		]
+	},
+	{
+		"name": "group",
+		"description": "Manage the groups in your 1Password account.:contentReference[oaicite:60]{index=60}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Create a group.:contentReference[oaicite:61]{index=61}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "name",
+						"type": "string",
+						"required": true,
+						"description": "The name for the new group."
+					}
+				],
+				"flags": [
+					{
+						"name": "--description",
+						"type": "string",
+						"required": false,
+						"description": "A description for the group."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "delete",
+				"description": "Remove a group (delete it from the account).:contentReference[oaicite:62]{index=62}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "group",
+						"type": "string",
+						"required": true,
+						"description": "The group name or ID to delete."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "edit",
+				"description": "Edit a group's name or description. Specify the group by name or ID.:contentReference[oaicite:63]{index=63}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "group",
+						"type": "string",
+						"required": true,
+						"description": "The group name or ID to edit."
+					}
+				],
+				"flags": [
+					{
+						"name": "--name",
+						"type": "string",
+						"required": false,
+						"description": "New name for the group."
+					},
+					{
+						"name": "--description",
+						"type": "string",
+						"required": false,
+						"description": "New description for the group."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Get details about a group. Specify the group by name or ID.:contentReference[oaicite:64]{index=64}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "group",
+						"type": "string",
+						"required": true,
+						"description": "The group name or ID to retrieve details for."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List groups in the account.:contentReference[oaicite:65]{index=65}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--vault",
+						"type": "string",
+						"required": false,
+						"description": "Only list groups that have access to the specified vault."
+					},
+					{
+						"name": "--user",
+						"type": "string",
+						"required": false,
+						"description": "Only list groups that the specified user belongs to."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "user",
+				"description": "Manage group membership (add or remove users in groups).:contentReference[oaicite:66]{index=66}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "grant",
+						"description": "Add a user to a group (grant group membership).:contentReference[oaicite:67]{index=67}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "user",
+								"type": "string",
+								"required": true,
+								"description": "The user (email, name, or ID) to add to the group."
+							}
+						],
+						"flags": [
+							{
+								"name": "--group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID to which the user will be added.:contentReference[oaicite:68]{index=68}"
+							},
+							{
+								"name": "--role",
+								"type": "string",
+								"required": false,
+								"description": "The user's role in the group (\"member\" or \"manager\"). Default is member.:contentReference[oaicite:69]{index=69}"
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "Retrieve users that belong to a group.:contentReference[oaicite:70]{index=70}",
+						"callable": true,
+						"arguments": [],
+						"flags": [
+							{
+								"name": "--group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID whose members to list."
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "revoke",
+						"description": "Remove a user from a group (revoke their group membership).:contentReference[oaicite:71]{index=71}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "user",
+								"type": "string",
+								"required": true,
+								"description": "The user (email, name, or ID) to remove from the group."
+							}
+						],
+						"flags": [
+							{
+								"name": "--group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID from which to remove the user."
+							}
+						],
+						"subcommands": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "item",
+		"description": "Perform CRUD operations on the 1Password items in your vaults.:contentReference[oaicite:72]{index=72}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Create a new item in a vault.:contentReference[oaicite:73]{index=73}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--category",
+						"type": "string",
+						"required": true,
+						"description": "The category of the new item (e.g., Login, Secure Note, etc.)."
+					},
+					{
+						"name": "--title",
+						"type": "string",
+						"required": false,
+						"description": "Title for the new item. If not provided, a default title may be used."
+					},
+					{
+						"name": "--vault",
+						"type": "string",
+						"required": false,
+						"description": "The vault name or ID to create the item in (defaults to current or specified by context)."
+					},
+					{
+						"name": "--template",
+						"type": "string",
+						"required": false,
+						"description": "Path to an item JSON template file to use for creating the item."
+					},
+					{
+						"name": "--generate-password",
+						"type": "string",
+						"required": false,
+						"description": "Generate a random password for the item (Login/Password category). Optionally specify length and character sets (or a recipe).:contentReference[oaicite:74]{index=74}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "delete",
+				"description": "Permanently delete an item (or archive it with a flag).:contentReference[oaicite:75]{index=75}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "item",
+						"type": "string",
+						"required": true,
+						"description": "The item name, ID, or sharing link to delete."
+					}
+				],
+				"flags": [
+					{
+						"name": "--archive",
+						"type": "boolean",
+						"required": false,
+						"description": "Archive the item instead of deleting it permanently.:contentReference[oaicite:76]{index=76}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "edit",
+				"description": "Edit an item's details (fields, etc.).:contentReference[oaicite:77]{index=77}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "item",
+						"type": "string",
+						"required": true,
+						"description": "The item name, ID, or sharing link to edit."
+					}
+				],
+				"flags": [
+					{
+						"name": "--generate-password",
+						"type": "string",
+						"required": false,
+						"description": "Generate and set a new random password for the item (if applicable)."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Get an item's details (view item data).:contentReference[oaicite:78]{index=78}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "item",
+						"type": "string",
+						"required": true,
+						"description": "The item name, ID, or sharing link to retrieve."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List items in vaults you have access to.:contentReference[oaicite:79]{index=79}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--vault",
+						"type": "string",
+						"required": false,
+						"description": "Filter items by a specific vault (name or ID)."
+					},
+					{
+						"name": "--category",
+						"type": "string",
+						"required": false,
+						"description": "Filter items by category (e.g., Login, Secure Note, etc.)."
+					},
+					{
+						"name": "--include-archive",
+						"type": "boolean",
+						"required": false,
+						"description": "Include archived items in the list."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "move",
+				"description": "Move an item to a different vault.:contentReference[oaicite:80]{index=80}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "item",
+						"type": "string",
+						"required": true,
+						"description": "The item name or ID to move."
+					},
+					{
+						"name": "vault",
+						"type": "string",
+						"required": true,
+						"description": "The destination vault name or ID."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "share",
+				"description": "Share an item by creating a secure shareable link.:contentReference[oaicite:81]{index=81}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "item",
+						"type": "string",
+						"required": true,
+						"description": "The item name or ID to share."
+					}
+				],
+				"flags": [
+					{
+						"name": "--emails",
+						"type": "array<string>",
+						"required": false,
+						"description": "One or more email addresses to share the item with (the share link will be emailed to these recipients).:contentReference[oaicite:82]{index=82}"
+					},
+					{
+						"name": "--expires-in",
+						"type": "string",
+						"required": false,
+						"description": "Expire the share link after the specified duration (e.g., 1h, 1d, 1w).:contentReference[oaicite:83]{index=83}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "template",
+				"description": "Manage item templates (item category templates).",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "get",
+						"description": "Get an item template by category name or ID (outputs the JSON template).",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "template",
+								"type": "string",
+								"required": true,
+								"description": "The template name or ID (category) to retrieve."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "List available item templates (categories).",
+						"callable": true,
+						"arguments": [],
+						"flags": [],
+						"subcommands": []
+					}
+				]
+			}
+		]
+	},
+	{
+		"name": "service-account",
+		"description": "Manage service accounts.:contentReference[oaicite:84]{index=84}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Create a service account to gain programmatic access to secrets.:contentReference[oaicite:85]{index=85}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "name",
+						"type": "string",
+						"required": false,
+						"description": "A name for the service account (for identification)."
+					}
+				],
+				"flags": [
+					{
+						"name": "--vault",
+						"type": "array<string>",
+						"required": false,
+						"description": "Grant the service account access to a vault with specific permissions. Use the format VAULT:PERM, where PERM can be `read_items`, `write_items`, or `share_items`. This flag can be repeated for multiple vaults.:contentReference[oaicite:86]{index=86}"
+					},
+					{
+						"name": "--expires-in",
+						"type": "string",
+						"required": false,
+						"description": "Set an expiration duration for the service account (e.g., 30d for 30 days).:contentReference[oaicite:87]{index=87}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "ratelimit",
+				"description": "Retrieve hourly and daily rate limit usage for a service account.:contentReference[oaicite:88]{index=88}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "service-account",
+						"type": "string",
+						"required": true,
+						"description": "The service account ID or name to check rate limits for."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			}
+		]
+	},
+	{
+		"name": "user",
+		"description": "Manage users within this 1Password account.:contentReference[oaicite:89]{index=89}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "confirm",
+				"description": "Confirm a user (typically after they accept an invitation).:contentReference[oaicite:90]{index=90}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to confirm (email, name, or ID)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "delete",
+				"description": "Remove a user and all their data from the account.:contentReference[oaicite:91]{index=91}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to delete (email, name, or ID)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "edit",
+				"description": "Edit a user's name or Travel Mode status.:contentReference[oaicite:92]{index=92}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to edit (email, name, or ID)."
+					}
+				],
+				"flags": [
+					{
+						"name": "--name",
+						"type": "string",
+						"required": false,
+						"description": "Change the user's full name."
+					},
+					{
+						"name": "--travel-mode",
+						"type": "boolean",
+						"required": false,
+						"description": "Enable or disable Travel Mode for the user (true to enable Travel Mode exemption, false to disable)."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Get details about a user (by email, name, or ID).:contentReference[oaicite:93]{index=93}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to retrieve (email, name, or ID)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List users in the account (with optional filters).:contentReference[oaicite:94]{index=94}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--group",
+						"type": "string",
+						"required": false,
+						"description": "Only list users who are members of the specified group (by group name or ID).:contentReference[oaicite:95]{index=95}"
+					},
+					{
+						"name": "--vault",
+						"type": "string",
+						"required": false,
+						"description": "Only list users who have access to the specified vault (by vault name or ID).:contentReference[oaicite:96]{index=96}"
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "provision",
+				"description": "Provision (invite) a user in the account (send them an invitation email).:contentReference[oaicite:97]{index=97}:contentReference[oaicite:98]{index=98}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--email",
+						"type": "string",
+						"required": true,
+						"description": "The email address of the user to invite."
+					},
+					{
+						"name": "--name",
+						"type": "string",
+						"required": true,
+						"description": "The full name of the user to invite."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "reactivate",
+				"description": "Reactivate a suspended user (restore their access).:contentReference[oaicite:99]{index=99}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to reactivate (email, name, or ID)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "recovery",
+				"description": "Manage user recovery in your 1Password account.:contentReference[oaicite:100]{index=100}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "begin",
+						"description": "Begin recovery for users in your 1Password account.:contentReference[oaicite:101]{index=101}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "user...",
+								"type": "array<string>",
+								"required": true,
+								"description": "One or more users (emails, names, or IDs) to begin recovery for."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					}
+				]
+			},
+			{
+				"name": "suspend",
+				"description": "Suspend a user (revoke their access temporarily).:contentReference[oaicite:102]{index=102}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "user",
+						"type": "string",
+						"required": true,
+						"description": "The user to suspend (email, name, or ID)."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			}
+		]
+	},
+	{
+		"name": "vault",
+		"description": "Manage permissions and perform CRUD operations on your 1Password vaults.:contentReference[oaicite:103]{index=103}",
+		"callable": false,
+		"arguments": [],
+		"flags": [],
+		"subcommands": [
+			{
+				"name": "create",
+				"description": "Create a new vault.:contentReference[oaicite:104]{index=104}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "name",
+						"type": "string",
+						"required": true,
+						"description": "Name of the new vault."
+					}
+				],
+				"flags": [
+					{
+						"name": "--description",
+						"type": "string",
+						"required": false,
+						"description": "A description for the vault."
+					},
+					{
+						"name": "--icon",
+						"type": "string",
+						"required": false,
+						"description": "Icon for the vault (keyword). Valid options include: airplane, application, art-supplies, ..., vault-door, etc.:contentReference[oaicite:105]{index=105}"
+					},
+					{
+						"name": "--no-travel-mode",
+						"type": "boolean",
+						"required": false,
+						"description": "Exclude this vault from Travel Mode (mark vault as safe for travel)."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "delete",
+				"description": "Remove a vault. Specify the vault to delete by name or ID.:contentReference[oaicite:106]{index=106}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "vault",
+						"type": "string",
+						"required": true,
+						"description": "The vault name or ID to delete."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "edit",
+				"description": "Edit a vault's name, description, icon, or Travel Mode status.:contentReference[oaicite:107]{index=107}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "vault",
+						"type": "string",
+						"required": true,
+						"description": "The vault name or ID to edit."
+					}
+				],
+				"flags": [
+					{
+						"name": "--name",
+						"type": "string",
+						"required": false,
+						"description": "New name for the vault."
+					},
+					{
+						"name": "--description",
+						"type": "string",
+						"required": false,
+						"description": "New description for the vault."
+					},
+					{
+						"name": "--icon",
+						"type": "string",
+						"required": false,
+						"description": "New icon for the vault (keyword)."
+					},
+					{
+						"name": "--travel-mode",
+						"type": "boolean",
+						"required": false,
+						"description": "Set the vault's Travel Mode inclusion status (true to include in Travel Mode, false to exclude)."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "get",
+				"description": "Get details about a vault. Specify the vault by name or ID.:contentReference[oaicite:108]{index=108}",
+				"callable": true,
+				"arguments": [
+					{
+						"name": "vault",
+						"type": "string",
+						"required": true,
+						"description": "The vault name or ID to retrieve."
+					}
+				],
+				"flags": [],
+				"subcommands": []
+			},
+			{
+				"name": "list",
+				"description": "List all vaults in the account.:contentReference[oaicite:109]{index=109}",
+				"callable": true,
+				"arguments": [],
+				"flags": [
+					{
+						"name": "--user",
+						"type": "string",
+						"required": false,
+						"description": "Only list vaults that the specified user has access to."
+					},
+					{
+						"name": "--group",
+						"type": "string",
+						"required": false,
+						"description": "Only list vaults that the specified group has access to."
+					},
+					{
+						"name": "--include-archive",
+						"type": "boolean",
+						"required": false,
+						"description": "Include vaults that are archived or deleted in the output."
+					}
+				],
+				"subcommands": []
+			},
+			{
+				"name": "group",
+				"description": "Manage group vault access (grant, list, revoke group permissions on vaults).:contentReference[oaicite:110]{index=110}:contentReference[oaicite:111]{index=111}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "grant",
+						"description": "Grant a group permissions to a vault.:contentReference[oaicite:112]{index=112}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to grant access to."
+							}
+						],
+						"flags": [
+							{
+								"name": "--group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID that will receive access to the vault.:contentReference[oaicite:113]{index=113}"
+							},
+							{
+								"name": "--permissions",
+								"type": "string",
+								"required": false,
+								"description": "Comma-separated list of permissions to grant (e.g., allow_viewing, allow_editing, allow_managing). If omitted, defaults to read/write access.:contentReference[oaicite:114]{index=114}"
+							},
+							{
+								"name": "--no-input",
+								"type": "boolean",
+								"required": false,
+								"description": "Do not prompt for confirmation or additional input (accept defaults).:contentReference[oaicite:115]{index=115}"
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "List all groups that have access to the given vault and their permissions.:contentReference[oaicite:116]{index=116}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to list group access for."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "revoke",
+						"description": "Revoke a group's access (or specific permissions) to a vault.:contentReference[oaicite:117]{index=117}:contentReference[oaicite:118]{index=118}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID from which to revoke access."
+							}
+						],
+						"flags": [
+							{
+								"name": "--group",
+								"type": "string",
+								"required": true,
+								"description": "The group name or ID whose access will be revoked."
+							},
+							{
+								"name": "--permissions",
+								"type": "string",
+								"required": false,
+								"description": "Comma-separated list of permissions to revoke (if partial removal; if omitted, all access is revoked)."
+							},
+							{
+								"name": "--no-input",
+								"type": "boolean",
+								"required": false,
+								"description": "Do not prompt for confirmation if revoking permissions has dependencies."
+							}
+						],
+						"subcommands": []
+					}
+				]
+			},
+			{
+				"name": "user",
+				"description": "Manage user vault access (grant, list, revoke user permissions on vaults).:contentReference[oaicite:119]{index=119}",
+				"callable": false,
+				"arguments": [],
+				"flags": [],
+				"subcommands": [
+					{
+						"name": "grant",
+						"description": "Grant a user permissions in a vault.:contentReference[oaicite:120]{index=120}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to grant access to."
+							}
+						],
+						"flags": [
+							{
+								"name": "--user",
+								"type": "string",
+								"required": true,
+								"description": "The user email, name, or ID to grant access."
+							},
+							{
+								"name": "--permissions",
+								"type": "string",
+								"required": false,
+								"description": "Comma-separated list of permissions to grant (e.g., allow_viewing, allow_editing, allow_managing). If omitted, defaults to full access."
+							},
+							{
+								"name": "--no-input",
+								"type": "boolean",
+								"required": false,
+								"description": "Do not prompt for confirmation if granting permissions that have dependencies."
+							}
+						],
+						"subcommands": []
+					},
+					{
+						"name": "list",
+						"description": "List all users with access to the vault and their permissions.:contentReference[oaicite:121]{index=121}:contentReference[oaicite:122]{index=122}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID to list user access for."
+							}
+						],
+						"flags": [],
+						"subcommands": []
+					},
+					{
+						"name": "revoke",
+						"description": "Revoke a user's permissions in a vault, in part or in full.:contentReference[oaicite:123]{index=123}",
+						"callable": true,
+						"arguments": [
+							{
+								"name": "vault",
+								"type": "string",
+								"required": true,
+								"description": "The vault name or ID from which to revoke the user's access."
+							}
+						],
+						"flags": [
+							{
+								"name": "--user",
+								"type": "string",
+								"required": true,
+								"description": "The user email, name, or ID whose access will be revoked."
+							},
+							{
+								"name": "--permissions",
+								"type": "string",
+								"required": false,
+								"description": "Comma-separated permissions to revoke (if partially revoking). If omitted, all access for that user to the vault is removed."
+							},
+							{
+								"name": "--no-input",
+								"type": "boolean",
+								"required": false,
+								"description": "Do not prompt for confirmation if revoking permissions has dependent permissions."
+							}
+						],
+						"subcommands": []
+					}
+				]
+			}
+		]
+	}
+]

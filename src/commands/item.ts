@@ -419,6 +419,19 @@ export class ItemCommand extends BaseCommand {
 	}
 
 	/**
+	 * Move an item to a different vault.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-move}
+	 */
+	move(item: string, vault: string, flags: CommandFlags = {}) {
+		return this.cli.execute<void>(["item", "move"], {
+			args: [item, vault],
+			flags,
+			json: false,
+		});
+	}
+
+	/**
 	 * Share an item.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/item#item-share}

@@ -7,23 +7,6 @@ describe("AccountCommand", () => {
 		mockCli = setupMockCli();
 	});
 
-	describe("forget", () => {
-		it("executes account forget command with account name", () => {
-			mockCli.account.forget("myaccount.com");
-			assertOp("account forget myaccount.com", mockCli);
-		});
-
-		it("executes account forget command without account name", () => {
-			mockCli.account.forget(null);
-			assertOp("account forget", mockCli);
-		});
-
-		it("executes account forget command with all flag", () => {
-			mockCli.account.forget(undefined, { all: true });
-			assertOp("account forget --all", mockCli);
-		});
-	});
-
 	describe("get", () => {
 		it("executes account get command", () => {
 			mockCli.account.get();

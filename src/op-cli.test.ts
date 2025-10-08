@@ -428,7 +428,7 @@ describe("OpCli", () => {
 				signal: null,
 			});
 
-			const result = cli.whoami();
+			const result = cli.whoami.get();
 			expect(result).toEqual(userInfo);
 
 			jest.restoreAllMocks();
@@ -451,7 +451,7 @@ describe("OpCli", () => {
 				signal: null,
 			});
 
-			const result = cli.whoami();
+			const result = cli.whoami.get();
 			expect(result).toBeNull();
 
 			jest.restoreAllMocks();
@@ -470,7 +470,7 @@ describe("OpCli", () => {
 				signal: null,
 			});
 
-			expect(() => cli.whoami()).toThrow();
+			expect(() => cli.whoami.get()).toThrow();
 
 			jest.restoreAllMocks();
 		});

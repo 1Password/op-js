@@ -185,6 +185,23 @@ describe("ItemCommand", () => {
 		});
 	});
 
+	describe("move", () => {
+		it("executes item move command", () => {
+			mockCli.item.move("myitem", "destination-vault");
+			assertOp("item move myitem destination-vault", mockCli);
+		});
+
+		it("executes item move command with flags", () => {
+			mockCli.item.move("myitem", "destination-vault", {
+				account: "test-account",
+			});
+			assertOp(
+				"item move myitem destination-vault --account=test-account",
+				mockCli,
+			);
+		});
+	});
+
 	describe("share", () => {
 		it("executes item share command", () => {
 			mockCli.item.share("myitem");

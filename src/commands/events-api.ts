@@ -4,7 +4,7 @@ export class EventsApiCommand extends BaseCommand {
 	/**
 	 * Create an Events API integration token.
 	 *
-	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api#subcommands}
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/events-api/#events-api-create}
 	 */
 	create(
 		name: string,

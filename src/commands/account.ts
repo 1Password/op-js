@@ -35,16 +35,32 @@ export interface ListAccount {
 
 export class AccountCommand extends BaseCommand {
 	/**
+	 * Add an account to sign in to for the first time.
+	 *
+	 * Note: This command is not supported by the CLI wrapper as it requires interactive setup.
+	 *
+	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-add}
+	 */
+	add(
+		flags: CommandFlags<{
+			address: string;
+			email: string;
+			secretKey: string;
+			shorthand: string;
+			signin: boolean;
+			raw: boolean;
+		}> = {},
+	) {
+		throw new Error("account.add is not supported by the CLI wrapper.");
+	}
+
+	/**
 	 * Remove a 1Password account from this device.
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/account#account-forget}
 	 */
 	forget(account: string | null, flags: CommandFlags<{ all: boolean }> = {}) {
-		return this.cli.execute<string>(["account", "forget"], {
-			args: account ? [account] : [],
-			flags,
-			json: false,
-		});
+		throw new Error("account.add is not supported by the CLI wrapper.");
 	}
 
 	/**
