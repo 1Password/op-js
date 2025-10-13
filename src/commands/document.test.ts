@@ -26,7 +26,7 @@ describe("DocumentCommand", () => {
 				vault: "myvault",
 			});
 			assertOp(
-				"document create  --file-name=mydoc.txt --tags=tag1,tag2 --title=My\\ Document --vault=myvault --format=json",
+				"document create  --file-name=mydoc.txt --tags=tag1,tag2 --title=My Document --vault=myvault --format=json",
 				mockCli,
 			);
 		});
@@ -69,7 +69,7 @@ describe("DocumentCommand", () => {
 				vault: "myvault",
 			});
 			assertOp(
-				"document edit mydoc  --file-name=newdoc.txt --tags=tag1,tag2 --title=Updated\\ Document --vault=myvault --format=json",
+				"document edit mydoc  --file-name=newdoc.txt --tags=tag1,tag2 --title=Updated Document --vault=myvault --format=json",
 				mockCli,
 			);
 		});

@@ -11,7 +11,7 @@ describe("ServiceAccountCommand", () => {
 		it("executes service-account create command", () => {
 			mockCli.serviceAccount.create("Test Service Account");
 			assertOp(
-				"service-account create Test\\ Service\\ Account --format=json",
+				"service-account create Test Service Account --format=json",
 				mockCli,
 			);
 		});
@@ -21,7 +21,7 @@ describe("ServiceAccountCommand", () => {
 				vault: ["vault1:read_items", "vault2:write_items"],
 			});
 			assertOp(
-				"service-account create Test\\ Service\\ Account --vault=vault1:read_items,vault2:write_items --format=json",
+				"service-account create Test Service Account --vault=vault1:read_items,vault2:write_items --format=json",
 				mockCli,
 			);
 		});
@@ -31,7 +31,7 @@ describe("ServiceAccountCommand", () => {
 				expiresIn: "1y",
 			});
 			assertOp(
-				"service-account create Test\\ Service\\ Account --expires-in=1y --format=json",
+				"service-account create Test Service Account --expires-in=1y --format=json",
 				mockCli,
 			);
 		});
@@ -42,7 +42,7 @@ describe("ServiceAccountCommand", () => {
 				expiresIn: "1y",
 			});
 			assertOp(
-				"service-account create Test\\ Service\\ Account --vault=vault1:read_items,vault2:write_items --expires-in=1y --format=json",
+				"service-account create Test Service Account --vault=vault1:read_items,vault2:write_items --expires-in=1y --format=json",
 				mockCli,
 			);
 		});

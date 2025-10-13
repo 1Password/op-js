@@ -18,7 +18,7 @@ describe("GroupCommand", () => {
 				description: "My group description",
 			});
 			assertOp(
-				"group create mygroup --description=My\\ group\\ description --format=json",
+				"group create mygroup --description=My group description --format=json",
 				mockCli,
 			);
 		});
@@ -43,7 +43,7 @@ describe("GroupCommand", () => {
 				description: "New description",
 			});
 			assertOp(
-				"group edit mygroup --name=newname --description=New\\ description",
+				"group edit mygroup --name=newname --description=New description",
 				mockCli,
 			);
 		});

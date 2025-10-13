@@ -285,31 +285,8 @@ describe("OpCli", () => {
 					},
 				]),
 			).toThrow(
-				new TypeError(
-					"Invalid argument: must be string or field assignment array",
-				),
+				new TypeError("Arguments must be string or field assignment array"),
 			);
-		});
-
-		it("sanitizes input in commands, arguments, and flags", () => {
-			const execute = executeSpy(cli, [
-				['"foo'],
-				{
-					args: ['bar"'],
-					flags: { $lorem: "`ipsum`" },
-				},
-			]);
-			expectOpCommand(execute, `\\"foo bar\\" --\\$lorem=\\\`ipsum\\\``);
-		});
-
-		it("sanitizes field assignments", () => {
-			const execute = executeSpy(cli, [
-				["foo"],
-				{
-					args: [["$username", "text", "\\foo"]],
-				},
-			]);
-			expectOpCommand(execute, `foo \\$username[text]=\\\\foo`);
 		});
 
 		it("throws if there's an error", () => {

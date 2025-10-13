@@ -39,7 +39,7 @@ describe("ItemCommand", () => {
 				},
 			);
 			assertOp(
-				"item create --category=Login --title=My\\ Login --tags=tag1,tag2 --vault=myvault --url=https://example.com --generate-password --format=json",
+				"item create --category=Login --title=My Login --tags=tag1,tag2 --vault=myvault --url=https://example.com --generate-password --format=json",
 				mockCli,
 			);
 		});
@@ -90,7 +90,7 @@ describe("ItemCommand", () => {
 				generatePassword: "strong",
 			});
 			assertOp(
-				"item edit myitem username[text]=newuser --title=Updated\\ Item --tags=tag1,tag2 --vault=myvault --url=https://example.com --generate-password=strong --format=json",
+				"item edit myitem username[text]=newuser --title=Updated Item --tags=tag1,tag2 --vault=myvault --url=https://example.com --generate-password=strong --format=json",
 				mockCli,
 			);
 		});

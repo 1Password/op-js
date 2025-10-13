@@ -18,7 +18,7 @@ describe("VaultCommand", () => {
 				description: "My vault description",
 			});
 			assertOp(
-				"vault create myvault --description=My\\ vault\\ description --format=json",
+				"vault create myvault --description=My vault description --format=json",
 				mockCli,
 			);
 		});
@@ -43,7 +43,7 @@ describe("VaultCommand", () => {
 				allowAdminsToManage: "false",
 			});
 			assertOp(
-				"vault create myvault --description=My\\ vault\\ description --icon=treasure-chest --allow-admins-to-manage=false --format=json",
+				"vault create myvault --description=My vault description --icon=treasure-chest --allow-admins-to-manage=false --format=json",
 				mockCli,
 			);
 		});
@@ -69,7 +69,7 @@ describe("VaultCommand", () => {
 
 		it("executes vault edit command with description", () => {
 			mockCli.vault.edit("myvault", { description: "New description" });
-			assertOp("vault edit myvault --description=New\\ description", mockCli);
+			assertOp("vault edit myvault --description=New description", mockCli);
 		});
 
 		it("executes vault edit command with icon", () => {

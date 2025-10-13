@@ -57,3 +57,15 @@ export class CLIError extends ExecutionError {
 		this.timestamp = parsedTimestamp;
 	}
 }
+
+export class ComponentLengthError extends Error {
+	public constructor(
+		public componentName: string,
+		public maxLength: number,
+		public actualLength?: number,
+	) {
+		const message = `Too many ${componentName}: maximum ${maxLength} allowed, got ${actualLength}`;
+		super(message);
+		this.name = "ComponentLengthError";
+	}
+}

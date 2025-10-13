@@ -36,7 +36,7 @@ describe("UserCommand", () => {
 
 		it("executes user edit command with name", () => {
 			mockCli.user.edit("user@example.com", { name: "New Name" });
-			assertOp("user edit user@example.com --name=New\\ Name", mockCli);
+			assertOp("user edit user@example.com --name=New Name", mockCli);
 		});
 
 		it("executes user edit command with travelMode on", () => {
@@ -101,7 +101,7 @@ describe("UserCommand", () => {
 				language: "en",
 			});
 			assertOp(
-				"user provision --email=user@example.com --name=User\\ Name --language=en --format=json",
+				"user provision --email=user@example.com --name=User Name --language=en --format=json",
 				mockCli,
 			);
 		});

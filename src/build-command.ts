@@ -1,5 +1,14 @@
 import { validFieldPurposes } from "./commands/item";
+import { ComponentLengthError } from "./errors";
 import { FieldAssignment, FieldLabelSelector, FieldTypeSelector } from ".";
+
+/**
+ * When building commands for the CLI:
+ * - We enforce limits/maximums to keep execution predictable and safe: caps on arg/flag counts and
+ *   lengths to help mitigate DoS-style abuse and avoid OS limits that cause spawn failures.
+ * - We don’t sanitize/escape user input because we don’t invoke a shell (shell: false): arguments are
+ *   passed directly to the OS so metacharacters are treated literally.
+ */
 
 export type FlagValue =
 	| string
@@ -10,38 +19,28 @@ export type FlagValue =
 export type Flags = Record<string, FlagValue>;
 export type Arg = string | FieldAssignment;
 
-export const camelToHyphen = (str: string) =>
-	str.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
+export const MAX_SUBCOMMAND_PARTS = 4;
+export const MAX_ARGS = 32;
+export const MAX_ARG_LENGTH = 2048;
+export const MAX_FLAGS = 32;
+export const MAX_FLAG_NAME_LENGTH = 40;
+export const MAX_FLAG_VALUE_LENGTH = 2048;
+export const MAX_STDIN_LENGTH = 1_048_576; // 1 MiB
 
-// Maximums to prevent DoS attacks
-const MAX_INPUT_LENGTH = 10000;
-const MAX_FLAG_VALUE_LENGTH = 5000;
-const MAX_FLAG_NAME_LENGTH = 100;
-const MAX_FLAGS_COUNT = 100;
-const MAX_ARGS_COUNT = 50;
-const MAX_SUBCOMMAND_PARTS = 10;
-
-// Shell metacharacters that are dangerous for command injection
-// Excluding characters needed for CLI syntax like = and ,
-const DANGEROUS_CHARS = /[!"#$&'()*;<>?[\\\]^`{|}~\s]/g;
-
-export const sanitizeInput = (str: string): string => {
-	if (typeof str !== "string") {
-		throw new TypeError("Input must be a string");
+export const parseFlagName = (name: string): string => {
+	if (typeof name !== "string" || name.length === 0) {
+		throw new TypeError("Flag names must be non-empty strings");
 	}
 
-	if (str.length > MAX_INPUT_LENGTH) {
-		throw new Error(
-			`Input too long: maximum ${MAX_INPUT_LENGTH} characters allowed`,
+	if (name.length > MAX_FLAG_NAME_LENGTH) {
+		throw new ComponentLengthError(
+			"flag name characters",
+			MAX_FLAG_NAME_LENGTH,
+			name.length,
 		);
 	}
 
-	// Handle empty string
-	if (str.length === 0) {
-		return str;
-	}
-
-	return str.replace(DANGEROUS_CHARS, "\\$&");
+	return name.replace(/([A-Za-z])(?=[A-Z])/g, "$1-").toLowerCase();
 };
 
 export const parseFlagValue = (value: FlagValue): string => {
@@ -49,40 +48,27 @@ export const parseFlagValue = (value: FlagValue): string => {
 		return "";
 	}
 
+	let flagValue: string;
+
 	if (typeof value === "string") {
-		if (value.length > MAX_FLAG_VALUE_LENGTH) {
-			throw new Error(
-				`Flag value too long: maximum ${MAX_FLAG_VALUE_LENGTH} characters allowed`,
-			);
-		}
-		return `=${sanitizeInput(value)}`;
+		flagValue = value;
 	}
 
 	if (Array.isArray(value)) {
-		// Validate array elements and sanitize each one
-		const sanitizedValues = value.map((item) => {
+		const values = value.map((item) => {
 			if (typeof item !== "string") {
 				throw new TypeError("Array flag values must be strings");
 			}
-			if (item.length > MAX_FLAG_VALUE_LENGTH) {
-				throw new Error(
-					`Flag value too long: maximum ${MAX_FLAG_VALUE_LENGTH} characters allowed`,
-				);
-			}
-			return sanitizeInput(item);
+
+			return item;
 		});
 
-		const result = sanitizedValues.join(",");
-		if (result.length > MAX_FLAG_VALUE_LENGTH) {
-			throw new Error(
-				`Combined flag values too long: maximum ${MAX_FLAG_VALUE_LENGTH} characters allowed`,
-			);
-		}
-		return `=${result}`;
+		const combinedValues = values.join(",");
+		flagValue = combinedValues;
 	}
 
+	// Currently these should only ever be field selectors
 	if (typeof value === "object") {
-		// Validate and process field selectors
 		const parts: string[] = [];
 
 		if ("label" in value && Array.isArray(value.label)) {
@@ -91,7 +77,8 @@ export const parseFlagValue = (value: FlagValue): string => {
 					if (typeof label !== "string") {
 						throw new TypeError("Field labels must be strings");
 					}
-					return `label=${sanitizeInput(label)}`;
+
+					return `label=${label}`;
 				}),
 			);
 		}
@@ -102,65 +89,96 @@ export const parseFlagValue = (value: FlagValue): string => {
 					if (typeof type !== "string") {
 						throw new TypeError("Field types must be strings");
 					}
-					return `type=${sanitizeInput(type)}`;
+
+					return `type=${type}`;
 				}),
 			);
 		}
 
 		if (parts.length > 0) {
-			const result = parts.join(",");
-			if (result.length > MAX_FLAG_VALUE_LENGTH) {
-				throw new Error(
-					`Field selector too long: maximum ${MAX_FLAG_VALUE_LENGTH} characters allowed`,
-				);
-			}
-			return `=${result}`;
+			const selectorValue = parts.join(",");
+			flagValue = selectorValue;
 		}
+	}
+
+	if (flagValue) {
+		if (flagValue.length > MAX_FLAG_VALUE_LENGTH) {
+			throw new ComponentLengthError(
+				"flag value characters",
+				MAX_FLAG_VALUE_LENGTH,
+				flagValue.length,
+			);
+		}
+
+		return `=${flagValue}`;
 	}
 
 	// If we get here, it's a true boolean
 	return "";
 };
 
-export const createFlags = (flags: Flags): string[] => {
-	// Input validation
-	if (!flags || typeof flags !== "object") {
-		return [];
+export const processSubCommand = (subCommand: string[]): string[] => {
+	if (!Array.isArray(subCommand)) {
+		throw new TypeError("Sub-command must be an array");
 	}
 
-	const entries = Object.entries(flags);
-
-	// Limit number of flags
-	if (entries.length > MAX_FLAGS_COUNT) {
-		throw new Error(`Too many flags: maximum ${MAX_FLAGS_COUNT} flags allowed`);
+	if (subCommand.length > MAX_SUBCOMMAND_PARTS) {
+		throw new ComponentLengthError(
+			"sub-commands",
+			MAX_SUBCOMMAND_PARTS,
+			subCommand.length,
+		);
 	}
 
-	return entries
-		.filter(([_, value]) => Boolean(value))
-		.map(([flag, value]) => {
-			// Validate flag name
-			if (typeof flag !== "string" || flag.length === 0) {
-				throw new TypeError("Flag names must be non-empty strings");
-			}
+	for (const part of subCommand) {
+		if (typeof part !== "string" || part.length === 0 || part.includes(" ")) {
+			throw new TypeError(
+				"Sub-commands must be non-empty strings without spaces",
+			);
+		}
+	}
 
-			if (flag.length > MAX_FLAG_NAME_LENGTH) {
-				throw new Error(
-					`Flag name too long: maximum ${MAX_FLAG_NAME_LENGTH} characters allowed`,
-				);
-			}
-
-			// Convert camelCase to kebab-case and sanitize
-			const sanitizedFlag = sanitizeInput(camelToHyphen(flag));
-			const flagValue = parseFlagValue(value);
-
-			return `--${sanitizedFlag}${flagValue}`;
-		});
+	return subCommand;
 };
 
-export const createFieldAssignment = (
+export const processArgs = (args: Arg[]): string[] => {
+	const argParts: string[] = [];
+
+	if (!Array.isArray(args)) {
+		throw new TypeError("Arguments must be an array");
+	}
+
+	if (args.length > MAX_ARGS) {
+		throw new ComponentLengthError("arguments", MAX_ARGS, args.length);
+	}
+
+	for (const arg of args) {
+		let argPart: string;
+		if (typeof arg === "string") {
+			argPart = arg;
+		} else if (Array.isArray(arg)) {
+			argPart = parseFieldAssignment(arg);
+		} else {
+			throw new TypeError("Arguments must be string or field assignment array");
+		}
+
+		if (argPart.length > MAX_ARG_LENGTH) {
+			throw new ComponentLengthError(
+				"argument characters",
+				MAX_ARG_LENGTH,
+				argPart.length,
+			);
+		}
+
+		argParts.push(argPart);
+	}
+
+	return argParts;
+};
+
+export const parseFieldAssignment = (
 	fieldAssignment: FieldAssignment,
 ): string => {
-	// Input validation
 	if (
 		!Array.isArray(fieldAssignment) ||
 		fieldAssignment.length < 3 ||
@@ -173,7 +191,6 @@ export const createFieldAssignment = (
 
 	const [label, type, value, purpose] = fieldAssignment;
 
-	// Validate each component
 	if (typeof label !== "string" || label.length === 0) {
 		throw new TypeError("Field label must be a non-empty string");
 	}
@@ -186,22 +203,7 @@ export const createFieldAssignment = (
 		throw new TypeError("Field value must be a string");
 	}
 
-	// Length validation
-	if (label.length > 200) {
-		throw new Error("Field label too long: maximum 200 characters allowed");
-	}
-
-	if (type.length > 50) {
-		throw new Error("Field type too long: maximum 50 characters allowed");
-	}
-
-	if (value.length > MAX_INPUT_LENGTH) {
-		throw new Error(
-			`Field value too long: maximum ${MAX_INPUT_LENGTH} characters allowed`,
-		);
-	}
-
-	let result = `${sanitizeInput(label)}[${sanitizeInput(type)}]=${sanitizeInput(value)}`;
+	let result = `${label}[${type}]=${value}`;
 
 	// Add purpose if provided
 	if (purpose !== undefined) {
@@ -209,95 +211,65 @@ export const createFieldAssignment = (
 			throw new TypeError("Field purpose must be a non-empty string");
 		}
 
-		// Validate that purpose is a valid FieldPurpose value
 		if (!validFieldPurposes.includes(purpose)) {
 			throw new TypeError(
 				`Invalid field purpose: must be one of ${validFieldPurposes.join(", ")}`,
 			);
 		}
-		result += `[${sanitizeInput(purpose)}]`;
+
+		result += `[${purpose}]`;
 	}
 
 	return result;
 };
 
-export const buildCommand = (
-	subCommand: string[],
-	args: Arg[],
-	flags: Flags,
-	json: boolean,
-	globalFlags: Flags,
+export const processFlags = (flags: Flags): string[] => {
+	if (!flags) {
+		return [];
+	}
+
+	if (typeof flags !== "object") {
+		throw new TypeError("Flags must be an object");
+	}
+
+	const entries = Object.entries(flags);
+
+	if (entries.length > MAX_FLAGS) {
+		throw new ComponentLengthError("flags", MAX_FLAGS, entries.length);
+	}
+
+	return entries
+		.filter(([_, value]) => Boolean(value))
+		.map(([name, value]) => {
+			const flagName = parseFlagName(name);
+			const flagValue = parseFlagValue(value);
+			return `--${flagName}${flagValue}`;
+		});
+};
+
+export const processStdin = (
 	stdin?: string | Record<string, any>,
-) => {
-	// Input validation
-	if (!Array.isArray(subCommand)) {
-		throw new TypeError("subCommand must be an array");
-	}
-
-	if (!Array.isArray(args)) {
-		throw new TypeError("args must be an array");
-	}
-
-	if (subCommand.length > MAX_SUBCOMMAND_PARTS) {
-		throw new Error(
-			`Too many subcommand parts: maximum ${MAX_SUBCOMMAND_PARTS} allowed`,
-		);
-	}
-
-	if (args.length > MAX_ARGS_COUNT) {
-		throw new Error(`Too many arguments: maximum ${MAX_ARGS_COUNT} allowed`);
-	}
-
-	// Validate subcommand parts
-	for (const part of subCommand) {
-		if (typeof part !== "string" || part.length === 0) {
-			throw new TypeError("Subcommand parts must be non-empty strings");
-		}
-	}
-
+): Buffer | undefined => {
 	let input: Buffer | undefined;
-	const parts: string[] = [];
-	let mergedFlags = { ...(globalFlags || {}), ...flags };
 
-	// Process subcommand parts
-	for (const part of subCommand) {
-		parts.push(sanitizeInput(part));
-	}
-
-	// Process arguments with validation
-	for (const arg of args) {
-		if (typeof arg === "string") {
-			parts.push(sanitizeInput(arg));
-		} else if (Array.isArray(arg)) {
-			parts.push(createFieldAssignment(arg));
-		} else {
-			throw new TypeError(
-				"Invalid argument: must be string or field assignment array",
-			);
-		}
-	}
-
-	if (json) {
-		mergedFlags = { ...mergedFlags, format: "json" };
-	}
-
-	parts.push(...createFlags(mergedFlags));
-
-	// Handle stdin input with validation
 	if (stdin !== undefined) {
 		if (typeof stdin === "string") {
-			if (stdin.length > MAX_INPUT_LENGTH) {
-				throw new Error(
-					`Stdin input too long: maximum ${MAX_INPUT_LENGTH} characters allowed`,
+			if (stdin.length > MAX_STDIN_LENGTH) {
+				throw new ComponentLengthError(
+					"stdin characters",
+					MAX_STDIN_LENGTH,
+					stdin.length,
 				);
 			}
 			input = Buffer.from(stdin);
 		} else if (typeof stdin === "object" && stdin !== null) {
 			try {
 				const jsonString = JSON.stringify(stdin);
-				if (jsonString.length > MAX_INPUT_LENGTH) {
-					throw new Error(
-						`Stdin JSON too long: maximum ${MAX_INPUT_LENGTH} characters allowed`,
+				if (jsonString.length > MAX_STDIN_LENGTH) {
+					throw new ComponentLengthError(
+						"stdin JSON characters",
+						MAX_STDIN_LENGTH,
+						jsonString.length,
 					);
 				}
 				input = Buffer.from(jsonString);
@@ -309,5 +281,25 @@ export const buildCommand = (
 		}
 	}
 
-	return { parts, input };
+	return input;
 };
+
+export const buildCommand = (
+	subCommand: string[],
+	args: Arg[],
+	flags: Flags,
+	json: boolean,
+	globalFlags: Flags,
+	stdin?: string | Record<string, any>,
+) => ({
+	parts: [
+		...processSubCommand(subCommand),
+		...processArgs(args),
+		...processFlags({
+			...(globalFlags || {}),
+			...flags,
+			...(json ? { format: "json" } : {}),
+		}),
+	],
+	input: processStdin(stdin),
+});
