@@ -52,9 +52,7 @@ export const parseFlagValue = (value: FlagValue): string => {
 
 	if (typeof value === "string") {
 		flagValue = value;
-	}
-
-	if (Array.isArray(value)) {
+	} else if (Array.isArray(value)) {
 		const values = value.map((item) => {
 			if (typeof item !== "string") {
 				throw new TypeError("Array flag values must be strings");
@@ -65,10 +63,8 @@ export const parseFlagValue = (value: FlagValue): string => {
 
 		const combinedValues = values.join(",");
 		flagValue = combinedValues;
-	}
-
-	// Currently these should only ever be field selectors
-	if (typeof value === "object") {
+	} else if (typeof value === "object") {
+		// Currently these should only ever be field selectors
 		const parts: string[] = [];
 
 		if ("label" in value && Array.isArray(value.label)) {
