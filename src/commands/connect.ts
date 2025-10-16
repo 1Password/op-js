@@ -133,11 +133,7 @@ export class ConnectCommand extends BaseCommand {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-server-edit}
 		 */
-		edit: (
-			nameOrId: string,
-			newName: string,
-			flags: CommandFlags<Record<string, never>> = {},
-		) =>
+		edit: (nameOrId: string, newName: string, flags: CommandFlags = {}) =>
 			this.cli.execute<string>(["connect", "server", "edit"], {
 				args: [nameOrId],
 				flags: { name: newName, ...flags },
@@ -242,11 +238,7 @@ export class ConnectCommand extends BaseCommand {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-grant}
 		 */
-		grant: (
-			server: string,
-			vault: string,
-			flags: CommandFlags<Record<string, never>> = {},
-		) =>
+		grant: (server: string, vault: string, flags: CommandFlags = {}) =>
 			this.cli.execute<void>(["connect", "vault", "grant"], {
 				flags: { server, vault, ...flags },
 				json: false,
@@ -257,11 +249,7 @@ export class ConnectCommand extends BaseCommand {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/connect#connect-vault-revoke}
 		 */
-		revoke: (
-			server: string,
-			vault: string,
-			flags: CommandFlags<Record<string, never>> = {},
-		) =>
+		revoke: (server: string, vault: string, flags: CommandFlags = {}) =>
 			this.cli.execute<void>(["connect", "vault", "revoke"], {
 				flags: { server, vault, ...flags },
 				json: false,

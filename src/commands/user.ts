@@ -38,10 +38,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirm(
-		emailOrNameOrId: string,
-		flags: CommandFlags<Record<string, never>> = {},
-	) {
+	confirm(emailOrNameOrId: string, flags: CommandFlags = {}) {
 		return this.cli.execute<void>(["user", "confirm"], {
 			args: [emailOrNameOrId],
 			flags,
@@ -54,7 +51,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-confirm}
 	 */
-	confirmAll(flags: CommandFlags<Record<string, never>> = {}) {
+	confirmAll(flags: CommandFlags = {}) {
 		return this.cli.execute<void>(["user", "confirm"], {
 			flags: { all: true, ...flags },
 			json: false,
@@ -98,10 +95,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	get(
-		emailOrNameOrId: string,
-		flags: CommandFlags<Record<string, never>> = {},
-	) {
+	get(emailOrNameOrId: string, flags: CommandFlags = {}) {
 		return this.cli.execute<User>(["user", "get"], {
 			args: [emailOrNameOrId],
 			flags,
@@ -113,7 +107,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	me(flags: CommandFlags<Record<string, never>> = {}) {
+	me(flags: CommandFlags = {}) {
 		return this.cli.execute<User>(["user", "get"], {
 			flags: { me: true, ...flags },
 		});
@@ -124,10 +118,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	fingerprint(
-		emailOrNameOrId: string,
-		flags: CommandFlags<Record<string, never>> = {},
-	) {
+	fingerprint(emailOrNameOrId: string, flags: CommandFlags = {}) {
 		return this.cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
 			flags: { fingerprint: true, ...flags },
@@ -140,10 +131,7 @@ export class UserCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-get}
 	 */
-	publicKey(
-		emailOrNameOrId: string,
-		flags: CommandFlags<Record<string, never>> = {},
-	) {
+	publicKey(emailOrNameOrId: string, flags: CommandFlags = {}) {
 		return this.cli.execute<string>(["user", "get"], {
 			args: [emailOrNameOrId],
 			flags: { publicKey: true, ...flags },
@@ -217,7 +205,7 @@ export class UserCommand extends BaseCommand {
 		 *
 		 * {@link https://developer.1password.com/docs/cli/reference/management-commands/user#user-recovery-begin}
 		 */
-		begin: (users: string[], flags: CommandFlags<Record<string, never>> = {}) =>
+		begin: (users: string[], flags: CommandFlags = {}) =>
 			this.cli.execute<void>(["user", "recovery", "begin"], {
 				args: users,
 				flags,

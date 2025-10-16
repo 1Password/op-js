@@ -10,7 +10,7 @@ export class InjectCommand extends BaseCommand {
 	 *
 	 * {@link https://developer.1password.com/docs/cli/reference/commands/inject}
 	 */
-	data(input: string, flags: CommandFlags<Record<string, never>> = {}) {
+	data(input: string, flags: CommandFlags = {}) {
 		return this.executeInject<string>(["inject"], {
 			flags,
 			json: false,
