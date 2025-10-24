@@ -151,11 +151,13 @@ export class OpCli {
 			flags = {},
 			stdin,
 			json = true,
+			returnRaw = false,
 		}: {
 			args?: Arg[];
 			flags?: Flags;
 			stdin?: string | Record<string, any>;
 			json?: boolean;
+			returnRaw?: boolean;
 		} = {},
 	): TData {
 		const { parts, input } = buildCommand(
@@ -190,6 +192,14 @@ export class OpCli {
 			env,
 		});
 
+		if (returnRaw) {
+			return {
+				stdout: stdout.toString(),
+				stderr: stderr.toString(),
+				exitCode: status || 0,
+			} as unknown as TData;
+		}
+
 		if (error) {
 			throw new ExecutionError(error.message, status);
 		}
@@ -215,6 +225,24 @@ export class OpCli {
 			console.log(output);
 			throw error;
 		}
+	}
+
+	public executeRun(
+		subCommand: string[],
+		{
+			args = [],
+			flags = {},
+		}: {
+			args?: string[];
+			flags?: Flags;
+		} = {},
+	): { stdout: string; stderr: string; exitCode: number } {
+		return this.execute(subCommand, {
+			args,
+			flags,
+			json: false,
+			returnRaw: true,
+		});
 	}
 
 	/**

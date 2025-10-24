@@ -1,44 +1,26 @@
-import chalk from "chalk";
-import { CLIManager, getChoice, info, success, warn } from "../scenario-tools";
+import { chooseAccount } from "../common";
+import { logger as l, pluralize, scenario } from "../tools";
 
-export const main = async () => {
-	const cli = await new CLIManager().getCli();
+export const name = "Account Overview";
 
-	info(
-		"This scenario will display detailed information about an account, including users and vaults.",
-	);
+export const description = "Displays detailed information about an account.";
 
-	info("Please select an account.");
-	const accounts = cli.account.list();
-	const accountUuid = await getChoice(
-		"Select an account:",
-		accounts.map((account) => ({
-			label: `${account.email} (${account.url})`,
-			value: account.account_uuid,
-		})),
-	);
-	if (!accountUuid) {
-		warn("No account selected, exiting.");
+export const main = scenario(async (cli) => {
+	const account = await chooseAccount(cli);
+	if (!account) {
+		l.warn("No account selected, exiting.");
 		return;
 	}
-	const listAccount = accounts.find(
-		(account) => account.account_uuid === accountUuid,
-	);
-	success(`Got it, we'll use your account for ${listAccount?.email}.`);
 
-	// Get current user details
-	info("\nFetching user details...");
-	const currentUser = cli.user.me({ account: accountUuid });
+	l.info("\nFetching user details...");
+	const currentUser = cli.user.me({ account: account.account_uuid });
 
-	// Get account details
-	info("Fetching account details...");
-	const account = cli.account.get({ account: accountUuid });
+	l.info("Fetching account details...");
+	const accountDetails = cli.account.get({ account: account.account_uuid });
 
-	// Get all users in the account
-	info("Fetching users...");
-	const allUsers = cli.user.list({ account: accountUuid });
+	l.info("Fetching users...");
+	const allUsers = cli.user.list({ account: account.account_uuid });
 
-	// Count active and suspended users
 	const activeUsers = allUsers.filter((user) => user.state === "ACTIVE").length;
 	const suspendedUsers = allUsers.filter(
 		(user) => user.state === "SUSPENDED",
@@ -47,58 +29,53 @@ export const main = async () => {
 		(user) => user.state !== "ACTIVE" && user.state !== "SUSPENDED",
 	).length;
 
-	// Get all vaults
-	info("Fetching vaults...");
-	const vaultsList = cli.vault.list({ account: accountUuid });
+	l.info("Fetching vaults...");
+	const vaultsList = cli.vault.list({ account: account.account_uuid });
 
-	// Get full details for each vault to get item counts
 	const vaultsWithDetails = vaultsList.map((vault) => {
-		const vaultDetails = cli.vault.get(vault.id, { account: accountUuid });
+		const vaultDetails = cli.vault.get(vault.id, {
+			account: account.account_uuid,
+		});
 		return vaultDetails;
 	});
 
-	const accountCategory = account.type.toLowerCase();
+	const accountType = accountDetails.type.toLowerCase();
 
-	info("\n🙂 Who you are:\n");
-	console.log(
-		`You're signed in to a ${chalk.whiteBright(accountCategory)} account as ${chalk.whiteBright(currentUser.name)} with the email ${chalk.whiteBright(currentUser.email)}.\n`,
+	l.info("\n👤 Who you are:\n");
+	l.log(`User UUID: ${l.highlight(currentUser.id)}\n`);
+	l.log(
+		`You're signed in to a ${l.highlight(accountType)} account as ${l.highlight(currentUser.name)} with the email ${l.highlight(currentUser.email)}.\n`,
 	);
-	console.log(`User UUID: ${chalk.whiteBright(currentUser.id)}\n`);
 
-	info("📄 About your account:\n");
+	l.info("🧾 About your account:\n");
 	const accountNameWithDomain =
-		account.domain === "my"
-			? chalk.whiteBright(account.name)
-			: `${chalk.whiteBright(account.name)} (${chalk.whiteBright(account.domain)})`;
-	console.log(
-		`Your 1Password account ${accountNameWithDomain} is a ${chalk.whiteBright(account.type.toLowerCase())} account. It was created on ${chalk.whiteBright(new Date(account.created_at).toLocaleDateString())} and is currently ${chalk.whiteBright(account.state.toLowerCase())}. The account has ${chalk.whiteBright(activeUsers)} user${activeUsers !== 1 ? "s" : ""} with an "active" status, ${chalk.whiteBright(suspendedUsers)} user${suspendedUsers !== 1 ? "s" : ""} with a "suspended" status, and ${chalk.whiteBright(otherUsers)} user${otherUsers !== 1 ? "s" : ""} with other statuses.\n`,
-	);
-	console.log(`Account UUID: ${chalk.whiteBright(account.id)}\n`);
+		accountDetails.domain === "my"
+			? l.highlight(accountDetails.name)
+			: `${l.highlight(accountDetails.name)} (${l.highlight(accountDetails.domain)})`;
 
-	info("🔐 Your vaults and items:\n");
+	l.log(`Account UUID: ${l.highlight(accountDetails.id)}\n`);
+	l.log(
+		`Your 1Password account ${accountNameWithDomain} is a ${l.highlight(accountType)} account. It was created on ${l.highlight(new Date(accountDetails.created_at).toLocaleDateString())} and is currently ${l.highlight(accountDetails.state.toLowerCase())}. The account has ${l.highlight(activeUsers.toString())} ${pluralize(activeUsers, "user")} with an "active" status, ${l.highlight(suspendedUsers.toString())} ${pluralize(suspendedUsers, "user")} with a "suspended" status, and ${l.highlight(otherUsers.toString())} ${pluralize(otherUsers, "user")} with other statuses.\n`,
+	);
+
+	l.info("🔐 Your vaults and items:\n");
 	if (vaultsWithDetails.length === 0) {
-		console.log(
-			"Your account has no vaults, or you have no access to any vaults.\n",
-		);
+		l.log("Your account has no vaults, or you have no access to any vaults.\n");
 	} else {
 		const totalItems = vaultsWithDetails.reduce(
 			(sum, vault) => sum + (vault.items ?? 0),
 			0,
 		);
-		console.log(
-			`You have access to ${chalk.whiteBright(vaultsWithDetails.length)} vault${vaultsWithDetails.length !== 1 ? "s" : ""} ` +
-				`containing ${chalk.whiteBright(totalItems)} item${totalItems !== 1 ? "s" : ""}:\n`,
+
+		l.log(
+			`You have access to ${l.highlight(vaultsWithDetails.length.toString())} ${pluralize(vaultsWithDetails.length, "vault")} ` +
+				`containing ${l.highlight(totalItems.toString())} ${pluralize(totalItems, "item")}:\n`,
 		);
+
 		for (const vault of vaultsWithDetails) {
-			console.log(
-				`- ${chalk.whiteBright(vault.name)}, created on ${chalk.whiteBright(new Date(vault.created_at).toLocaleDateString())}, has ${chalk.whiteBright(vault.items ?? 0)} item${vault.items !== 1 ? "s" : ""}`,
+			l.log(
+				`- ${l.highlight(vault.name)}, created on ${l.highlight(new Date(vault.created_at).toLocaleDateString())}, has ${l.highlight(vault.items?.toString() ?? "0")} ${pluralize(vault.items ?? 0, "item")}`,
 			);
 		}
 	}
-
-	success("\nAccount overview displayed successfully!");
-};
-
-if (require.main === module) {
-	main().catch(console.error);
-}
+});

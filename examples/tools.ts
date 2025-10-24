@@ -6,11 +6,15 @@ import {
 	unlinkSync,
 	chmodSync,
 } from "fs";
+import { exec } from "child_process";
+import { promisify } from "util";
 import { join, basename, resolve } from "path";
 import { open, Entry, ZipFile } from "yauzl";
 import chalk from "chalk";
 import inquirer from "inquirer";
 import { OpCli } from "../src/index";
+
+const execAsync = promisify(exec);
 
 type Platform = "darwin" | "freebsd" | "openbsd" | "linux" | "windows";
 type Arch = "x64" | "x32" | "ia32" | "arm" | "arm64";
@@ -27,25 +31,37 @@ interface CLIVersionResponse {
 	};
 }
 
-export const system = (message: string) => {
-	console.log(chalk.gray(message));
+export const logger = {
+	log: (...message: string[]) => {
+		console.log(...message);
+	},
+	system: (...message: string[]) => {
+		console.log(chalk.gray(...message));
+	},
+	info: (...message: string[]) => {
+		console.log(chalk.blue(...message));
+	},
+	warn: (...message: string[]) => {
+		console.log(chalk.yellow(...message));
+	},
+	error: (...message: string[]) => {
+		console.log(chalk.red(...message));
+	},
+	success: (...message: string[]) => {
+		console.log(chalk.green(...message));
+	},
+	highlight: (...message: string[]) => chalk.whiteBright(...message),
 };
 
-export const info = (message: string) => {
-	console.log(chalk.blue(message));
-};
+export const pluralize = (count: number, word: string): string =>
+	count === 1 ? word : `${word}s`;
 
-export const warn = (message: string) => {
-	console.log(chalk.yellow(message));
-};
-
-export const error = (message: string) => {
-	console.log(chalk.red(message));
-};
-
-export const success = (message: string) => {
-	console.log(chalk.green(message));
-};
+export const scenario =
+	(fn: (cli: OpCli) => Promise<void>): (() => Promise<void>) =>
+	async () => {
+		const cli = await new CLIManager().getCli();
+		await fn(cli);
+	};
 
 interface Choice<T = string> {
 	label: string;
@@ -97,6 +113,31 @@ export const getConfirmation = async (title: string): Promise<boolean> => {
 	]);
 
 	return result.confirmation;
+};
+
+export const openItem = async (
+	accountUuid: string,
+	vaultUuid: string,
+	itemUuid: string,
+	accountHost: string,
+): Promise<void> => {
+	const url = `onepassword://open/i?a=${accountUuid}&v=${vaultUuid}&i=${itemUuid}&h=${accountHost}`;
+	const platform = process.platform;
+	let command: string;
+
+	if (platform === "darwin") {
+		command = `open "${url}"`;
+	} else if (platform === "win32") {
+		command = `start "${url}"`;
+	} else {
+		command = `xdg-open "${url}"`;
+	}
+
+	try {
+		await execAsync(command);
+	} catch (error) {
+		logger.warn(`Failed to open URL: ${error}`);
+	}
 };
 
 export class CLIManager {
@@ -168,9 +209,9 @@ export class CLIManager {
 			opPath: this.cliPath,
 		});
 
-		system("Verifying CLI...");
+		logger.system("Verifying CLI...");
 		if (!(await this.check(cli, true))) {
-			system("CLI not found, downloading...");
+			logger.system("CLI not found, downloading...");
 			await this.download(cli);
 		}
 
@@ -184,7 +225,9 @@ export class CLIManager {
 
 			try {
 				await cli.verify(latestVersion);
-				system(`1Password CLI v${latestVersion} is active and up to date\n`);
+				logger.system(
+					`1Password CLI v${latestVersion} is active and up to date`,
+				);
 				return true;
 			} catch (error) {
 				if (!failAllowed) {
@@ -233,14 +276,14 @@ export class CLIManager {
 		version: string,
 		url: string,
 	): Promise<void> {
-		system(`Downloading v${version} from: ${url}`);
+		logger.system(`Downloading v${version} from: ${url}`);
 
 		const response = await fetch(url);
 		if (!response.ok) {
 			throw new Error(`Failed to download CLI: ${response.statusText}`);
 		}
 
-		system("Saving and extracting...");
+		logger.system("Saving and extracting...");
 
 		const arrayBuffer = await response.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);

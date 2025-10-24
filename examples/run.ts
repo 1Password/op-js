@@ -4,9 +4,22 @@ import inquirer from "inquirer";
 import minimist from "minimist";
 import chalk from "chalk";
 
+interface ScenarioMetadata {
+	filename: string;
+	name: string;
+	description: string;
+}
+
+interface ScenarioModule {
+	name?: string;
+	description?: string;
+	main?: () => Promise<void>;
+}
+
 export class ExampleRunner {
 	private scenariosDir: string;
 	private args: minimist.ParsedArgs;
+	private moduleCache: Map<string, ScenarioModule> = new Map();
 
 	constructor() {
 		this.scenariosDir = join(process.cwd(), "examples", "scenarios");
@@ -24,6 +37,32 @@ export class ExampleRunner {
 		}
 	}
 
+	async getScenarioMetadata(
+		scenarioFilename: string,
+	): Promise<ScenarioMetadata> {
+		const scenarioPath = join(this.scenariosDir, `${scenarioFilename}.ts`);
+
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, no-unsanitized/method
+			const scenarioModule = (await import(scenarioPath)) as ScenarioModule;
+
+			this.moduleCache.set(scenarioFilename, scenarioModule);
+
+			return {
+				filename: scenarioFilename,
+				name: scenarioModule.name || scenarioFilename,
+				description: scenarioModule.description || "",
+			};
+		} catch (err) {
+			// Fallback to filename if unable to load metadata
+			return {
+				filename: scenarioFilename,
+				name: scenarioFilename,
+				description: "",
+			};
+		}
+	}
+
 	async selectScenario(): Promise<string | null> {
 		const scenarios = this.availableScenarios;
 
@@ -32,8 +71,19 @@ export class ExampleRunner {
 			return null;
 		}
 
+		const scenarioMetadata = await Promise.all(
+			scenarios.map(
+				async (scenario) => await this.getScenarioMetadata(scenario),
+			),
+		);
+
 		const choices = [
-			...scenarios.map((scenario) => ({ name: scenario, value: scenario })),
+			...scenarioMetadata.map((metadata) => ({
+				name: metadata.description
+					? `${metadata.name} - ${chalk.gray(metadata.description)}`
+					: metadata.name,
+				value: metadata.filename,
+			})),
 			{ name: "👋 Exit program", value: "exit" },
 		];
 
@@ -57,9 +107,6 @@ export class ExampleRunner {
 	}
 
 	async runScenario(scenarioName: string): Promise<void> {
-		console.log(`\n🚀 Running scenario: ${scenarioName}`);
-		console.log("-".repeat(60) + "\n");
-
 		const scenarioPath = join(this.scenariosDir, `${scenarioName}.ts`);
 
 		if (!existsSync(scenarioPath)) {
@@ -67,20 +114,19 @@ export class ExampleRunner {
 		}
 
 		try {
-			// Dynamically import and run the scenario
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, no-unsanitized/method
-			const scenarioModule = await import(scenarioPath);
+			const scenarioModule = this.moduleCache.get(scenarioName);
+			const displayName = scenarioModule.name || scenarioName;
 
-			// Look for a main function
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			console.log(`\n🚀 Running scenario: ${displayName}`);
+			console.log("-".repeat(60) + "\n");
+
 			if (typeof scenarioModule.main === "function") {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 				await scenarioModule.main();
 			} else {
 				console.log("❌ Scenario loaded but no main function found.");
 			}
 
-			console.log(`\n✅ Completed scenario: ${scenarioName}`);
+			console.log(`\n✅ Completed scenario: ${displayName}`);
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("SIGINT")) {
 				console.log("❌ Scenario interrupted by user.");

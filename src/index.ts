@@ -80,7 +80,7 @@ export type {
 	ConnectServerToken,
 } from "./commands/connect";
 
-export type { RunOptions } from "./commands/run";
+export type { RunResult } from "./commands/run";
 
 export type {
 	ServiceAccount,

@@ -1,136 +1,83 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/unbound-method */
-
-import { spawn, exec, spawnSync } from "child_process";
-import { OpCli } from "../op-cli";
-
-jest.mock("child_process", () => ({
-	spawn: jest.fn(),
-	exec: jest.fn(),
-	spawnSync: jest.fn(),
-}));
-
-jest.mock("util", () => ({
-	promisify: jest.fn((fn: any) => fn),
-}));
+import { assertOp, setupMockCli } from "./test-utils";
 
 describe("RunCommand", () => {
-	let mockCli: OpCli;
+	let mockCli: ReturnType<typeof setupMockCli>;
 
 	beforeEach(() => {
-		mockCli = new OpCli();
-		jest.spyOn(mockCli, "version").mockReturnValue("0.0.0");
-		(spawnSync as jest.Mock).mockReturnValue({
-			error: null,
-			stderr: "",
-			stdout: "{}",
-		});
-		jest.clearAllMocks();
+		mockCli = setupMockCli();
 	});
 
-	describe("spawn", () => {
-		it("executes run command with spawn", async () => {
-			jest.spyOn(mockCli, "execute").mockReturnValue({
-				SECRET_KEY: "secret-value",
-				API_TOKEN: "token-value",
-			});
-
-			const mockChild = {
-				stdout: { on: jest.fn() },
-				stderr: { on: jest.fn() },
-				on: jest.fn((event: string, callback: (code: number) => void) => {
-					if (event === "close") {
-						setTimeout(() => callback(0), 10);
-					}
-				}),
-			};
-			(spawn as unknown as jest.Mock).mockReturnValue(mockChild);
-
-			await mockCli.run.spawn("echo", ["hello"], {
-				envFile: [".env"],
-				noMasking: false,
-			});
-
-			expect(mockCli.execute).toHaveBeenCalledWith(["run"], {
-				args: ["echo", "hello"],
-				flags: {
-					envFile: [".env"],
-					noMasking: false,
-				},
-				json: true,
-			});
-
-			expect(spawn).toHaveBeenCalledWith("echo", ["hello"], {
-				env: expect.objectContaining({
-					SECRET_KEY: "secret-value",
-					API_TOKEN: "token-value",
-				}),
-				stdio: "pipe",
-			});
-		});
-	});
-
-	describe("exec", () => {
-		it("executes run command with exec", async () => {
-			jest.spyOn(mockCli, "execute").mockReturnValue({
-				SECRET_KEY: "secret-value",
-				API_TOKEN: "token-value",
-			});
-
-			(exec as unknown as jest.Mock).mockResolvedValue({
-				stdout: "command output",
-				stderr: "",
-			});
-
-			const result = await mockCli.run.exec("echo hello", {
-				envFile: [".env"],
-				noMasking: false,
-			});
-
-			expect(mockCli.execute).toHaveBeenCalledWith(["run"], {
-				args: ["echo hello"],
-				flags: {
-					envFile: [".env"],
-					noMasking: false,
-				},
-				json: true,
-			});
-
-			expect(exec).toHaveBeenCalledWith("echo hello", {
-				env: expect.objectContaining({
-					SECRET_KEY: "secret-value",
-					API_TOKEN: "token-value",
-				}),
-			});
-
-			expect(result).toEqual({
-				stdout: "command output",
-				stderr: "",
-				exitCode: 0,
-			});
+	describe("run", () => {
+		it("executes run command with basic command", () => {
+			mockCli.run.run("echo", ["hello"]);
+			assertOp("run echo hello", mockCli);
 		});
 
-		it("handles command execution errors", async () => {
-			jest.spyOn(mockCli, "execute").mockReturnValue({
-				SECRET_KEY: "secret-value",
-			});
+		it("executes run command with command only", () => {
+			mockCli.run.run("ls");
+			assertOp("run ls", mockCli);
+		});
 
-			(exec as unknown as jest.Mock).mockRejectedValue({
-				stdout: "command output",
-				stderr: "command error",
-				code: 1,
-			});
+		it("executes run command with multiple arguments", () => {
+			mockCli.run.run("npm", ["run", "test", "--", "--watch"]);
+			assertOp("run npm run test -- --watch", mockCli);
+		});
 
-			const result = await mockCli.run.exec("invalid-command");
-
-			expect(result).toEqual({
-				stdout: "command output",
-				stderr: "command error",
-				exitCode: 1,
+		it("executes run command with envFile flag", () => {
+			mockCli.run.run("echo", ["hello"], {
+				envFile: [".env", ".env.local"],
 			});
+			assertOp("run echo hello --env-file=.env,.env.local", mockCli);
+		});
+
+		it("executes run command with noMasking flag", () => {
+			mockCli.run.run("echo", ["hello"], {
+				noMasking: true,
+			});
+			assertOp("run echo hello --no-masking", mockCli);
+		});
+
+		it("executes run command with all flags", () => {
+			mockCli.run.run("npm", ["start"], {
+				envFile: [".env.production"],
+				noMasking: true,
+			});
+			assertOp(
+				"run npm start --env-file=.env.production --no-masking",
+				mockCli,
+			);
+		});
+
+		it("executes run command with empty args array", () => {
+			mockCli.run.run("pwd", []);
+			assertOp("run pwd", mockCli);
+		});
+
+		it("executes run command with complex command and flags", () => {
+			mockCli.run.run("docker", ["run", "-it", "myimage"], {
+				envFile: [".env.docker"],
+				noMasking: false,
+			});
+			assertOp("run docker run -it myimage --env-file=.env.docker", mockCli);
+		});
+
+		it("executes run command with single envFile", () => {
+			mockCli.run.run("node", ["app.js"], {
+				envFile: [".env"],
+			});
+			assertOp("run node app.js --env-file=.env", mockCli);
+		});
+
+		it("executes run command with noMasking false (should not include flag)", () => {
+			mockCli.run.run("echo", ["test"], {
+				noMasking: false,
+			});
+			assertOp("run echo test", mockCli);
+		});
+
+		it("executes run command with empty flags object", () => {
+			mockCli.run.run("echo", ["hello"], {});
+			assertOp("run echo hello", mockCli);
 		});
 	});
 });
