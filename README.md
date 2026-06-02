@@ -131,6 +131,8 @@ There are roughly 70 commands available for use, so you're encouraged to check o
 
 💬 Share your feedback and connect with the Developer Products team in the [1Password Developers Slack](https://developer.1password.com/joinslack) workspace.
 
+*By accessing or using 1Password Developer Tools, you agree to the [API and SDK Terms of Service](https://1password.com/legal/api-sdk-terms-of-service).*
+
 ## License
 
 MIT
