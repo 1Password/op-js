@@ -222,26 +222,6 @@ export class CLI {
 			flags = { ...flags, format: "json" };
 		}
 
-		// Version >=2.6.2 of the CLI changed how it handled piped input
-		// in order to fix an issue with item creation, but in the process
-		// it broke piping for other commands. We have a macOS/Linux-only
-		// workaround, but not one for Windows, so for now we cannot support
-		// the inject command on Windows past this version until the CLI
-		// team fixes the issue.
-		if (equalArray(subCommand, ["inject"])) {
-			const version = semverCoerce(cli.getVersion());
-			if (semverSatisfies(version, ">=2.6.2")) {
-				if (process.platform === "win32") {
-					throw new ExecutionError(
-						"Inject is not supported on Windows for version >=2.6.2 of the CLI",
-						1,
-					);
-				} else {
-					flags = { ...flags, inFile: "/dev/stdin" };
-				}
-			}
-		}
-
 		return [
 			...parts,
 			...createFlags({
