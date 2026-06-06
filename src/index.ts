@@ -1288,6 +1288,7 @@ export const vault = {
 		flags: CommandFlags<{
 			group: string;
 			user: string;
+			permission: VaultPermisson;
 		}> = {},
 	) => cli.execute<AbbreviatedVault[]>(["vault", "list"], { flags }),
 
