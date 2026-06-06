@@ -48,7 +48,7 @@
 		"prettier": "^3.2.5",
 		"prettier-plugin-organize-imports": "^3.2.4",
 		"ts-jest": "^29.1.2",
-		"typescript": "5.4.5"
+		"typescript": "5.5.4"
 	},
 	"dependencies": {
 		"lookpath": "^1.2.2",
