@@ -11,6 +11,10 @@
 		"type": "git",
 		"url": "https://github.com/1Password/op-js"
 	},
+	"homepage": "https://github.com/1Password/op-js#readme",
+	"bugs": {
+		"url": "https://github.com/1Password/op-js/issues"
+	},
 	"license": "MIT",
 	"scripts": {
 		"build": "license-checker-rseidelsohn --direct --files licenses && yarn compile --minify && tsc -p tsconfig.release.json --emitDeclarationOnly",
